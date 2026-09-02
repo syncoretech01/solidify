@@ -1,0 +1,66 @@
+# ── Dependencies ──────────────────────────────────────────────────────────
+node_modules/
+.pnp
+.pnp.js
+
+# ── Next.js ───────────────────────────────────────────────────────────────
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+
+# ── Generated image ladder ────────────────────────────────────────────────
+# Derived from assets/media/ by `npm run images`, which the build runs.
+# The masters are committed; these are not.
+public/media/gen/
+
+# ── Photography sourcing cache + audit sheets ─────────────────────────────
+.imagery-cache/
+.audit/
+
+# ── QA + visual regression artefacts ──────────────────────────────────────
+# Screenshot runs are large and regenerated on demand by `npm run qa`.
+qa/
+shots/
+screenshots/
+*.png.orig
+
+# ── Temporary browser / automation profiles ───────────────────────────────
+.playwright/
+playwright-report/
+test-results/
+chrome-profile/
+edge-profile/
+solidify-qa/
+
+# ── Onboarding runtime data ───────────────────────────────────────────────
+# Submitted onboarding payloads contain TIN/EIN and bank details.
+# They must never reach version control under any circumstances.
+.data/
+server/data/
+*.key
+*.pem
+secrets.json
+
+# ── Environment ───────────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ── Editor / OS ───────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+*.swo
+
+# ── Logs ──────────────────────────────────────────────────────────────────
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+logs/
+*.log
+.vercel

@@ -1,0 +1,377 @@
+SOLIDIFY — PHOTOGRAPHY CREDITS AND VETTING RECORD
+==================================================
+
+Photo editor's log for the masters in assets/media/. Every master below was
+downloaded at full resolution, opened, cut into a 3x3 grid of 2x-magnified
+tiles (.audit/crops/<file>/) and examined for: (a) any competing carrier's
+name, logo, livery, fleet/unit number or USDOT/MC panel, (b) positive evidence
+of US origin, (c) renders/toys/composites, (d) the banned bearded-driver-in-cab
+portrait, (e) derelict equipment or general freight as the subject.
+
+Standard applied to US origin: a frame is admitted only when a state plate,
+MUTCD signage, a US-market conventional cab, or a stated US location on the
+source page (photo page first; photographer profile as corroboration only)
+places it in the United States. "Nothing proves otherwise" was not accepted.
+
+Standard applied to text: manufacturer badges (Toyota, Jeep, Chevrolet, Volvo,
+Cottrell, BBS, Pirelli, Mercedes-AMG, Cadillac, Maserati) are allowed. Private
+licence plates are allowed and were used as US evidence. Unit numbers and
+regulatory panels were NOT tolerated even without a company name: where one
+sat on a croppable strip the master was cropped and the crop is recorded
+here; where it could not be cropped out the frame was rejected.
+
+Licence: Pexels Licence / Unsplash Licence (free for commercial use, no
+attribution required, no model or property release). Unsplash+ (premium)
+frames were treated as unavailable. Any person shown is a stock subject and
+must never be captioned as a Solidify employee, operator or customer.
+
+Focal points are [x%, y%] of the master as adopted, measured by eye on the
+full-resolution frame.
+
+
+ADOPTED MASTERS
+---------------
+
+1. carrier-corvettes-highway.jpg  (2400x1725)
+   Source: Unsplash BSL-V0TRSSo — Roger Starnes Sr (@rstar50, Southern Ohio).
+   Caption on source: "Load of 10 new 2025 Corvettes en route to Jersey".
+   Shows: rear three-quarter of a loaded high-mount car carrier at speed on a
+   two-lane highway, ten new Corvettes in white transit covers on both decks,
+   orange hydraulic uprights, golden-hour light.
+   Vetting: tiles r0c0-r2c2 read. Upper deck, covers, uprights and trailer
+   flanks carry no lettering. The only text in the frame was a Kansas
+   permanent trailer plate (493768) and a stencilled unit number (3398) on a
+   strip along the bottom edge; the master is CROPPED from 2400x1846 to
+   2400x1725 to remove that strip entirely. No cab door in frame.
+   US origin: Kansas state plate on the trailer (seen before the crop);
+   Volvo VNL conventional power unit visible in the companion frame from the
+   same shoot; source caption places the load on I-71 en route to New Jersey.
+   Focal: [66, 58] (centre of the loaded upper deck). Tone: light.
+   Person: none.
+
+2. carrier-deck-socal.jpg  (2400x1180)
+   Source: Unsplash LrDsApWs3C0 — Craig Marolf. Stated location: Southern
+   California, CA, USA.
+   Shows: upper deck of a Cottrell-type car carrier against a storm sky — a
+   white Toyota 4Runner TRD Pro, a green Jeep Wrangler Rubicon and a black
+   Chevrolet Malibu chained down on the deck.
+   Vetting: tiles read. Lower deck carried "NEXTGEN" and "QuiXspinz" decals
+   (both confirmed as Cottrell Trailers product/equipment branding, i.e.
+   manufacturer marks, allowed) and a stencilled unit number "2177" on the
+   headboard. The master is CROPPED from 2400x1600 to 2400x1180 so that the
+   entire lower deck, the decals and the unit number are outside the frame.
+   Remaining text: "4RUNNER", "TRD PRO", "RUBICON", "Jeep", "MALIBU" badges
+   (manufacturer), and a private New York plate on the 4Runner (KRL 6907),
+   legible but a private plate, not a carrier. US-flag decals on the 4Runner.
+   US origin: stated location (Southern California) plus New York state plate.
+   Focal: [54, 62] (the Jeep). Tone: light.
+   Person: none.
+
+3. carrier-interstate-transit.jpg  (1290x1130)
+   Source: Unsplash RQlbiwT4Zgs — Roger Starnes Sr. Caption on source: "Load
+   of 10 brand new 2025 Corvettes en route to Jersey on I-71".
+   Shows: the same loaded car carrier from directly behind, at speed on a
+   divided interstate, covered new vehicles stacked on both decks, more
+   traffic ahead.
+   Vetting: the original frame had a dry-van trailer alongside carrying a
+   fully legible "VASCOR Transport / NOW HIRING / 502.370.4186" panel — a
+   competitor's livery. The master is CROPPED (x 1110-2400, y 250-1380 of the
+   2400x1914 original) so the van, its mirror and its plate are entirely
+   outside the frame, and the bottom edge sits above the carrier's own plate /
+   unit-number strip. Tiles of the retained region read: covers and uprights
+   carry no lettering; distant trucks are unreadable at 2x.
+   US origin: source caption (I-71), Kansas plate on the same trailer in the
+   companion frame, US divided interstate with white edge lines.
+   Focal: [37, 64] (the stacked load). Tone: light.
+   Person: none.
+
+4. supra-trailer-straps.jpg  (2400x3440)
+   Source: Pexels 12330350 — Jacob Moore (@jacobmooreimages, Colorado
+   Springs, CO).
+   Shows: a black Toyota GR Supra strapped down on an open car trailer, yellow
+   ratchet straps and D-rings on the diamond-plate deck, wet asphalt.
+   Vetting: tiles read. Trailer carries only DOT-C2 conspicuity tape and a
+   strap tag unreadable at 2x; no company name. Car badges (GR, Supra) are
+   manufacturer marks. A personalised Colorado plate ("ISASPRA") is legible —
+   a private plate, admitted. A small mirrored sticker on the spoiler is
+   unreadable at 2x.
+   US origin: Colorado state plate; photographer's stated base corroborates.
+   Focal: [50, 46] (the car's body). Tone: dark.
+   Person: none.
+
+5. lot-chattanooga-aerial.jpg  (2400x1348)
+   Source: Pexels 4204153 — K (@kelly). Stated location: Chattanooga, TN,
+   United States.
+   Shows: top-down drone view of a vehicle storage lot, hundreds of new
+   vehicles in rows on marked bays.
+   Vetting: no vehicles, signage or lettering beyond painted "STOP" and arrow
+   markings; no people.
+   US origin: stated location on the source page; English "STOP" bay markings.
+   Focal: [58, 45] (central block of rows). Tone: light.
+   Person: none.
+
+6. lot-dealer-row.jpg  (2400x1807)
+   Source: Unsplash NFz9uZ8CtKM — Koons Automotive (@koons), a Virginia /
+   Maryland dealer group's own account.
+   Shows: a row of Mercedes-Benz sedans nose-in on a dealership lot, shallow
+   depth of field, office building behind.
+   Vetting: tiles read. "AMG", "C300", "E300" and a small Chevrolet bowtie
+   are manufacturer marks. A tiny chrome dealer decal on one bumper is not
+   readable at 2x. No plates, no people, no carrier text.
+   US origin: uploaded by a US dealership group from its own lot; US-style
+   striped lot and signage. Recorded as the weakest origin evidence in this
+   set — replace first when Solidify supplies its own dealership frames.
+   Focal: [45, 40] (the AMG's tail-lamp and badge). Tone: light.
+   Person: none.
+
+7. showroom-mc20.jpg  (2400x3134)
+   Source: Pexels 12565887 — Jacob Moore (Colorado Springs, CO).
+   Shows: a white Maserati MC20 on the floor of a glass-walled showroom, a
+   grey Maserati beside it, two customers in the background.
+   Vetting: tiles read. No dealer name anywhere in frame (a "SOLD" tag on the
+   windscreen, manufacturer badges only). Chosen over Unsplash bC5NNbwuoB0
+   (Nashville) precisely because that frame carried a legible "Nelson Mazda"
+   plate frame and door sticker naming a real dealership.
+   US origin: photographer's stated US base only (no plate in frame). Admitted
+   for an interior environment slot on that basis and recorded as such.
+   Focal: [56, 66] (the MC20). Tone: light.
+   Person: YES — two background customers, faces visible. Stock subjects.
+
+8. hands-wheel-detail.jpg  (2400x2400)
+   Source: Pexels 17623850 — Malcolm Garret. Stated location: Ho-Ho-Kus, NJ,
+   United States.
+   Shows: a hand with a microfibre cloth at a polished BBS alloy wheel on a
+   red car, close detail.
+   Vetting: "BBS" centre cap and tyre sidewall text are manufacturer marks;
+   no other text. The person is an arm and hand only, not identifiable.
+   US origin: stated location on the source page.
+   Focal: [61, 58] (the wheel centre and hand). Tone: dark.
+   Person: YES — hand and forearm only.
+
+9. detail-amg-wheel.jpg  (2400x3600)
+   Source: Unsplash FsBbavP9YA4 — Jakob Rosen (@jakobnoahrosen, Denver, CO).
+   Shows: a black five-spoke Mercedes-AMG wheel with a red AMG brake caliper
+   and a Pirelli P Zero tyre, close detail.
+   Vetting: Mercedes star, AMG, Pirelli — manufacturer marks only.
+   US origin: no geographic content in frame; photographer's stated Denver
+   base only. Admitted as a context-free product detail and recorded as such.
+   Focal: [46, 50] (the caliper behind the spokes). Tone: dark.
+   Person: none.
+
+10. detail-cadillac-crest.jpg  (2400x1600)
+    Source: Unsplash IQTkDY7xrmU — Jakob Rosen (Denver, CO).
+    Shows: the Cadillac crest on the tailgate of a champagne SUV, dark glass
+    above, close detail.
+    Vetting: manufacturer badge only; a sliver of a Colorado-style plate at
+    the bottom-right corner, unreadable.
+    US origin: plate sliver plus photographer's stated Denver base.
+    Focal: [45, 57] (the crest). Tone: dark.
+    Person: none.
+
+11. road-utah-canyon.jpg  (2400x1603)
+    Source: Unsplash kkbhlly5G2Y — Anguel Hristozov. Stated location: Utah,
+    United States (I-70 through the San Rafael Swell).
+    Shows: an interstate curving through a red-rock canyon toward open
+    desert, yellow chevron signs on the bend.
+    Vetting: a small white box truck on the far carriageway and a bulldozer
+    at the bottom edge are incidental and unreadable at 2x; MUTCD yellow
+    chevrons. No branded vehicle.
+    US origin: stated location; MUTCD signage.
+    Focal: [70, 78] (the highway bend). Tone: light.
+    Person: none.
+
+12. road-death-valley.jpg  (2400x1350)
+    Source: Pexels 33569802 — Aomata. Stated location: California, United
+    States (Death Valley / Panamint).
+    Shows: a straight two-lane highway with a yellow centre line running
+    toward desert mountains, no vehicles.
+    Vetting: distant road signs unreadable; no vehicles, no people.
+    US origin: stated location; US yellow centre-line / white edge-line
+    marking convention.
+    Focal: [50, 68] (the road's vanishing point). Tone: light.
+    Person: none.
+
+13. road-north-cascades.jpg  (2400x1602)
+    Source: Pexels 35000374 — Timberly Hawkins. Stated location: Washington,
+    United States (North Cascades Highway).
+    Shows: a mountain highway curving through pine forest below granite
+    peaks; two small cars on the road.
+    Vetting: cars are unidentifiable at 2x; no signage, no people.
+    US origin: stated location.
+    Focal: [30, 70] (the road and valley). Tone: light.
+    Person: none.
+
+14. road-utah-night.jpg  (2400x1600)
+    Source: Unsplash Oy84q0IlQ_4 — Patrick Hendry. Stated location: Utah.
+    Shows: long-exposure headlight and tail-light trails on a mountain
+    highway winding through a snow-dusted valley at night.
+    Vetting: no vehicles resolvable, no text, no people.
+    US origin: stated location.
+    Focal: [40, 76] (the bend in the light trail). Tone: dark.
+    Person: none.
+
+
+REJECTED (with the rule each failed)
+------------------------------------
+
+Carriers / loading
+- Unsplash q36Yp9RpHa0 (Cooper White, Freightliner Cascadia stinger at speed):
+  REJECT — competitor livery. Door panel fully legible at 2x: "S3 TRANSPORT,
+  NEW BOSTON MI, USDOT 3283969, MC 1042307, #32"; deck rail lettering too.
+- Unsplash xDhuMgWBrXU (Starnes, front three-quarter of the Corvette load):
+  REJECT — competitor livery. Cab door carries a winged company emblem, unit
+  number "3581" and a USDOT/GVW panel, all legible and not croppable without
+  losing the subject.
+- Pexels 34539243 (Elite Transport Solutions): REJECT — Heathwood, Queensland,
+  Australia (stated), cab-over Kenworth K200.
+- Unsplash 9iTgJ8mv_S4 and J5Xzr3E3HRQ (Car Photographers): REJECT — Sydney
+  NSW, Australia (stated on page).
+- Unsplash 8bCFl6hJ0bA (Dakota Towing): REJECT — Kelowna, BC, Canada (stated).
+- Pexels 29566910 (Luke Miller, hi-vis worker loading a white car): REJECT —
+  photographer is Vancouver-based, no US evidence; whole series presumed
+  Canadian.
+- Pexels 17429097 and 17429095 (Jonathan Reynaga, GMC on a rollback; hands
+  chaining a wheel): REJECT — Mexico. Operator's jacket reads "GRUAS" with a
+  Colima (312) phone number; "DURAN" tow body is a Mexican manufacturer.
+- Unsplash UanilB8ZktA (fr0ggy5, Dodge Dart on a rollback, Parkland WA):
+  REJECT — third-party livery legible on the tow body ("D&J USED CARS,
+  RUTHERFORDTON, 828-28x-xxxx, www.djusedcarsonline.com"); two bystanders
+  are the dominant subject.
+- Unsplash dEuSdsnHGGA (fr0ggy5, silver car on a flatbed): REJECT — towing
+  company advertising livery legible ("LOCKOUT / JUMPSTART / 24 HOUR").
+- Unsplash TzST6fTdjxY (Jaxon Smith, Alabama race-car hauler): NOT ADOPTED —
+  US-positive (Alabama tag, Chattanooga photographer) but race-team livery
+  ("ASM", car numbers) and the trailer maker's phone number/URL on the rail
+  put it off-brief; a reserved slot was preferred.
+- Pexels 18590409 (Wavy Visuals, McLaren in an enclosed trailer at dusk):
+  REJECT — Ontario plate "CLASIC 9" legible.
+- Pexels 32212376 (Leo Asher, blue car transporter): REJECT — Chinese FAW
+  cab-over with Chinese plate; GEFCO livery on the deck.
+- Unsplash wIc9pIY2WSE (George Pagan III, Ferrari off an enclosed trailer):
+  REJECT — enclosed trailer carries a legible company name ("Professional
+  ...") on the flank; no US evidence.
+- Unsplash WkMMuOjzvZ0 (Drake, Lotus into an enclosed trailer): REJECT —
+  lettering on the trailer flank, no US evidence.
+- Unsplash vvnZdwe80EE (Nadja Thoner): REJECT — European (Opel/Peugeot
+  models, EU transporter).
+- Unsplash wevZ9CYl4KM (Nazar Dremach): REJECT — no US evidence, Eastern
+  European setting.
+- Unsplash 9lrR5mHId7c (Markus Kammermann): REJECT — Swiss, Euro flatbed.
+- Unsplash iJGax56o5yU (Ali Ananta): REJECT — Indonesian tow truck.
+- Unsplash ZUC0RGbVfME (John Cameron): REJECT — European transporter.
+- Unsplash O1aRrdShIR0 (Rob Wingate): REJECT — dealer display ramp, not
+  transport.
+- Unsplash 1gTNyTHKsKg / hriizMq0mU4 (Coleman Glover, rollback with two
+  cars): REJECT — no US evidence on page or profile.
+- Unsplash jEPQKAijobQ, aLf3S7eg7-g, BLc20J8FqV0, Qw8br4YULjs, q6nx3xFYw3E,
+  p4TboR3s0tQ, B_cu5ruzcso: REJECT — non-US (South Africa, Germany, Belgium,
+  Isuzu D-Max market, Polish plate, Netherlands, Russia respectively).
+- Unsplash dF6Sh8krxd4, 5NpfO5BMJnY, qlx6GLKvgHw, IW9QDmpmZUY, v426HGVYnZw,
+  OZ-YLUUUokg (Zoshua Colah): REJECT — AAA / WSDOT branding legible.
+- Pexels 8931961 / 8931963 (Sami Aksu): REJECT — Istanbul.
+- Pexels 1606957 (maltelu): REJECT — European trucks.
+- Pexels 28264505 (Hitesh Sarain): REJECT — "G7 Logistics" livery legible.
+- Pexels 33248089 / 33248090 (John Cheathem, Bristol TN): NOT ADOPTED — a
+  third-party business sign ("OWEN EQUIPMENT CO.") legible behind the trailer.
+- Pexels 943930: REJECT — derelict vehicle.
+- Pexels 11087830 (Carlos Cruz): REJECT — "SAIA" general-freight livery.
+- Pexels 6563903, 27508769, 27099095, 2199293, 13663664, 28264496, 34902065,
+  12261472; Unsplash 9lNE4qc6LLc, 3FuQylRWQeg, ucuOscdCaO4, H2UzCyX32p4,
+  -TQ6M3TliV0, 0-r7LSNq1b8, 9Ayfcdmu2YE, EmEQ6kK_5P0, PozaNwheXFE, dlyz37qqHfM:
+  REJECT — general freight (dry van / reefer / logs / tanker) as the subject.
+- Unsplash 1Zl16CRLnV0 (convoy with "FREEDOM" banners): REJECT — political
+  content.
+- Unsplash Um0OnHRvncI, XWJC1RfCL4M, IuhWU2Q-5G0, kP9aKbrT56M, IxvMeovmRmk,
+  UQffr-a_t1M, cQpQWhyg0P8, 0ubgQTMQSgA, xfcSqXx85M4, grKBtk4u7UM: UNAVAILABLE
+  — Getty / Unsplash+ premium, not under the free licence.
+
+Drivers / people
+- Pexels 14797991 (Sikh driver in a cab): REJECT — bearded man in cab; the
+  banned portrait type.
+- Pexels 17377416 ("happy bearded man in truck"): REJECT — the banned
+  bearded-man-in-cab portrait.
+- Unsplash YhoXp0AdEWc (Mitchell Luo, man before a Peterbilt): REJECT —
+  Melbourne VIC, Australia (stated).
+- Unsplash BZHlmOTG7JM, x60YgfG5SoY, pOzSw1BSRpo, oMcRbZkrEeM, jT8zhN3CeIs,
+  FN8pkWDRg5k, Svjxn_zcKdQ (Wesley Tingey, Las Vegas): UNAVAILABLE —
+  Unsplash+ premium.
+- Pexels 28518939: REJECT — Vietnamese door lettering.
+- Pexels 6720527, 21711145, 7006171: NOT ADOPTED — no US evidence / B&W /
+  workshop portrait off-brief.
+- Unsplash 6AbkEt7-lCA: REJECT — Turkish plate.
+- Pexels 33036006 (Shoreline Vehicles, mechanic with clipboard): REJECT —
+  UK vehicle retailer, no US evidence.
+- Pexels 8943323, 6870320, 7144183 (clipboard frames): NOT ADOPTED — no US
+  evidence or showroom-sales cliche.
+
+Dealerships / lots
+- Pexels 29566896-29566911 (Luke Miller series, incl. the "bridge view"
+  lot): REJECT — Vancouver, BC photographer; no US evidence.
+- Unsplash 3WAMh1omVAY, bCJqNVaKL7k, dhz-Nez_fgo, UlQE9rNwXHQ, v31xA0n0Mw0
+  (Erik Mclean): REJECT — St. John's, Newfoundland; "BMW St. John's" signage
+  legible in the row frame.
+- Unsplash bC5NNbwuoB0 (Crosby Hinze, Mazda showroom, Nashville): NOT
+  ADOPTED — US-positive but "NELSON MAZDA" plate frame and "Discover the
+  Nelson Difference" door sticker name a real dealership; would read as an
+  endorsement on the OEM page.
+- Pexels 25286593 (Mustang/Challenger under a canopy): NOT ADOPTED — no US
+  location stated; 9:16 portrait unsuited to the 16/10 slot.
+- Pexels 1685111, 16176576, 34593441, 18029637, 18108314, 20430143, 164634,
+  7629180, 23319104, 12700837, 12700827; Unsplash lsXEOVFOrhw, 9njClq6GPG0,
+  TX2tgF4aFhI, ccgjEBvHTIU, euFJPwObDWI, vDVX6Ry0eWo, aZKJEvydrNM,
+  VUnoUXKVrrI, PoPsSRju8Y8: REJECT / NOT ADOPTED — no US evidence (several
+  explicitly European, Middle Eastern or Central Asian).
+
+Details
+- Pexels 38953381 (Camaro badge, Giovanni Spoletini): REJECT — Edmonton,
+  Alberta photographer, no US evidence.
+- Pexels 35627755: REJECT — Jamaica (stated).
+- Pexels 29132800 (JT, Audi R8 wheel), 33808591, 20381587, 29755711;
+  Unsplash 0ZZuVE0wJUE, 7M3aFdvbSpo, 9e_ssIz4jB4, 45mIehgTFu0, 6FS0FlBCrP0,
+  3eg3Iuq-3gQ, pXFDctQsUys, eTGcQEMxEpw, Ws8-RUngrpc: NOT ADOPTED — no US
+  evidence on page or profile (Spiske and Sobota are European).
+- Pexels 13569837, 7019361 (truck mirror details): REJECT — Edmonton
+  photographer / studio series with no US evidence.
+
+Roads
+- Pexels 36717134: REJECT — Namibia (stated).
+- Pexels 18569394, 12597491, 11357903, 716809: REJECT — Canada / Norway
+  (stated).
+- Unsplash XT-cHE5Li-E, y7CGYPRJhwQ, D6e13_64bHk, rZybLYQ7xTg: NOT ADOPTED —
+  US-positive (Monument Valley, Red Rock NV, Route 50 NV, Valley of Fire NV)
+  but portrait frames unsuited to the wide road slots.
+- Unsplash PC6uONcXkhY (Hoover Dam bypass, MUTCD merge sign) and 0OaDoru5QIY
+  (Arizona) and Pexels 18514240 (Monument Valley): NOT ADOPTED — clean and
+  US-positive, held in .imagery-cache as spares; all road slots were filled.
+- Unsplash caczsRlPLp8, qTdWHfBawW4, VB8I2m4ggZI: NOT ADOPTED — no stated
+  location.
+
+Rejected / not adopted after full-resolution review: 33 frames examined at
+full size; 24 of those rejected on a rule, 9 set aside on quality or fit.
+Roughly 120 further candidates were screened on contact sheets and dropped
+before download (non-US, ferries, trains, rooftop boxes, toys, general
+freight).
+
+
+SLOTS STILL RESERVED (and why)
+------------------------------
+
+- home-car-shipping (vehicle being driven / winched onto a carrier): every
+  loading-action frame found was Canadian (Luke Miller), Mexican (Reynaga)
+  or carried a tow company's livery (fr0ggy5). Nothing honest.
+- cs-loading (ramp down, vehicle moving onto the deck): as above.
+- process-delivery (vehicle coming off the ramp): as above.
+- home-operator, oo-hero, oo-driver (professional driver / owner-operator at
+  a truck): the only US driver frames were Unsplash+ premium (Tingey); the
+  free frames were Australian, Vietnamese, or the banned bearded-in-cab
+  portrait.
+- oo-equipment (deck / hydraulics / ramps detail): the two adopted carrier
+  frames are already at their two-slot limit; the only other US hauler
+  (Alabama race hauler) is off-brief.
+- oem-cta (dealership lot at dusk, or a carrier departing): no US dusk lot
+  found; the only night dealership frames were Newfoundland.
+
+Shoot brief for Solidify: a loaded carrier on a Western interstate with the
+cab in frame (Solidify's own livery), a vehicle being winched up the ramp,
+a driver at the cab step or checking a strap, a dusk departure from a
+dealership lot.

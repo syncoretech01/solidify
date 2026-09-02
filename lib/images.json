@@ -1,0 +1,253 @@
+{
+  "carrier-corvettes-highway": {
+    "width": 2400,
+    "height": 1725,
+    "aspect": 1.3913,
+    "widths": [
+      400,
+      640,
+      900,
+      1280,
+      1800,
+      2400
+    ],
+    "formats": [
+      "avif",
+      "webp",
+      "jpg"
+    ]
+  },
+  "carrier-deck-socal": {
+    "width": 2400,
+    "height": 1180,
+    "aspect": 2.0339,
+    "widths": [
+      400,
+      640,
+      900,
+      1280,
+      1800,
+      2400
+    ],
+    "formats": [
+      "avif",
+      "webp",
+      "jpg"
+    ]
+  },
+  "carrier-interstate-transit": {
+    "width": 1290,
+    "height": 1130,
+    "aspect": 1.1416,
+    "widths": [
+      400,
+      640,
+      900,
+      1280,
+      1290
+    ],
+    "formats": [
+      "avif",
+      "webp",
+      "jpg"
+    ]
+  },
+  "detail-amg-wheel": {
+    "width": 2400,
+    "height": 3600,
+    "aspect": 0.6667,
+    "widths": [
+      400,
+      640,
+      900,
+      1280,
+      1800,
+      2400
+    ],
+    "formats": [
+      "avif",
+      "webp",
+      "jpg"
+    ]
+  },
+  "detail-cadillac-crest": {
+    "width": 2400,
+    "height": 1600,
+    "aspect": 1.5,
+    "widths": [
+      400,
+      640,
+      900,
+      1280,
+      1800,
+      2400
+    ],
+    "formats": [
+      "avif",
+      "webp",
+      "jpg"
+    ]
+  },
+  "hands-wheel-detail": {
+    "width": 2400,
+    "height": 2400,
+    "aspect": 1,
+    "widths": [
+      400,
+      640,
+      900,
+      1280,
+      1800,
+      2400
+    ],
+    "formats": [
+      "avif",
+      "webp",
+      "jpg"
+    ]
+  },
+  "lot-chattanooga-aerial": {
+    "width": 2400,
+    "height": 1348,
+    "aspect": 1.7804,
+    "widths": [
+      400,
+      640,
+      900,
+      1280,
+      1800,
+      2400
+    ],
+    "formats": [
+      "avif",
+      "webp",
+      "jpg"
+    ]
+  },
+  "lot-dealer-row": {
+    "width": 2400,
+    "height": 1807,
+    "aspect": 1.3282,
+    "widths": [
+      400,
+      640,
+      900,
+      1280,
+      1800,
+      2400
+    ],
+    "formats": [
+      "avif",
+      "webp",
+      "jpg"
+    ]
+  },
+  "road-death-valley": {
+    "width": 2400,
+    "height": 1350,
+    "aspect": 1.7778,
+    "widths": [
+      400,
+      640,
+      900,
+      1280,
+      1800,
+      2400
+    ],
+    "formats": [
+      "avif",
+      "webp",
+      "jpg"
+    ]
+  },
+  "road-north-cascades": {
+    "width": 2400,
+    "height": 1602,
+    "aspect": 1.4981,
+    "widths": [
+      400,
+      640,
+      900,
+      1280,
+      1800,
+      2400
+    ],
+    "formats": [
+      "avif",
+      "webp",
+      "jpg"
+    ]
+  },
+  "road-utah-canyon": {
+    "width": 2400,
+    "height": 1603,
+    "aspect": 1.4972,
+    "widths": [
+      400,
+      640,
+      900,
+      1280,
+      1800,
+      2400
+    ],
+    "formats": [
+      "avif",
+      "webp",
+      "jpg"
+    ]
+  },
+  "road-utah-night": {
+    "width": 2400,
+    "height": 1600,
+    "aspect": 1.5,
+    "widths": [
+      400,
+      640,
+      900,
+      1280,
+      1800,
+      2400
+    ],
+    "formats": [
+      "avif",
+      "webp",
+      "jpg"
+    ]
+  },
+  "showroom-mc20": {
+    "width": 2400,
+    "height": 3134,
+    "aspect": 0.7658,
+    "widths": [
+      400,
+      640,
+      900,
+      1280,
+      1800,
+      2400
+    ],
+    "formats": [
+      "avif",
+      "webp",
+      "jpg"
+    ]
+  },
+  "supra-trailer-straps": {
+    "width": 2400,
+    "height": 3440,
+    "aspect": 0.6977,
+    "widths": [
+      400,
+      640,
+      900,
+      1280,
+      1800,
+      2400
+    ],
+    "formats": [
+      "avif",
+      "webp",
+      "jpg"
+    ]
+  }
+}
