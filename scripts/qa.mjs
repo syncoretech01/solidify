@@ -496,6 +496,8 @@ try {
   await page.waitForTimeout(1800);
   await page.evaluate(() => document.getElementById("onboarding")?.scrollIntoView());
   await page.waitForTimeout(800);
+  // The boot probe (/api/health) can take a few seconds on a cold serverless start; wait for it to settle.
+  await page.waitForFunction(() => !/checking/i.test(document.querySelector("[data-onboarding-status]")?.textContent || ""), null, { timeout: 20000 }).catch(() => {});
   const ob = await page.evaluate(() => {
     const root = document.querySelector("[data-onboarding]");
     const gate = document.querySelector("[data-onboarding-gate]");
