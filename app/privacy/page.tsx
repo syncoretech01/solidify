@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import { COMPANY, ADDRESS_LINES } from "@/lib/site";
-import { Section, PhoneLink } from "@/components/ui/Primitives";
+import { PHOTOS } from "@/lib/media";
+import { Section, SectionMark, PhoneLink } from "@/components/ui/Primitives";
+import { Closing } from "@/components/layout/Closing";
 
 export const metadata: Metadata = pageMetadata({
   title: "Privacy Notice — Solidify Transport",
@@ -12,15 +14,13 @@ export const metadata: Metadata = pageMetadata({
 const SECTIONS = [
   {
     h: "What this notice covers",
-    p: [
-      `This notice describes how ${COMPANY.legalName} ("Solidify", "we") handles information submitted through this website. It is written to be read, not to be skipped.`,
-    ],
+    p: [`This notice describes how ${COMPANY.legalName} ("Solidify", "we") handles information submitted through this website. It is written to be read, not to be skipped.`],
   },
   {
     h: "Information we collect",
     p: [
       "Quote and contact inquiries: the route, vehicle, timing and contact details you provide, together with the free-text notes you choose to add.",
-      "Owner-operator onboarding: business and contact details, truck / power unit and licensing details, insurance policy numbers and certificates, a completed W-9 (which contains a taxpayer identification number), and direct-deposit details (including a bank routing number, account number and a voided check).",
+      "Owner-operator onboarding: business and contact details, Truck / Power Unit and licensing details, insurance policy numbers and certificates, a completed W-9 (which contains a taxpayer identification number), and direct-deposit details (including a bank routing number, account number and a voided check).",
       "Technical information needed to serve the site securely, such as the IP address a request came from, used for rate limiting and abuse prevention.",
     ],
   },
@@ -62,32 +62,57 @@ const SECTIONS = [
 ] as const;
 
 export default function PrivacyPage() {
+  const credits = Object.values(PHOTOS);
   return (
-    <Section surface="navy" id="privacy" className="pt-[calc(var(--nav-h)+4rem)]" ariaLabelledBy="privacy-title">
-      <div className="shell-narrow flex flex-col gap-12">
-        <header className="flex flex-col gap-4">
-          <span className="eyebrow">Privacy notice</span>
-          <h1 id="privacy-title" className="display-md">
-            How we handle your information.
-          </h1>
-          <p className="lead">Plain language, covering inquiries and owner-operator onboarding.</p>
-        </header>
-        <div className="flex flex-col gap-10">
-          {SECTIONS.map((s) => (
-            <section key={s.h} className="flex flex-col gap-3">
-              <h2 className="title-sm">{s.h}</h2>
-              {s.p.map((para) => (
-                <p key={para} className="body">
-                  {para}
-                </p>
-              ))}
-            </section>
-          ))}
+    <>
+      <Section surface="navy" id="privacy" className="pt-[calc(var(--nav-h)+4rem)]" ariaLabelledBy="privacy-title" head="stack">
+        <div aria-hidden className="pointer-events-none absolute inset-0 guides opacity-40" />
+        <div className="shell-narrow relative flex flex-col gap-12">
+          <header className="flex flex-col gap-4">
+            <SectionMark index={1} label="Privacy notice" />
+            <h1 id="privacy-title" className="display-md">
+              How we handle your information.
+            </h1>
+            <p className="lead">Plain language, covering inquiries and owner-operator onboarding.</p>
+          </header>
+          <div className="flex flex-col divide-y divide-[var(--line)] border-y border-[var(--line)]">
+            {SECTIONS.map((s, i) => (
+              <section key={s.h} className="grid gap-3 py-8 sm:grid-cols-[4rem_1fr] sm:gap-6">
+                <span className="numeral text-[var(--step--1)] text-[var(--text-low)]">{String(i + 1).padStart(2, "0")}</span>
+                <div className="flex flex-col gap-3">
+                  <h2 className="title-sm">{s.h}</h2>
+                  {s.p.map((para) => (
+                    <p key={para} className="body">
+                      {para}
+                    </p>
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
           <p className="small">
             Phone: <PhoneLink className="link-underline text-[var(--text-hi)]" />
           </p>
+
+          <section id="credits" aria-labelledby="credits-title" className="flex flex-col gap-4 border-t border-[var(--line-strong)] pt-8">
+            <SectionMark index={2} label="Photography" />
+            <h2 id="credits-title" className="title">
+              Photography credits
+            </h2>
+            <p className="body">
+              Photographs on this site are licensed stock. People shown in any frame are stock subjects, not Solidify personnel, operators or customers.
+            </p>
+            <ul role="list" className="flex flex-col gap-1.5">
+              {credits.map((p) => (
+                <li key={p.file} className="small">
+                  <span className="text-[var(--text-hi)]">{p.file}</span> — {p.source}
+                </li>
+              ))}
+            </ul>
+          </section>
         </div>
-      </div>
-    </Section>
+      </Section>
+      <Closing compact />
+    </>
   );
 }

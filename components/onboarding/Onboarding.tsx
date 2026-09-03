@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import type { OnboardingStep } from "@/lib/schemas";
+import { COMPENSATION } from "@/lib/site";
 import { useOnboarding } from "./useOnboarding";
 import { AccessGate } from "./AccessGate";
 import { StatusRegion } from "./StatusRegion";
@@ -22,6 +23,27 @@ const TITLE = {
   unlocked: "Secure session open",
   done: "Submission received",
 } as const;
+
+/**
+ * Verbatim from the Carrier Profile Information Sheet ("Vehicle Shipping
+ * Rates"). lib/site.ts carries a paraphrase for marketing copy; the
+ * onboarding form quotes the sheet exactly, so the sentence lives here.
+ */
+const RATES_LINE = "Compensation is based upon a percentage of the line haul revenue derived from each load.";
+
+/** Read-only terms, shown once above the step rail in every phase (locked included). */
+function TermsNote() {
+  return (
+    <div
+      data-onboarding-terms
+      className="flex flex-col gap-1.5 rounded-[var(--radius-btn)] border border-[var(--line)] bg-[color-mix(in_srgb,var(--surface-sunken)_45%,transparent)] px-3.5 py-3"
+    >
+      <span className="label">Vehicle shipping rates · Payment terms</span>
+      <p className="text-[var(--step--2)] leading-relaxed text-[var(--text-mid)]">{RATES_LINE}</p>
+      <p className="text-[var(--step--2)] leading-relaxed text-[var(--text-mid)]">Payment terms: {COMPENSATION.terms}.</p>
+    </div>
+  );
+}
 
 /**
  * Owner-operator onboarding: an access gate, six steps, and a review. All
@@ -136,12 +158,14 @@ export function Onboarding() {
 
         <StatusRegion message={state.message} />
 
-        {!unlocked && <AccessGate disabled={state.phase === "booting"} busy={state.busy} onUnlock={ob.unlock} />}
+        {/* Disabled while booting (no answer yet) and while locked (the server will refuse every code). */}
+        {!unlocked && <AccessGate disabled={state.phase === "booting" || state.phase === "locked"} busy={state.busy} onUnlock={ob.unlock} />}
       </div>
 
       {/* Steps. Every control inside is disabled until the server accepts a code. */}
       <div data-onboarding-steps className="grid gap-6 p-5 sm:p-6 lg:grid-cols-12 lg:gap-8 lg:p-8">
-        <div className="min-w-0 lg:col-span-4 xl:col-span-3">
+        <div className="flex min-w-0 flex-col gap-4 lg:col-span-4 xl:col-span-3">
+          <TermsNote />
           <StepRail current={state.current} status={state.status} done={state.phase === "done"} disabled={locked || state.busy} missing={state.missing} onSelect={ob.goTo} />
         </div>
         <div className="flex min-w-0 flex-col gap-4 lg:col-span-8 xl:col-span-9">

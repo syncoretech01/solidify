@@ -8,10 +8,18 @@ import { STATUS_LABEL, STEP_META, lastFour, stepNumber, type StepForms, type Ste
 interface Row {
   label: string;
   value: string;
+  /** Spans both columns — for long text such as the authorization. */
+  wide?: boolean;
 }
 
 const stateName = (v: string): string => (v in STATE_NAMES ? STATE_NAMES[v as keyof typeof STATE_NAMES] : v);
-const address = (line: string, city: string, state: string, zip: string): string => `${line}, ${city}, ${stateName(state)} ${zip}`;
+
+/** Tolerates blank parts (several address fields are optional). */
+const address = (line: string, city: string, state: string, zip: string): string => {
+  const locality = [city, stateName(state)].filter(Boolean).join(", ");
+  const tail = [locality, zip].filter(Boolean).join(" ");
+  return [line, tail].filter(Boolean).join(", ") || "—";
+};
 
 function rowsFor(step: OnboardingStep, saved: Partial<StepForms>, files: Record<string, UploadedFile>): Row[] {
   const fileName = (id: string): string => (id ? (files[id]?.name ?? `Stored file ${id}`) : "—");
@@ -32,7 +40,7 @@ function rowsFor(step: OnboardingStep, saved: Partial<StepForms>, files: Record<
       if (!v) return [];
       return [
         { label: "Truck / Power Unit VIN", value: v.powerUnitVin },
-        { label: "Truck / power unit", value: `${v.year} ${v.make} ${v.model}` },
+        { label: "Truck / Power Unit", value: [v.year, v.make, v.model].filter(Boolean).join(" ") },
         { label: "Capacity", value: v.capacity },
         { label: "USDOT number", value: v.dot },
         { label: "MC number", value: v.mc },
@@ -49,7 +57,7 @@ function rowsFor(step: OnboardingStep, saved: Partial<StepForms>, files: Record<
         { label: "Auto liability policy", value: v.autoLiabilityPolicyNumber || "—" },
         { label: "Agent", value: `${v.agentName} · ${v.agentEmail} · ${v.agentPhone}` },
         { label: "Certificates", value: v.certificateFileIds.map(fileName).join(", ") || "—" },
-        { label: "Required limits", value: v.acknowledgedLimits ? "Confirmed" : "Not confirmed" },
+        { label: "Certificate requirements", value: v.acknowledgedLimits ? "Confirmed — holder, additional insured, agent-issued, limits" : "Not confirmed" },
       ];
     }
     case "w9": {
@@ -63,20 +71,30 @@ function rowsFor(step: OnboardingStep, saved: Partial<StepForms>, files: Record<
     case "direct-deposit": {
       const v = saved["direct-deposit"];
       if (!v) return [];
-      return [
-        { label: "Payee", value: `${v.payeeName} · ${v.payeePhone}` },
+      const rows: Row[] = [
+        { label: "Payee", value: v.payeeName },
+        { label: "Payee phone", value: v.payeePhone || "—" },
         { label: "Payee address", value: address(v.payeeAddressLine, v.payeeCity, v.payeeState, v.payeeZip) },
-        { label: "EIN", value: lastFour(v.ein) },
-        { label: "Financial institution", value: v.bankName },
-        { label: "Institution address", value: address(v.bankAddressLine, v.bankCity, v.bankState, v.bankZip) },
-        { label: "Institution contact", value: [v.bankContact, v.bankPhone].filter(Boolean).join(" · ") || "—" },
-        { label: "Routing number", value: lastFour(v.routingNumber) },
-        { label: "Account number", value: lastFour(v.accountNumber) },
-        { label: "Account type", value: v.accountType === "checking" ? "Checking" : v.accountType === "savings" ? "Savings" : "—" },
-        { label: "Deposit authorization", value: v.depositAuthorization ? "100% of each settlement — authorized" : "Not authorized" },
-        { label: "Voided check", value: fileName(v.voidedCheckFileId) },
-        { label: "Signed", value: `${v.signatureName} · ${v.signatureDate}` },
       ];
+      if (v.payeeMc) rows.push({ label: "Payee MC number", value: v.payeeMc });
+      rows.push(
+        { label: "EIN", value: lastFour(v.ein) },
+        { label: "Financial institution", value: v.bankName || "—" },
+        { label: "Institution address", value: address(v.bankAddressLine, v.bankCity, v.bankState, v.bankZip) },
+      );
+      if (v.bankPhone) rows.push({ label: "Institution phone", value: v.bankPhone });
+      if (v.bankFax) rows.push({ label: "Institution fax", value: v.bankFax });
+      rows.push(
+        { label: "Bank routing number", value: lastFour(v.routingNumber) },
+        { label: "Account number", value: lastFour(v.accountNumber) },
+        { label: "Type of account", value: v.accountType === "checking" ? "Checking" : v.accountType === "savings" ? "Savings" : "—" },
+        { label: "Amount to deposit", value: "100%" },
+        { label: "Voided check", value: fileName(v.voidedCheckFileId) },
+        { label: "Authorization", value: v.depositAuthorization ? v.authorizationText : "Not authorized", wide: true },
+        { label: "By (typed full name)", value: v.signatureName },
+        { label: "Date", value: v.signatureDate },
+      );
+      return rows;
     }
     default:
       return [];
@@ -163,7 +181,7 @@ export function ReviewStep({
               {rows.length > 0 ? (
                 <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
                   {rows.map((r) => (
-                    <div key={r.label} className="flex min-w-0 flex-col gap-0.5">
+                    <div key={r.label} className={clsx("flex min-w-0 flex-col gap-0.5", r.wide && "sm:col-span-2")}>
                       <dt className="text-[var(--step--2)] text-[var(--text-low)]">{r.label}</dt>
                       <dd className="break-words text-[var(--step--1)] text-[var(--text-hi)]">{r.value || "—"}</dd>
                     </div>

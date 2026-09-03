@@ -183,6 +183,9 @@ const insurance = (ids) => ({
   certificateFileIds: ids,
 });
 const w9 = (id) => ({ w9FileId: id, w9Confirmed: true });
+// Mirrors lib/schemas.ts — the server accepts only this exact pair.
+const DDA_VERSION = "dda-2026-09";
+const DDA_TEXT = "I authorize Solidify Transport LLC to deposit all payments due to me in the account(s) named herein. I further authorize Solidify Transport LLC the authority to make debits or take other corrective actions, if necessary, in relation to any deposit made by Solidify Transport LLC into the account(s).";
 const directDeposit = (voidedId, routing = "021-000-021") => ({
   payeeName: "Smoke Test Carrier LLC",
   payeeAddressLine: "1 Test Way",
@@ -196,12 +199,15 @@ const directDeposit = (voidedId, routing = "021-000-021") => ({
   bankCity: "Tracy",
   bankState: "CA",
   bankZip: "95304",
-  bankContact: "",
   bankPhone: "",
+  bankFax: "",
+  payeeMc: "",
   routingNumber: routing,
   accountNumber: "5551 2345 678",
   accountType: "checking",
   depositAuthorization: true,
+  authorizationText: DDA_TEXT,
+  authorizationVersion: DDA_VERSION,
   voidedCheckFileId: voidedId,
   signatureName: "Sam Smoke",
   signatureDate: "2026-09-03",

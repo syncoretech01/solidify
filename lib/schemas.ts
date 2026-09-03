@@ -28,11 +28,28 @@ const text = (label: string, max: number, min = 1) =>
 const optionalText = (label: string, max: number) =>
   z.string().trim().max(max, `${label} must be ${max} characters or fewer.`).optional().or(z.literal(""));
 
+/** Blank is fine; anything present must match `re`. */
+const optionalPattern = (re: RegExp, message: string) =>
+  z
+    .string()
+    .trim()
+    .refine((v) => v === "" || re.test(v), message)
+    .optional();
+
+const isUsPhone = (v: string) => [10, 11].includes(digits(v).length);
+
 export const phoneSchema = z
   .string()
   .trim()
   .min(1, "Phone number is required.")
-  .refine((v) => [10, 11].includes(digits(v).length), "Phone number must be a valid US number.");
+  .refine(isUsPhone, "Phone number must be a valid US number.");
+
+/** Blank is fine; anything present must be a US phone number. */
+export const optionalPhoneSchema = z
+  .string()
+  .trim()
+  .refine((v) => v === "" || isUsPhone(v), "Phone number must be a valid US number.")
+  .optional();
 
 export const emailSchema = z
   .string()
@@ -43,7 +60,17 @@ export const emailSchema = z
 
 export const stateSchema = z.enum(US_STATES, { message: "Select a state." });
 
-export const zipSchema = z.string().trim().regex(/^\d{5}(-\d{4})?$/, "ZIP must be 5 digits.");
+const ZIP_RE = /^\d{5}(-\d{4})?$/;
+export const zipSchema = z.string().trim().regex(ZIP_RE, "ZIP must be 5 digits.");
+
+/** Blank is fine; anything present must be a real state code. */
+export const optionalStateSchema = z
+  .string()
+  .trim()
+  .refine((v) => v === "" || (US_STATES as readonly string[]).includes(v), "Select a state.")
+  .optional();
+
+export const optionalZipSchema = optionalPattern(ZIP_RE, "ZIP must be 5 digits.");
 
 /** Honeypot + timing fields present on every public form. */
 const antiSpam = {
@@ -119,8 +146,10 @@ export const vinSchema = z
   .transform((v) => v.toUpperCase())
   .pipe(z.string().regex(/^[A-HJ-NPR-Z0-9]{17}$/, "VIN must be 17 characters (no I, O or Q)."));
 
+export const MC_RE = /^\d{5,8}$/;
 export const dotSchema = z.string().trim().regex(/^\d{5,8}$/, "USDOT number must be 5 to 8 digits.");
-export const mcSchema = z.string().trim().regex(/^\d{5,8}$/, "MC number must be 5 to 8 digits.");
+export const mcSchema = z.string().trim().regex(MC_RE, "MC number must be 5 to 8 digits.");
+export const optionalMcSchema = optionalPattern(MC_RE, "MC number must be 5 to 8 digits.");
 
 export const profileStepSchema = z.object({
   companyName: text("Company or operator name", 160),
@@ -137,7 +166,8 @@ export const equipmentStepSchema = z.object({
   powerUnitVin: vinSchema,
   make: text("Make", 60),
   model: text("Model", 60),
-  year: z.string().trim().regex(/^(19|20)\d{2}$/, "Year must be a four-digit year."),
+  // Not on the client's profile sheet; kept as an optional convenience.
+  year: optionalPattern(/^(19|20)\d{2}$/, "Year must be a four-digit year."),
   capacity: text("Capacity", 80),
   dot: dotSchema,
   mc: mcSchema,
@@ -170,21 +200,69 @@ export const abaValid = (routing: string) => {
   return sum % 10 === 0;
 };
 
+/**
+ * The Direct Deposit Authorization wording, verbatim from the client's form
+ * (with "Solidify Transport LLC" unpunctuated). The client sends both values
+ * with the step and the server accepts only an exact match, so the record
+ * always carries the precise words that were consented to. Bump the version
+ * whenever the text changes.
+ */
+export const DIRECT_DEPOSIT_AUTHORIZATION_VERSION = "dda-2026-09";
+export const DIRECT_DEPOSIT_AUTHORIZATION_TEXT =
+  "I authorize Solidify Transport LLC to deposit all payments due to me in the account(s) named herein. I further authorize Solidify Transport LLC the authority to make debits or take other corrective actions, if necessary, in relation to any deposit made by Solidify Transport LLC into the account(s).";
+
+const DATE_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
+
+/** A real calendar date written YYYY-MM-DD. Deliberately unrelated to today. */
+export const isCalendarDate = (v: string): boolean => {
+  const m = DATE_RE.exec(v);
+  if (!m) return false;
+  const y = Number(m[1]);
+  const mo = Number(m[2]);
+  const d = Number(m[3]);
+  if (y < 1000 || mo < 1 || mo > 12 || d < 1) return false;
+  // Day 0 of the following month is the last day of `mo`.
+  return d <= new Date(Date.UTC(y, mo, 0)).getUTCDate();
+};
+
+/**
+ * Direct Deposit Authorization — every field on the client's form.
+ *
+ * Required vs optional was decided against the form and the ACH workflow,
+ * not carried over from the previous implementation:
+ *
+ *  REQUIRED — the authorization cannot function without them:
+ *   payeeName (who is paid), ein (the payer's tax reporting for the payee),
+ *   routingNumber + accountNumber + accountType (the ACH entry itself),
+ *   depositAuthorization + authorizationText/Version (the consent and the
+ *   exact words consented to), voidedCheckFileId (the form's attachment and
+ *   the bookkeeper's cross-check of routing/account), signatureName +
+ *   signatureDate (the form's "By / Date" line).
+ *
+ *  OPTIONAL, format-checked when present:
+ *   payee address, payeePhone, payeeMc — the profile and equipment steps
+ *   already hold the carrier's address, phone and MC, and an ACH entry does
+ *   not use them; they are on the form for the bookkeeper's cross-reference.
+ *   bankName, institution address, bankPhone, bankFax — the routing number
+ *   identifies the institution and the voided check shows its name; these
+ *   are contact convenience only, never used to route a payment.
+ */
 export const directDepositStepSchema = z.object({
   payeeName: text("Payee / company name", 160),
-  payeeAddressLine: text("Payee street address", 160),
-  payeeCity: text("Payee city", 80),
-  payeeState: stateSchema,
-  payeeZip: zipSchema,
-  payeePhone: phoneSchema,
+  payeeAddressLine: optionalText("Payee street address", 160),
+  payeeCity: optionalText("Payee city", 80),
+  payeeState: optionalStateSchema,
+  payeeZip: optionalZipSchema,
+  payeePhone: optionalPhoneSchema,
+  payeeMc: optionalMcSchema,
   ein: z.string().trim().refine((v) => digits(v).length === 9, "EIN must be 9 digits."),
-  bankName: text("Financial institution", 160),
-  bankAddressLine: text("Institution address", 160),
-  bankCity: text("Institution city", 80),
-  bankState: stateSchema,
-  bankZip: zipSchema,
-  bankContact: optionalText("Institution contact", 160),
-  bankPhone: optionalText("Institution phone", 40),
+  bankName: optionalText("Financial institution", 160),
+  bankAddressLine: optionalText("Institution address", 160),
+  bankCity: optionalText("Institution city", 80),
+  bankState: optionalStateSchema,
+  bankZip: optionalZipSchema,
+  bankPhone: optionalPhoneSchema,
+  bankFax: optionalPhoneSchema,
   routingNumber: z
     .string()
     .trim()
@@ -195,10 +273,12 @@ export const directDepositStepSchema = z.object({
     return n >= 4 && n <= 17;
   }, "Account number must be 4 to 17 digits."),
   accountType: z.enum(["checking", "savings"], { message: "Select an account type." }),
-  depositAuthorization: z.literal(true, { message: "Authorize 100% deposit to this account." }),
+  depositAuthorization: z.literal(true, { message: "Tick the authorization to continue." }),
+  authorizationText: z.literal(DIRECT_DEPOSIT_AUTHORIZATION_TEXT, { message: "The authorization wording is out of date. Reload the page and try again." }),
+  authorizationVersion: z.literal(DIRECT_DEPOSIT_AUTHORIZATION_VERSION, { message: "The authorization version is out of date. Reload the page and try again." }),
   voidedCheckFileId: z.string().min(1, "Upload a voided check."),
   signatureName: text("Signature (typed full name)", 120),
-  signatureDate: z.string().trim().regex(/^\d{4}-\d{2}-\d{2}$/, "Enter the date."),
+  signatureDate: z.string().trim().refine(isCalendarDate, "Enter a valid date."),
 });
 
 export const ONBOARDING_STEPS = ["profile", "equipment", "insurance", "w9", "direct-deposit"] as const;

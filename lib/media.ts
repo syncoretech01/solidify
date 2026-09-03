@@ -11,14 +11,13 @@
  * resolution and examined through magnified crops for competitor livery, US
  * origin and identifiable people before it was admitted.
  *
- * LICENCE — Pexels / Unsplash licences: free for commercial use, no
- * attribution required, and NO model or property release. A person shown in
- * any frame is a stock subject, NOT a Solidify employee, operator or
- * customer, and copy must never imply otherwise.
+ * LICENCE — Pexels / Unsplash licences and CC0: free for commercial use, no
+ * model or property release. A person shown in any frame is a stock subject,
+ * NOT a Solidify employee, operator or customer, and copy must never imply
+ * otherwise.
  *
- * A slot whose `photo` is null renders a designed reserved composition rather
- * than a wrong or weak photograph. `awaiting` records the shot it is reserved
- * for, so a shoot brief reads straight out of this file.
+ * A public slot must resolve to a vetted photograph — nothing reserved ever
+ * ships. Each photograph carries at most two page:slot uses (QA-enforced).
  */
 
 import manifest from "./images.json";
@@ -38,19 +37,17 @@ export type Photo = {
 };
 
 export type SlotDef = {
-  photo: string | null;
+  photo: string;
   /** width / height the layout reserves. */
   aspect: number;
   tone: Tone;
-  /** The real photograph this slot is reserved for. */
-  awaiting: string;
+  /** What this slot shows, for the handover record. */
+  role: string;
 };
 
 /* ───────────────────────────────────────────────────────────── the photos ── */
 
 export const PHOTOS: Record<string, Photo> = {
-  // Each entry mirrors a vetted master in assets/media/. Keys are the file
-  // basenames. Provenance and the vetting record: assets/media/CREDITS.txt.
   "carrier-corvettes-highway": {
     file: "carrier-corvettes-highway",
     alt: "A loaded car carrier travelling an open highway, its upper deck stacked with new vehicles under protective transit covers.",
@@ -92,6 +89,20 @@ export const PHOTOS: Record<string, Photo> = {
     focal: [45, 40],
     tone: "light",
     source: "Unsplash NFz9uZ8CtKM — Koons Automotive (Virginia / Maryland)",
+  },
+  "lot-chevrolet-covers": {
+    file: "lot-chevrolet-covers",
+    alt: "Rows of new Chevrolet SUVs on a staging lot, white transit covers on their roofs and window stickers still in place.",
+    focal: [55, 52],
+    tone: "light",
+    source: "Unsplash 1h491Giz9CU — Rob Dean (new-vehicle staging lot)",
+  },
+  "deck-aerial-yard": {
+    file: "deck-aerial-yard",
+    alt: "A drone view of an empty car hauler's decks, ramps and uprights parked on a concrete yard.",
+    focal: [50, 55],
+    tone: "light",
+    source: "Wikimedia Commons “Car carrier trailer 2” — Wikideas1, CC0 (Midwest yard; cropped)",
   },
   "showroom-mc20": {
     file: "showroom-mc20",
@@ -157,174 +168,34 @@ export const PHOTOS: Record<string, Photo> = {
 
 export const SLOTS = {
   /* ---- Home ------------------------------------------------------------ */
-  "hero-carrier": {
-    photo: "carrier-corvettes-highway",
-    aspect: 16 / 9,
-    tone: "dark",
-    awaiting: "HERO. A loaded car carrier on an open Western highway, subject in the lower-right third, sky restrained. The first thing anyone sees.",
-  },
-  "home-what": {
-    photo: "detail-amg-wheel",
-    aspect: 4 / 5,
-    tone: "dark",
-    awaiting: "Vehicles secured on a carrier deck — straps, ramps, the equipment doing the work.",
-  },
-  "home-car-shipping": {
-    photo: "showroom-mc20",
-    aspect: 16 / 10,
-    tone: "dark",
-    awaiting: "A vehicle being driven or winched onto a carrier.",
-  },
-  "home-oem": {
-    photo: "lot-dealer-row",
-    aspect: 16 / 10,
-    tone: "light",
-    awaiting: "Dealership inventory — rows of new vehicles on a lot.",
-  },
-  "home-coverage": {
-    photo: "road-utah-canyon",
-    aspect: 21 / 9,
-    tone: "dark",
-    awaiting: "A Western road environment: high desert or mountain highway, wide, no branded vehicle.",
-  },
-  "home-trust": {
-    photo: "hands-wheel-detail",
-    aspect: 4 / 5,
-    tone: "dark",
-    awaiting: "Condition inspection detail — hands, clipboard or a walk-around at pickup.",
-  },
-  "home-operator": {
-    photo: "road-north-cascades",
-    aspect: 16 / 10,
-    tone: "dark",
-    awaiting: "A professional driver at a car carrier. A stock subject; never captioned as a Solidify operator.",
-  },
-  "home-cta": {
-    photo: "road-utah-night",
-    aspect: 16 / 9,
-    tone: "dark",
-    awaiting: "A car carrier at dusk or on a long highway — the closing frame.",
-  },
-
-  /* ---- Process (shared by home and car shipping, max two uses each) ---- */
-  "process-pickup": {
-    photo: null,
-    aspect: 4 / 5,
-    tone: "dark",
-    awaiting: "Pickup: a vehicle at the point of loading.",
-  },
-  "process-transit": {
-    photo: "supra-trailer-straps",
-    aspect: 4 / 5,
-    tone: "dark",
-    awaiting: "Transit: a loaded carrier at speed on the interstate.",
-  },
-  "process-delivery": {
-    photo: "carrier-interstate-transit",
-    aspect: 4 / 5,
-    tone: "dark",
-    awaiting: "Delivery: a vehicle coming off the ramp.",
-  },
+  "hero-carrier": { photo: "carrier-corvettes-highway", aspect: 16 / 9, tone: "dark", role: "HERO — the loaded hauler on the highway; the WebGL scene is built on it." },
+  "lane-consumer": { photo: "detail-cadillac-crest", aspect: 4 / 5, tone: "dark", role: "Lanes — the consumer's vehicle." },
+  "lane-oem": { photo: "lot-chevrolet-covers", aspect: 4 / 5, tone: "light", role: "Lanes — new-vehicle inventory with transit covers." },
+  "lane-operator": { photo: "deck-aerial-yard", aspect: 4 / 5, tone: "light", role: "Lanes — the equipment an owner-operator runs." },
+  statement: { photo: "carrier-deck-socal", aspect: 2, tone: "dark", role: "Statement — vehicles secured on a carrier deck, full-bleed." },
+  "seq-pickup": { photo: "supra-trailer-straps", aspect: 16 / 9, tone: "dark", role: "Sequence 01 — a vehicle secured at pickup." },
+  "seq-transit": { photo: "carrier-interstate-transit", aspect: 16 / 9, tone: "dark", role: "Sequence 02 — the carrier in transit." },
+  "seq-delivery": { photo: "lot-dealer-row", aspect: 16 / 9, tone: "dark", role: "Sequence 03 — vehicles at the destination." },
+  "home-oem": { photo: "lot-chattanooga-aerial", aspect: 16 / 11, tone: "light", role: "Home OEM feature — staged inventory from above." },
+  closing: { photo: "road-utah-night", aspect: 16 / 9, tone: "dark", role: "Closing — road light at night (home, owner-operators)." },
 
   /* ---- Car shipping ---------------------------------------------------- */
-  "cs-hero": {
-    photo: "carrier-deck-socal",
-    aspect: 16 / 9,
-    tone: "dark",
-    awaiting: "A vehicle on a carrier, close and premium.",
-  },
-  "cs-loading": {
-    photo: null,
-    aspect: 4 / 5,
-    tone: "dark",
-    awaiting: "Loading action — ramp down, vehicle moving onto the deck.",
-  },
-  "cs-situations": {
-    photo: "detail-cadillac-crest",
-    aspect: 16 / 10,
-    tone: "dark",
-    awaiting: "A premium vehicle detail — wheel, badge or body line.",
-  },
-  "cs-quote-ground": {
-    photo: "road-death-valley",
-    aspect: 21 / 9,
-    tone: "dark",
-    awaiting: "A road environment behind the quote form.",
-  },
+  "cs-hero": { photo: "carrier-deck-socal", aspect: 16 / 9, tone: "dark", role: "Car-shipping hero — vehicles on the carrier deck." },
+  "cs-situation-1": { photo: "road-utah-canyon", aspect: 4 / 5, tone: "dark", role: "Situations — relocating: the road West." },
+  "cs-situation-2": { photo: "road-north-cascades", aspect: 4 / 5, tone: "dark", role: "Situations — seasonal moves: a mountain highway." },
+  "cs-situation-3": { photo: "detail-cadillac-crest", aspect: 4 / 5, tone: "dark", role: "Situations — family vehicles: a premium vehicle detail." },
+  "quote-ground": { photo: "road-death-valley", aspect: 21 / 9, tone: "dark", role: "Quote console rail — a Western road, dimmed." },
 
   /* ---- OEM & dealerships ----------------------------------------------- */
-  "oem-hero": {
-    photo: "lot-chattanooga-aerial",
-    aspect: 16 / 9,
-    tone: "dark",
-    awaiting: "Rows of new vehicles staged for transport, or a carrier loaded with new inventory.",
-  },
-  "oem-environment": {
-    photo: "showroom-mc20",
-    aspect: 4 / 5,
-    tone: "light",
-    awaiting: "A modern dealership or OEM environment — showroom or delivery area.",
-  },
-  "oem-movement": {
-    photo: "carrier-corvettes-highway",
-    aspect: 16 / 10,
-    tone: "dark",
-    awaiting: "A carrier loaded with new vehicles.",
-  },
-  "oem-cta": {
-    photo: null,
-    aspect: 21 / 9,
-    tone: "dark",
-    awaiting: "Dealership lot at dusk, or a carrier departing.",
-  },
+  "oem-hero": { photo: "lot-chattanooga-aerial", aspect: 16 / 9, tone: "dark", role: "OEM hero — rows of new vehicles staged for transport." },
+  "oem-role": { photo: "lot-chevrolet-covers", aspect: 2, tone: "dark", role: "Role statement — inventory with transit covers, full-bleed." },
 
   /* ---- Owner operators ------------------------------------------------- */
-  "oo-hero": {
-    photo: "road-utah-night",
-    aspect: 16 / 9,
-    tone: "dark",
-    awaiting: "An owner-operator with a car carrier. A stock subject; never captioned as a Solidify operator.",
-  },
-  "oo-driver": {
-    photo: null,
-    aspect: 4 / 5,
-    tone: "dark",
-    awaiting: "A professional driver at work — cab, mirror, strap check.",
-  },
-  "oo-equipment": {
-    photo: "carrier-deck-socal",
-    aspect: 16 / 10,
-    tone: "dark",
-    awaiting: "Car hauler equipment detail — deck, hydraulics, ramps.",
-  },
-
-  /* ---- About ----------------------------------------------------------- */
-  "about-hero": {
-    photo: "road-utah-canyon",
-    aspect: 16 / 9,
-    tone: "dark",
-    awaiting: "A carrier in a Western landscape.",
-  },
-  "about-detail": {
-    photo: "detail-amg-wheel",
-    aspect: 4 / 5,
-    tone: "dark",
-    awaiting: "A premium vehicle detail.",
-  },
-  "about-coverage": {
-    photo: "road-north-cascades",
-    aspect: 16 / 10,
-    tone: "dark",
-    awaiting: "A second Western road environment, different geography from home-coverage.",
-  },
+  "oo-hero": { photo: "carrier-corvettes-highway", aspect: 16 / 9, tone: "dark", role: "Owner-operator hero — the loaded hauler." },
+  "road-1": { photo: "deck-aerial-yard", aspect: 16 / 10, tone: "light", role: "Road 01 — the hauler's decks and ramps from above." },
 
   /* ---- Contact --------------------------------------------------------- */
-  "contact-hero": {
-    photo: "road-death-valley",
-    aspect: 16 / 9,
-    tone: "dark",
-    awaiting: "A carrier or loaded vehicle — calm, composed, room for the form.",
-  },
+  "contact-rail": { photo: "road-death-valley", aspect: 4 / 5, tone: "dark", role: "Contact console rail — a Western road, dimmed." },
 } as const satisfies Record<string, SlotDef>;
 
 export type MediaId = keyof typeof SLOTS;
@@ -343,42 +214,33 @@ export type ResolvedMedia = {
   manifest: ManifestEntry | null;
   aspect: number;
   tone: Tone;
-  awaiting: string;
+  role: string;
 };
 
 const MANIFEST = manifest as Record<string, ManifestEntry>;
 
-/** Resolve a slot. Unknown ids throw in development so a typo cannot ship. */
+/** Resolve a slot. Unknown ids and missing masters throw — a typo cannot ship. */
 export function media(id: MediaId): ResolvedMedia {
   const slot = SLOTS[id] as SlotDef | undefined;
-  if (!slot) {
-    if (process.env.NODE_ENV !== "production") throw new Error(`media(): unknown slot "${id}"`);
-    return { id, photo: null, manifest: null, aspect: 16 / 9, tone: "dark", awaiting: "" };
-  }
-  const photo = slot.photo ? (PHOTOS[slot.photo] ?? null) : null;
+  if (!slot) throw new Error(`media(): unknown slot "${id}"`);
+  const photo = PHOTOS[slot.photo] ?? null;
   const entry = photo ? (MANIFEST[photo.file] ?? null) : null;
-  return {
-    id,
-    photo: entry ? photo : null,
-    manifest: entry,
-    aspect: slot.aspect,
-    tone: slot.tone,
-    awaiting: slot.awaiting,
-  };
+  if (!photo || !entry) throw new Error(`media(): slot "${id}" → "${slot.photo}" has no master in lib/images.json (run npm run images)`);
+  return { id, photo, manifest: entry, aspect: slot.aspect, tone: slot.tone, role: slot.role };
 }
 
-/** Slots still waiting on photography — read by the handover report. */
-export const outstandingMedia = () =>
-  (Object.keys(SLOTS) as MediaId[])
-    .filter((id) => media(id).photo === null)
-    .map((id) => ({ id, awaiting: SLOTS[id].awaiting }));
-
-/** How many slots each photo carries — the QA harness enforces max two. */
+/** How many slots each photo carries — the QA harness enforces max two page:slot uses. */
 export const photoUsage = () => {
   const counts: Record<string, MediaId[]> = {};
   for (const id of Object.keys(SLOTS) as MediaId[]) {
     const p = SLOTS[id].photo;
-    if (p) (counts[p] ||= []).push(id);
+    (counts[p] ||= []).push(id);
   }
   return counts;
+};
+
+/** Photographs with no slot — kept as masters, not served. */
+export const unusedPhotos = () => {
+  const used = new Set<string>(Object.values(SLOTS).map((s) => s.photo as string));
+  return Object.keys(PHOTOS).filter((p) => !used.has(p));
 };

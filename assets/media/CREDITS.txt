@@ -211,6 +211,40 @@ ADOPTED MASTERS
     Person: none.
 
 
+15. lot-chevrolet-covers.jpg  (2400x1600)
+    Source: Unsplash 1h491Giz9CU — Rob Dean (@robhdean). Unsplash Licence.
+    Shows: rows of new Chevrolet Trailblazer / Trax SUVs on a staging lot,
+    white protective transit covers on every roof, window stickers still on
+    the glass, shot from an elevated angle in hard sunlight.
+    Vetting: 2x2 quadrants read at 1400px. Only manufacturer marks (Chevrolet
+    bowtie badges, model script). No plates, no dealership name, no carrier
+    or yard signage, no people.
+    US origin: US-market Chevrolet models with US-style window stickers on
+    the windshields; new-vehicle staging lot. No stated location on the page.
+    Admitted as an inventory frame on that basis and recorded as such.
+    Focal: [55, 52] (the dense central block of covered roofs). Tone: light.
+    Person: none.
+
+16. deck-aerial-yard.jpg  (2400x1484)
+    Source: Wikimedia Commons File:Car_carrier_trailer_2.webp — Wikideas1,
+    CC0 1.0 (public domain dedication). Original 3830x2875.
+    Shows: a drone view of an empty stinger car-hauler trailer — perforated
+    decks, ramps, hydraulic uprights, tandem axles — parked on a concrete
+    yard with yellow bay lines beside a white dry van, its long shadow on
+    the slab.
+    Vetting: the master is CROPPED to remove the van's cab and the hauler's
+    power unit (both outside the frame) so no door lettering, unit number or
+    regulatory panel remains. Quadrants read at 1400px: the van flank carries
+    DOT-C2 conspicuity tape and rivets only; the hauler decks carry two small
+    stencilled ramp-position numerals (16, 17) and one unreadable warning
+    label — not a fleet or USDOT identifier; retained.
+    US origin: the companion Commons file shows the same yard with a
+    Midwest-liveried Peterbilt (excluded for livery); US conventional dry van
+    with DOT-C2 tape, US concrete bay marking. Recorded as such.
+    Focal: [50, 55] (the deck run and ramps). Tone: light.
+    Person: none.
+
+
 REJECTED (with the rule each failed)
 ------------------------------------
 
@@ -353,25 +387,25 @@ before download (non-US, ferries, trains, rooftop boxes, toys, general
 freight).
 
 
-SLOTS STILL RESERVED (and why)
-------------------------------
+PHOTOGRAPHY STILL WANTED (shoot brief for Solidify)
+-----------------------------------------------------
 
-- home-car-shipping (vehicle being driven / winched onto a carrier): every
-  loading-action frame found was Canadian (Luke Miller), Mexican (Reynaga)
-  or carried a tow company's livery (fr0ggy5). Nothing honest.
-- cs-loading (ramp down, vehicle moving onto the deck): as above.
-- process-delivery (vehicle coming off the ramp): as above.
-- home-operator, oo-hero, oo-driver (professional driver / owner-operator at
-  a truck): the only US driver frames were Unsplash+ premium (Tingey); the
-  free frames were Australian, Vietnamese, or the banned bearded-in-cab
-  portrait.
-- oo-equipment (deck / hydraulics / ramps detail): the two adopted carrier
-  frames are already at their two-slot limit; the only other US hauler
-  (Alabama race hauler) is off-brief.
-- oem-cta (dealership lot at dusk, or a carrier departing): no US dusk lot
-  found; the only night dealership frames were Newfoundland.
+No free-licence, livery-free, US-verified frame exists for these; the site
+carries them with the Blueprint drawing system until Solidify supplies its
+own photography. When it does, only lib/media.ts changes.
 
-Shoot brief for Solidify: a loaded carrier on a Western interstate with the
-cab in frame (Solidify's own livery), a vehicle being winched up the ramp,
-a driver at the cab step or checking a strap, a dusk departure from a
-dealership lot.
+- A loaded hauler, front three-quarter, on a Western interstate, with the
+  cab in frame (Solidify's own livery).
+- A vehicle being winched or driven up the ramp (loading) and rolling off at
+  delivery (unloading).
+- A driver at the cab step or checking a strap — an owner-operator at the
+  equipment.
+- A handover at a residence or dealership.
+- A dusk departure from a dealership lot.
+
+Wikimedia Commons candidates examined this round and rejected: 2015
+Peterbilt 388 car hauler (Ontario, Canada; livery), Peterbilt car hauler
+(yellow, "Professional" livery + USDOT), Freightliner FLA (Ontime Transport
+livery), the US Army Hohenfels unloading series (Germany, Scania, German
+plates), I-95 Sumter and I-4 Polk rest-area frames (distant / advertising
+livery), Canoe Creek pickup-and-gooseneck (Shell canopy + door logo).

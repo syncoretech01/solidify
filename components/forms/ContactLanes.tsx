@@ -2,14 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import clsx from "clsx";
 import { InquiryForm, type Lane } from "./InquiryForm";
 import { ApplyLink } from "@/components/ui/Primitives";
+import { Blueprint } from "@/components/graphics/Blueprint";
 
-const LANES: { id: Lane; label: string; hint: string }[] = [
-  { id: "vehicle", label: "Vehicle shipping quote", hint: "Individuals and businesses shipping a vehicle" },
-  { id: "oem", label: "OEM & dealership inquiry", hint: "Manufacturers, dealerships, dealer groups" },
-  { id: "operator", label: "Owner-operator inquiry", hint: "Questions before you apply" },
+const LANES: { id: Lane; label: string; hint: string; icon: "iconCar" | "iconRows" | "iconHauler" }[] = [
+  { id: "vehicle", label: "Vehicle shipping quote", hint: "Individuals and businesses shipping a vehicle", icon: "iconCar" },
+  { id: "oem", label: "OEM & dealership inquiry", hint: "Manufacturers, dealerships, dealer groups", icon: "iconRows" },
+  { id: "operator", label: "Owner-operator inquiry", hint: "Questions before you apply", icon: "iconHauler" },
 ];
 
 /** Three clearly separated inquiry lanes. `?lane=oem|operator` preselects. */
@@ -24,24 +24,13 @@ export function ContactLanes() {
   }, [params]);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-7">
       <div role="tablist" aria-label="Inquiry type" className="grid gap-2 sm:grid-cols-3">
         {LANES.map((l) => (
-          <button
-            key={l.id}
-            role="tab"
-            type="button"
-            id={`lane-tab-${l.id}`}
-            aria-selected={lane === l.id}
-            aria-controls={`lane-panel-${l.id}`}
-            onClick={() => setLane(l.id)}
-            className={clsx(
-              "flex min-h-[64px] flex-col items-start justify-center gap-0.5 rounded-md border px-4 py-2 text-left transition-colors duration-300",
-              lane === l.id
-                ? "border-[var(--color-signal-400)] bg-[color-mix(in_srgb,var(--accent)_14%,transparent)] text-[var(--text-hi)]"
-                : "border-[var(--line-strong)] text-[var(--text-mid)] hover:border-[var(--text-low)] hover:text-[var(--text-hi)]",
-            )}
-          >
+          <button key={l.id} role="tab" type="button" id={`lane-tab-${l.id}`} aria-selected={lane === l.id} aria-controls={`lane-panel-${l.id}`} onClick={() => setLane(l.id)} className="seg">
+            <span className="mb-1 block h-8 w-16 opacity-80" aria-hidden>
+              <Blueprint view={l.icon} draw={false} className="h-full w-full" />
+            </span>
             <span className="text-[var(--step--1)] font-semibold">{l.label}</span>
             <span className="text-[var(--step--2)] text-[var(--text-low)]">{l.hint}</span>
           </button>
@@ -50,7 +39,7 @@ export function ContactLanes() {
 
       <div role="tabpanel" id={`lane-panel-${lane}`} aria-labelledby={`lane-tab-${lane}`}>
         {lane === "operator" && (
-          <p className="mb-4 rounded-md border border-[var(--line-strong)] px-4 py-3 text-[var(--step--1)] text-[var(--text-mid)]">
+          <p className="mb-5 rounded-md border border-[var(--line-strong)] px-4 py-3 text-[var(--step--1)] text-[var(--text-mid)]">
             Ready to apply? New applications go through our driver portal:{" "}
             <ApplyLink className="link-underline font-medium text-[var(--text-hi)]">start a new application</ApplyLink>. Already approved? Complete{" "}
             <a href="/owner-operators#onboarding" className="link-underline font-medium text-[var(--text-hi)]">
@@ -59,7 +48,7 @@ export function ContactLanes() {
             .
           </p>
         )}
-        <InquiryForm lane={lane} />
+        <InquiryForm lane={lane} bare />
       </div>
     </div>
   );

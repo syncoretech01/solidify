@@ -5,7 +5,6 @@ import { SITE_URL, COMPANY, META } from "@/lib/site";
 import { organizationLd } from "@/lib/seo";
 import { SmoothScroll } from "@/components/layout/SmoothScroll";
 import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
 import { Cursor } from "@/components/ui/Cursor";
 import { JsonLd } from "@/components/layout/JsonLd";
 
@@ -32,7 +31,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#070c16",
+  themeColor: "#080b12",
   colorScheme: "dark",
   width: "device-width",
   initialScale: 1,
@@ -53,7 +52,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Cursor />
           <Header />
           <main id="main">{children}</main>
-          <Footer />
         </SmoothScroll>
       </body>
     </html>

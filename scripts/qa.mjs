@@ -50,6 +50,10 @@ const BANNED_PHRASES = [
   "enclosed transport", "open transport", "guaranteed", "we guarantee", "real-time tracking", "live tracking",
   "track your vehicle", "expedited", "fully insured", "insured up to", "on-time", "years in business",
   "testimonial", "no forced dispatch", "under our own authority", "own operating authority",
+  // weak / internal / unsupported copy retired in the overhaul
+  "numbers we made up", "real company", "person answers", "hand-off", "handoff", "third-party carrier", "inoperable", "operable",
+  "inspected", "condition documented", "authority to", "renegotiate", "tenth move", "guarantee", "tracking your",
+  "deepest coverage", "strongest coverage", "strongest in the west", "western density", "home base",
 ];
 const BANNED_WORDS = ["tractor"];
 
@@ -122,9 +126,9 @@ const GATHER = () => {
     photo: p.getAttribute("data-photo"),
   }));
   const chosen = imgs
-    .filter((i) => i.hasAttribute("data-plate"))
+    .filter((i) => i.hasAttribute("data-plate") && i.currentSrc)
     .map((i) => {
-      const u = i.currentSrc || i.src;
+      const u = i.currentSrc;
       const m = /\/media\/gen\/([a-z0-9-]+?)-(\d+)\.(avif|webp|jpg)/i.exec(u);
       return m ? { name: m[1], w: Number(m[2]), type: m[3], rendered: Math.round(i.getBoundingClientRect().width) } : null;
     })
@@ -225,6 +229,17 @@ const GATHER = () => {
     canvas: document.querySelectorAll("[data-hero] canvas").length,
     contrastFailures: bad.slice(0, 12),
     linksToApi: [...document.querySelectorAll('a[href*="/api/"]')].length,
+    reserved: document.querySelectorAll(".frame-reserved, [data-reserved-for]").length,
+    heads: [...document.querySelectorAll("main [data-section][data-head]")].map((s) => s.getAttribute("data-head")),
+    blueButtons: [...document.querySelectorAll(".btn")]
+      .filter((b) => {
+        const m = /rgba?\((\d+),\s*(\d+),\s*(\d+)/.exec(getComputedStyle(b).backgroundColor);
+        if (!m) return false;
+        const [r, g, bl] = [+m[1], +m[2], +m[3]];
+        return bl > 150 && bl - r > 80 && bl - g > 40;
+      })
+      .map((b) => (b.textContent || "").trim().slice(0, 30)),
+    brokerCount: ((document.body.innerText || "").toLowerCase().match(/not a broker/g) || []).length,
     focusable: document.querySelectorAll('a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])').length,
   };
 };
@@ -242,25 +257,27 @@ try {
     headless: true,
     args: ["--enable-unsafe-swiftshader", "--disable-gpu", "--mute-audio", "--disable-background-networking"],
   });
-  const ctx = await browser.newContext({ viewport: { width: 1536, height: 864 }, deviceScaleFactor: 1, colorScheme: "dark" });
-  const page = await ctx.newPage();
-
   const consoleErrors = [];
   const netErrors = [];
-  page.on("console", (m) => {
-    if (m.type() === "error") consoleErrors.push(m.text().slice(0, 220));
-  });
-  page.on("pageerror", (e) => consoleErrors.push("pageerror: " + String(e.message).slice(0, 220)));
-  page.on("requestfailed", (r) => {
-    const u = r.url();
-    if (u.startsWith(APPLY_URL)) return;
-    netErrors.push(`${r.failure()?.errorText} ${u.slice(0, 140)}`);
-  });
-  page.on("response", (r) => {
-    try {
-      if (r.status() >= 400 && new URL(r.url()).origin === new URL(TARGET).origin) netErrors.push(`HTTP ${r.status()} ${r.url().slice(0, 140)}`);
-    } catch {}
-  });
+  const attach = (p) => {
+    p.on("console", (m) => {
+      if (m.type() === "error") consoleErrors.push(m.text().slice(0, 220));
+    });
+    p.on("pageerror", (e) => consoleErrors.push("pageerror: " + String(e.message).slice(0, 220)));
+    p.on("requestfailed", (r) => {
+      const u = r.url();
+      if (u.startsWith(APPLY_URL)) return;
+      netErrors.push(`${r.failure()?.errorText} ${u.slice(0, 140)}`);
+    });
+    p.on("response", (r) => {
+      try {
+        if (r.status() >= 400 && new URL(r.url()).origin === new URL(TARGET).origin) netErrors.push(`HTTP ${r.status()} ${r.url().slice(0, 140)}`);
+      } catch {}
+    });
+  };
+  let ctx = await browser.newContext({ viewport: { width: 1536, height: 864 }, deviceScaleFactor: 1, colorScheme: "dark" });
+  let page = await ctx.newPage();
+  attach(page);
 
   const health = await fetch(`${TARGET}/api/health`).then((r) => r.json()).catch(() => null);
   note("backend health", JSON.stringify(health));
@@ -268,10 +285,18 @@ try {
   const onboardingConfigured = !!health?.onboarding?.configured;
 
   const siteWidePhotoUse = {};
+  let brokerTotal = 0;
   const seenTitles = new Map();
   const seenDescs = new Map();
 
   for (const vp of VIEWPORTS) {
+    if (vp.mobile) {
+      // A phone does not carry a desktop cache: a fresh context keeps srcset selection honest.
+      await ctx.close();
+      ctx = await browser.newContext({ viewport: { width: vp.w, height: vp.h }, deviceScaleFactor: 1, colorScheme: "dark" });
+      page = await ctx.newPage();
+      attach(page);
+    }
     await page.setViewportSize({ width: vp.w, height: vp.h });
     for (const pg of PAGES) {
       const label = `[${vp.name} ${pg.name}]`;
@@ -307,6 +332,11 @@ try {
         for (const phrase of BANNED_PHRASES) check(`[${pg.name}] copy does not say "${phrase}"`, !f.text.includes(phrase));
         for (const w of BANNED_WORDS) check(`[${pg.name}] copy does not use the word "${w}"`, !new RegExp(`\\b${w}\\b`).test(f.text) && !new RegExp(`\\b${w}\\b`).test(f.alts.join(" ").toLowerCase()));
         check(`[${pg.name}] states it is a carrier`, /\bcarrier\b/.test(f.text));
+        check(`[${pg.name}] no reserved / placeholder frames`, f.reserved === 0, String(f.reserved));
+        check(`[${pg.name}] no blue-filled buttons`, f.blueButtons.length === 0, f.blueButtons.join(", "));
+        const dupHead = f.heads.find((h, i) => i > 0 && h && h === f.heads[i - 1] && h !== "stack");
+        check(`[${pg.name}] consecutive sections use different heading patterns`, !dupHead, f.heads.join(" > "));
+        brokerTotal += f.brokerCount;
         check(`[${pg.name}] confirmed phone present`, f.text.includes(PHONE));
         check(`[${pg.name}] no invented phone`, !/\(800\)\s*555/.test(f.text));
         check(`[${pg.name}] no placeholder brackets`, !/\[(xx|tbd|todo|placeholder)/i.test(f.text), "");
@@ -324,7 +354,10 @@ try {
           if (!p.photo) continue;
           (siteWidePhotoUse[p.photo] ||= new Set()).add(`${pg.name}:${p.slot}`);
         }
-        if (pg.name !== "privacy") check(`[${pg.name}] scroll animations registered`, f.triggers > 3, String(f.triggers));
+        if (pg.name !== "privacy") {
+          if (f.triggers === -1) note(`[${pg.name}] scroll animations`, "registry not exposed in production builds");
+          else check(`[${pg.name}] scroll animations registered`, f.triggers > 3, String(f.triggers));
+        }
         if (f.applyCtas.length) {
           check(`[${pg.name}] apply CTAs point at the application`, f.applyCtas.every((a) => a.href === APPLY_URL), f.applyCtas.map((a) => a.href).join(", "));
           check(`[${pg.name}] apply CTAs open safely`, f.applyCtas.every((a) => a.target === "_blank" && /noopener/.test(a.rel)), "");
@@ -352,9 +385,12 @@ try {
         await page.waitForTimeout(650);
         await shot(page, `${dir}/${String(i).padStart(2, "0")}-${s.id}.png`);
         if (s.h > vp.h * 1.6) {
-          await page.evaluate((y) => window.scrollTo(0, y), s.top + s.h * 0.5);
-          await page.waitForTimeout(550);
-          await shot(page, `${dir}/${String(i).padStart(2, "0")}-${s.id}-mid.png`);
+          const fracs = ["hero", "sequence", "road", "situations"].includes(s.id) ? [0.25, 0.5, 0.8] : [0.5];
+          for (const fr of fracs) {
+            await page.evaluate((y) => window.scrollTo(0, y), s.top + s.h * fr);
+            await page.waitForTimeout(700);
+            await shot(page, `${dir}/${String(i).padStart(2, "0")}-${s.id}-${Math.round(fr * 100)}.png`);
+          }
         }
         i++;
       }
@@ -386,6 +422,8 @@ try {
       }
     }
   }
+
+  check("copy: \"not a broker\" appears at most twice site-wide", brokerTotal <= 2, String(brokerTotal));
 
   /* ---- photo reuse across the site ---- */
   const over = Object.entries(siteWidePhotoUse).filter(([, s]) => s.size > 2);
@@ -458,6 +496,7 @@ try {
       root: !!root,
       gate: !!gate,
       gateInput: !!document.querySelector('[data-onboarding-gate] input[name="code"]'),
+      gateDisabled: !!document.querySelector('[data-onboarding-gate] input[name="code"]')?.disabled,
       stepInputs: stepInputs.length,
       stepInputsDisabled: stepInputs.every((i) => i.disabled),
       status: document.querySelector("[data-onboarding-status]")?.textContent?.trim().slice(0, 200) || "",
@@ -467,7 +506,11 @@ try {
   check("onboarding: stepper mounted (not the stub)", ob.root && !ob.stub, JSON.stringify(ob));
   check("onboarding: access gate present with a code field", ob.gate && ob.gateInput, JSON.stringify(ob));
   if (ob.stepInputs) check("onboarding: step controls disabled behind the gate", ob.stepInputsDisabled, `${ob.stepInputs} inputs`);
-  if (ob.gateInput) {
+  if (ob.gateInput && !onboardingConfigured) {
+    check("onboarding: gate is disabled while the backend is unconfigured (nothing can be typed into a dead form)", ob.gateDisabled, JSON.stringify(ob));
+    check("onboarding: locked state explains itself honestly", /not accepting|not configured|nothing you enter|contact solidify/i.test(ob.status), ob.status);
+    await shot(page, `${OUT}/forms/onboarding-gate.png`);
+  } else if (ob.gateInput) {
     await page.fill('[data-onboarding-gate] input[name="code"]', "QA-NOT-A-REAL-CODE");
     await page.click('[data-onboarding-gate] button[type="submit"]');
     await page.waitForTimeout(2500);
@@ -483,7 +526,7 @@ try {
   check("onboarding: still nothing in localStorage/sessionStorage after interaction", obStorage.l === 0 && obStorage.s === 0, JSON.stringify(obStorage));
 
   /* ---- reduced motion ---- */
-  await ctx.emulateMedia({ reducedMotion: "reduce" });
+  await page.emulateMedia({ reducedMotion: "reduce" });
   const rmBefore = consoleErrors.length;
   await page.goto(`${TARGET}/`, { waitUntil: "load", timeout: 120000 });
   await page.waitForTimeout(1500);
@@ -499,7 +542,7 @@ try {
   check("reduced motion: no reveal left invisible", rm.hiddenReveals === 0, String(rm.hiddenReveals));
   check("reduced motion: no console errors", consoleErrors.length === rmBefore, consoleErrors.slice(rmBefore).join(" | "));
   await shot(page, `${OUT}/reduced-motion.png`);
-  await ctx.emulateMedia({ reducedMotion: "no-preference" });
+  await page.emulateMedia({ reducedMotion: "no-preference" });
 
   /* ---- global cleanliness ---- */
   check("no console errors across the run", consoleErrors.length === 0, [...new Set(consoleErrors)].slice(0, 6).join(" | "));

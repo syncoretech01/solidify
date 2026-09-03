@@ -57,9 +57,7 @@ export const INSURANCE = {
 export const CLAIMS = {
   coverage: "All 48 contiguous states",
   coverageLong: "Vehicle transport across all 48 contiguous states",
-  focus: "Western US strength",
-  focusLong: "Strong Western US focus, with lanes across the country",
-  role: "A motor carrier — not a broker",
+  focus: "Strong Western-US focus",
 } as const;
 
 /** Western states, for the coverage visual. Geography only — never a volume or lane claim. */
@@ -90,12 +88,12 @@ export const NAV = [
 ] as const;
 
 export const CTA = {
-  quote: { href: "/contact", label: "Get a Vehicle Shipping Quote" },
-  quoteShort: { href: "/contact", label: "Get a Quote" },
-  oem: { href: "/oem-dealerships", label: "OEM & Dealership Solutions" },
-  oemInquiry: { href: "/contact?lane=oem", label: "Start a Commercial Inquiry" },
-  drive: { href: "/owner-operators", label: "Drive With Solidify" },
-  apply: { href: APPLY_URL, label: "Start a New Application" },
+  quote: { href: "/contact", label: "Get a vehicle shipping quote" },
+  quoteShort: { href: "/contact", label: "Get a quote" },
+  oem: { href: "/oem-dealerships", label: "OEM & dealership solutions" },
+  oemInquiry: { href: "/contact?lane=oem", label: "Start a commercial inquiry" },
+  drive: { href: "/owner-operators", label: "Drive with Solidify" },
+  apply: { href: APPLY_URL, label: "Start a new application" },
 } as const;
 
 export const FOOTER_LINKS = {

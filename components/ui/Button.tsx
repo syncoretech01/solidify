@@ -5,13 +5,32 @@ import type { ReactNode } from "react";
 import clsx from "clsx";
 import { Magnetic } from "./Magnetic";
 
-type Variant = "primary" | "ghost" | "glass" | "light";
+/**
+ * metal — the primary action: brushed ice → silver with a light sweep.
+ * steel — the secondary action: a metallic ring, transparent body.
+ * ink   — the primary action on an ice surface.
+ * link  — a mono trace link (no box).
+ * The old names (primary/ghost/glass/light) still resolve so nothing breaks.
+ */
+type Variant = "metal" | "steel" | "ink" | "link" | "primary" | "ghost" | "glass" | "light";
+
+const VARIANT_CLASS: Record<Variant, string> = {
+  metal: "btn btn-metal",
+  steel: "btn btn-steel",
+  ink: "btn btn-ink",
+  link: "link-trace",
+  primary: "btn btn-metal",
+  ghost: "btn btn-steel",
+  glass: "btn btn-glass",
+  light: "btn btn-metal",
+};
 
 type Props = {
   children: ReactNode;
   href?: string;
   onClick?: () => void;
   variant?: Variant;
+  size?: "md" | "sm";
   className?: string;
   magnetic?: boolean;
   type?: "button" | "submit";
@@ -38,7 +57,8 @@ export function Button({
   children,
   href,
   onClick,
-  variant = "primary",
+  variant = "metal",
+  size = "md",
   className,
   magnetic = true,
   type = "button",
@@ -48,12 +68,13 @@ export function Button({
   block = false,
   ...rest
 }: Props) {
-  const cls = clsx("btn", `btn-${variant}`, block && "btn-block", className);
+  const isLink = variant === "link";
+  const cls = clsx(VARIANT_CLASS[variant], size === "sm" && !isLink && "btn-sm", block && "btn-block", className);
 
   const inner = (
     <>
       <span>{children}</span>
-      {arrow && <Arrow />}
+      {arrow && !isLink && <Arrow />}
       {external && <span className="sr-only"> (opens in a new tab)</span>}
     </>
   );
@@ -79,7 +100,7 @@ export function Button({
     );
   }
 
-  if (!magnetic || block) return el;
+  if (!magnetic || block || isLink) return el;
   return (
     <Magnetic strength={0.22} className="inline-block">
       {el}

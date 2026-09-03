@@ -1,4 +1,4 @@
-import type { OnboardingStep } from "@/lib/schemas";
+import { DIRECT_DEPOSIT_AUTHORIZATION_TEXT, DIRECT_DEPOSIT_AUTHORIZATION_VERSION, type OnboardingStep } from "@/lib/schemas";
 import type { Result, UploadPurpose } from "@/lib/onboarding-client";
 
 /* ── Steps ──────────────────────────────────────────────────────────────── */
@@ -17,8 +17,8 @@ export const STEP_META: Record<StepKey, { label: string; title: string; lead: st
   },
   equipment: {
     label: "Equipment & licensing",
-    title: "Equipment and licensing",
-    lead: "The truck / power unit you run, and your operating authority.",
+    title: "Equipment, licensing & service",
+    lead: "The Truck / Power Unit you run, your operating authority, where you run, and how you track.",
     save: "Save and continue",
   },
   insurance: {
@@ -131,18 +131,22 @@ export interface DirectDepositForm {
   payeeState: string;
   payeeZip: string;
   payeePhone: string;
+  payeeMc: string;
   ein: string;
   bankName: string;
   bankAddressLine: string;
   bankCity: string;
   bankState: string;
   bankZip: string;
-  bankContact: string;
   bankPhone: string;
+  bankFax: string;
   routingNumber: string;
   accountNumber: string;
   accountType: string;
   depositAuthorization: boolean;
+  /** Always the current constants; the server accepts nothing else. */
+  authorizationText: string;
+  authorizationVersion: string;
   voidedCheckFileId: string;
   signatureName: string;
   signatureDate: string;
@@ -180,18 +184,21 @@ export const BLANK: { [K in OnboardingStep]: () => StepForms[K] } = {
     payeeState: "",
     payeeZip: "",
     payeePhone: "",
+    payeeMc: "",
     ein: "",
     bankName: "",
     bankAddressLine: "",
     bankCity: "",
     bankState: "",
     bankZip: "",
-    bankContact: "",
     bankPhone: "",
+    bankFax: "",
     routingNumber: "",
     accountNumber: "",
     accountType: "",
     depositAuthorization: false,
+    authorizationText: DIRECT_DEPOSIT_AUTHORIZATION_TEXT,
+    authorizationVersion: DIRECT_DEPOSIT_AUTHORIZATION_VERSION,
     voidedCheckFileId: "",
     signatureName: "",
     signatureDate: todayIso(),

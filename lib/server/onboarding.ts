@@ -84,6 +84,10 @@ export interface UploadMeta {
 }
 export interface CompleteRecord {
   completedAt: string;
+  /** When the operator's final submit was accepted — the moment the stored authorization wording became binding. */
+  consentAcceptedAt: string;
+  /** DIRECT_DEPOSIT_AUTHORIZATION_VERSION copied from the direct-deposit step at finalize time; null if absent. */
+  consentVersion: string | null;
   steps: OnboardingStep[];
 }
 export interface SubmissionRecord {
@@ -91,6 +95,8 @@ export interface SubmissionRecord {
   createdAt: string | null;
   complete: boolean;
   completedAt: string | null;
+  consentAcceptedAt: string | null;
+  consentVersion: string | null;
   masked: boolean;
   steps: Partial<Record<OnboardingStep, { savedAt: string; payload: StepPayload }>>;
   files: UploadMeta[];
@@ -359,6 +365,9 @@ export async function getSubmissionRecord(id: string, opts: { reveal: boolean })
     createdAt: created.createdAt,
     complete: complete !== null,
     completedAt: complete?.completedAt ?? null,
+    // Records finalized before consent tracking existed carry neither field.
+    consentAcceptedAt: complete?.consentAcceptedAt ?? null,
+    consentVersion: complete?.consentVersion ?? null,
     masked: !opts.reveal,
     steps,
     files: await listUploads(id),

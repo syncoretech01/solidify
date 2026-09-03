@@ -12,7 +12,7 @@ export function EquipmentStep({ initial, disabled, handlers, onBack }: StepProps
 
   return (
     <StepShell step="equipment" disabled={disabled} busy={saving} onBack={onBack} onSubmit={submit} submitLabel={STEP_META.equipment.save}>
-      <Group legend="Truck / power unit">
+      <Group legend="Truck / Power Unit">
         <TextField
           id={fid("powerUnitVin")}
           label="Truck / Power Unit VIN"
@@ -27,7 +27,7 @@ export function EquipmentStep({ initial, disabled, handlers, onBack }: StepProps
           disabled={disabled}
           registration={register("powerUnitVin")}
         />
-        <TextField id={fid("year")} label="Year" inputMode="numeric" maxLength={4} autoComplete="off" error={err("year")} disabled={disabled} registration={register("year")} />
+        <TextField id={fid("year")} label="Year" optional inputMode="numeric" maxLength={4} autoComplete="off" error={err("year")} disabled={disabled} registration={register("year")} />
         <TextField id={fid("make")} label="Make" autoComplete="off" error={err("make")} disabled={disabled} registration={register("make")} />
         <TextField id={fid("model")} label="Model" autoComplete="off" error={err("model")} disabled={disabled} registration={register("model")} />
         <TextField id={fid("capacity")} label="Capacity" note="How many vehicles you can carry, or the rated capacity." autoComplete="off" error={err("capacity")} disabled={disabled} registration={register("capacity")} />
@@ -40,7 +40,7 @@ export function EquipmentStep({ initial, disabled, handlers, onBack }: StepProps
 
       <Group legend="Operations">
         <TextAreaField id={fid("serviceAreas")} label="Primary service areas" className="sm:col-span-2" note="The states, regions or lanes you run most." error={err("serviceAreas")} disabled={disabled} registration={register("serviceAreas")} />
-        <TextField id={fid("gpsTracking")} label="GPS / tracking" className="sm:col-span-2" note="The GPS or tracking system in the truck / power unit, or “None”." autoComplete="off" error={err("gpsTracking")} disabled={disabled} registration={register("gpsTracking")} />
+        <TextField id={fid("gpsTracking")} label="GPS / tracking" className="sm:col-span-2" note="The GPS or tracking system in the Truck / Power Unit, or “None”." autoComplete="off" error={err("gpsTracking")} disabled={disabled} registration={register("gpsTracking")} />
       </Group>
     </StepShell>
   );

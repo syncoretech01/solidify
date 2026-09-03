@@ -192,7 +192,7 @@ export function Header() {
           </nav>
 
           <div className="flex items-center gap-3">
-            <Link href={CTA.quoteShort.href} className="btn btn-primary hidden md:inline-flex !min-h-[44px] !px-5" data-nav-cta>
+            <Link href={CTA.quoteShort.href} className="btn btn-metal btn-sm hidden md:inline-flex" data-nav-cta>
               {CTA.quoteShort.label}
             </Link>
             <button
@@ -200,7 +200,7 @@ export function Header() {
               onClick={() => setOpen((o) => !o)}
               aria-expanded={open}
               aria-controls="nav-panel"
-              className="relative z-10 flex h-11 w-11 items-center justify-center rounded-md border border-[var(--line-strong)] transition-colors hover:border-[var(--color-signal-400)] lg:hidden"
+              className="relative z-10 flex h-11 w-11 items-center justify-center rounded-md border border-[var(--line-strong)] transition-colors hover:border-[rgba(127,182,255,0.7)] lg:hidden"
             >
               <span className="sr-only">{open ? "Close menu" : "Open menu"}</span>
               <span aria-hidden className="relative block h-[10px] w-[20px]">
@@ -239,7 +239,7 @@ export function Header() {
             {[...NAV, { href: "/contact", label: "Get a Quote" }].map((item, i) => (
               <li key={item.href} className="mask-line border-b border-[var(--line)] py-[clamp(0.6rem,1.8vh,1.1rem)]">
                 <Link data-nav-item href={item.href} className="flex items-baseline gap-5 py-1" onClick={() => setOpen(false)}>
-                  <span className="numeral text-[var(--step--2)] text-[var(--accent)]">{String(i + 1).padStart(2, "0")}</span>
+                  <span className="numeral text-[var(--step--2)] text-[var(--text-low)]">{String(i + 1).padStart(2, "0")}</span>
                   <span className="display-sm">{item.label}</span>
                 </Link>
               </li>
@@ -247,7 +247,7 @@ export function Header() {
           </ul>
         </nav>
         <div className="flex flex-col gap-5 pt-8">
-          <Link data-nav-foot href={CTA.quote.href} className="btn btn-primary w-fit" onClick={() => setOpen(false)}>
+          <Link data-nav-foot href={CTA.quote.href} className="btn btn-metal w-fit" onClick={() => setOpen(false)}>
             {CTA.quote.label}
           </Link>
           <div data-nav-foot className="flex flex-wrap items-center gap-x-6 gap-y-2 small">

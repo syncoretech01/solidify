@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { ROUTE_EVENT } from "@/components/car/RouteMap";
 import { useForm, type FieldErrors, type Path } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import clsx from "clsx";
@@ -29,19 +30,19 @@ const LANE_COPY: Record<Lane, { title: string; text: string; submit: string; suc
     title: "Get a vehicle shipping quote",
     text: "Tell us the route and the vehicle. The carrier reviews it and comes back with a quote and a pickup window.",
     submit: "Request my quote",
-    success: "Your quote request is with the carrier. We'll reach out using the phone or email you provided.",
+    success: "Your quote request is with the carrier. We will reach out using the phone or email you provided.",
   },
   oem: {
     title: "Start a commercial inquiry",
-    text: "For OEMs, dealerships and dealer groups. Outline the movement and we'll follow up with the carrier's team.",
+    text: "For OEMs, dealerships and dealer groups. Outline the movement and the carrier's team follows up.",
     submit: "Send commercial inquiry",
-    success: "Your inquiry is with the carrier's commercial team. We'll follow up using the contact details you provided.",
+    success: "Your inquiry is with the carrier's commercial team. We will follow up using the contact details you provided.",
   },
   operator: {
     title: "Owner-operator inquiry",
     text: "Questions before you apply? Send them here. New applications go through our driver portal.",
     submit: "Send inquiry",
-    success: "Your message is with the carrier. We'll follow up using the contact details you provided.",
+    success: "Your message is with the carrier. We will follow up using the contact details you provided.",
   },
 };
 
@@ -49,8 +50,9 @@ const LANE_COPY: Record<Lane, { title: string; text: string; submit: string; suc
  * The single inquiry form for all three lanes. Client validation mirrors the
  * server exactly (shared zod schemas); the server's 422 field errors land on
  * the right control by name. Never reports a success it did not receive.
+ * `bare` drops the panel chrome so a console can wrap it.
  */
-export function InquiryForm({ lane, className, compact = false }: { lane: Lane; className?: string; compact?: boolean }) {
+export function InquiryForm({ lane, className, compact = false, bare = false }: { lane: Lane; className?: string; compact?: boolean; bare?: boolean }) {
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const copy = LANE_COPY[lane];
   const schema = SCHEMAS[lane];
@@ -70,6 +72,7 @@ export function InquiryForm({ lane, className, compact = false }: { lane: Lane; 
     handleSubmit,
     setError,
     reset,
+    watch,
     formState: { errors },
   } = useForm<Values>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -82,6 +85,14 @@ export function InquiryForm({ lane, className, compact = false }: { lane: Lane; 
     reset(defaults);
     setStatus({ kind: "idle" });
   }, [defaults, reset]);
+
+  // The quote console's route map listens for the chosen states.
+  const pickupState = watch("pickupState");
+  const deliveryState = watch("deliveryState");
+  useEffect(() => {
+    if (lane !== "vehicle") return;
+    window.dispatchEvent(new CustomEvent(ROUTE_EVENT, { detail: { pickupState, deliveryState } }));
+  }, [lane, pickupState, deliveryState]);
 
   const err = (name: string) => (errors as FieldErrors<Values>)[name]?.message as string | undefined;
 
@@ -127,11 +138,13 @@ export function InquiryForm({ lane, className, compact = false }: { lane: Lane; 
     }
   });
 
+  const wrap = bare ? "flex flex-col gap-6" : "panel steel-edge flex flex-col gap-6 p-6 lg:p-9";
+
   if (status.kind === "success") {
     return (
-      <div className={clsx("panel steel-edge flex flex-col gap-4 p-7 lg:p-9", className)} role="status" aria-live="polite">
+      <div className={clsx(wrap, className)} role="status" aria-live="polite">
         <span className="eyebrow">Received</span>
-        <h3 className="title">Thank you.</h3>
+        <h3 className="display-sm">Thank you.</h3>
         <p className="body">{copy.success}</p>
         <p className="small">
           Reference <span className="numeral text-[var(--text-hi)]">{status.reference}</span>. Need us sooner? Call <PhoneLink className="link-underline text-[var(--text-hi)]" />.
@@ -148,7 +161,7 @@ export function InquiryForm({ lane, className, compact = false }: { lane: Lane; 
   ));
 
   return (
-    <form onSubmit={onSubmit} noValidate className={clsx("panel steel-edge flex flex-col gap-6 p-6 lg:p-9", className)} aria-busy={busy} data-inquiry-form={lane}>
+    <form onSubmit={onSubmit} noValidate className={clsx(wrap, className)} aria-busy={busy} data-inquiry-form={lane}>
       {!compact && (
         <div className="flex flex-col gap-2">
           <h3 className="title">{copy.title}</h3>
@@ -203,19 +216,21 @@ export function InquiryForm({ lane, className, compact = false }: { lane: Lane; 
               <input id="vehicleModel" className="input" placeholder="Tacoma" aria-invalid={!!err("vehicleModel")} {...register("vehicleModel")} />
             </Field>
             <div className="field sm:col-span-2" data-field="operable">
-              <span className="field-label">Does the vehicle run?</span>
+              <span className="field-label">Vehicle condition</span>
               <div className="grid grid-cols-2 gap-3">
                 <label className="radio-tile">
-                  <input type="radio" value="operable" {...register("operable")} /> Operable
+                  <input type="radio" value="operable" {...register("operable")} /> Runs and drives
                 </label>
                 <label className="radio-tile">
-                  <input type="radio" value="inoperable" {...register("operable")} /> Inoperable
+                  <input type="radio" value="inoperable" {...register("operable")} /> Does not run
                 </label>
               </div>
-              {err("operable") && (
+              {err("operable") ? (
                 <p className="field-error" role="alert">
                   {err("operable")}
                 </p>
+              ) : (
+                <p className="field-note">Helps us quote accurately.</p>
               )}
             </div>
             <Field id="preferredDate" label="Preferred date" optional error={err("preferredDate")}>
@@ -260,10 +275,10 @@ export function InquiryForm({ lane, className, compact = false }: { lane: Lane; 
       {lane === "operator" && (
         <fieldset className="grid gap-4 sm:grid-cols-2">
           <legend className="label mb-3">About you</legend>
-          <Field id="homeBase" label="Home base (city, state)" optional error={err("homeBase")}>
+          <Field id="homeBase" label="Where you are based (city, state)" optional error={err("homeBase")}>
             <input id="homeBase" className="input" {...register("homeBase")} />
           </Field>
-          <Field id="equipment" label="Truck / power unit and trailer" optional error={err("equipment")}>
+          <Field id="equipment" label="Truck / Power Unit and trailer" optional error={err("equipment")}>
             <input id="equipment" className="input" placeholder="Year, make, capacity" {...register("equipment")} />
           </Field>
         </fieldset>
@@ -287,9 +302,12 @@ export function InquiryForm({ lane, className, compact = false }: { lane: Lane; 
       </Field>
 
       {status.kind === "not_configured" && (
-        <p className="rounded-md border border-[var(--color-warn)]/40 bg-[color-mix(in_srgb,var(--color-warn)_10%,transparent)] px-4 py-3 text-[var(--step--1)]" role="alert">
-          {status.message}
-        </p>
+        <div className="plate flex flex-col gap-3 p-5" role="alert" data-form-state="not-configured">
+          <span className="label">Not accepting online inquiries yet</span>
+          <p className="body !text-[var(--text-hi)]">{status.message}</p>
+          <PhoneLink className="font-display text-[var(--step-2)] font-semibold text-[var(--text-hi)]" />
+          <p className="field-note">Nothing you entered was sent or stored.</p>
+        </div>
       )}
       {status.kind === "rate_limited" && (
         <p className="rounded-md border border-[var(--color-warn)]/40 px-4 py-3 text-[var(--step--1)]" role="alert">
@@ -303,8 +321,8 @@ export function InquiryForm({ lane, className, compact = false }: { lane: Lane; 
       )}
 
       <div className="flex flex-wrap items-center justify-between gap-4 pt-1">
-        <button type="submit" className="btn btn-primary" disabled={busy}>
-          {busy ? "Sending…" : copy.submit}
+        <button type="submit" className="btn btn-metal" disabled={busy}>
+          <span>{busy ? "Sending…" : copy.submit}</span>
         </button>
         <p className="small">
           Prefer to talk? <PhoneLink className="link-underline text-[var(--text-hi)]" />

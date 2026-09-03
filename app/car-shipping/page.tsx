@@ -1,59 +1,41 @@
 import type { Metadata } from "next";
 import { pageMetadata, serviceLd, breadcrumbLd, faqLd } from "@/lib/seo";
 import { CTA } from "@/lib/site";
-import { HOME } from "@/lib/content/home";
 import { JsonLd } from "@/components/layout/JsonLd";
 import { PageHero } from "@/components/blocks/PageHero";
-import { SplitFeature } from "@/components/blocks/SplitFeature";
-import { CardGrid } from "@/components/blocks/CardGrid";
-import { ProcessSteps } from "@/components/blocks/ProcessSteps";
-import { FormSection } from "@/components/blocks/FormSection";
+import { Editorial } from "@/components/ui/Editorial";
+import { Situations } from "@/components/car/Situations";
+import { Sequence } from "@/components/home/Sequence";
+import { CoverageMap } from "@/components/blocks/CoverageMap";
+import { FormConsole } from "@/components/forms/FormConsole";
+import { RouteMap } from "@/components/car/RouteMap";
 import { Faq, type FaqItem } from "@/components/blocks/Faq";
-import { SimpleCTA } from "@/components/blocks/SimpleCTA";
+import { Closing } from "@/components/layout/Closing";
+import { Blueprint } from "@/components/graphics/Blueprint";
 
 export const metadata: Metadata = pageMetadata({
   title: "Car Shipping — Nationwide Vehicle Transport by the Carrier",
   description:
-    "Ship a car, truck or SUV anywhere in the 48 contiguous states with Solidify Transport, an auto transport motor carrier. Clear quotes, a documented pickup-to-delivery process, and one carrier from start to finish.",
+    "Ship a car, truck or SUV anywhere in the 48 contiguous states with Solidify Transport, an auto transport motor carrier. A clear quote and a clear process from pickup to delivery.",
   path: "/car-shipping",
 });
 
-const SITUATIONS = [
-  { title: "Relocating", text: "Moving across the state or across the country and driving one vehicle while the other needs to arrive with you." },
-  { title: "Buying out of state", text: "Found the right vehicle in another state. The carrier picks it up and delivers it to your door." },
-  { title: "Seasonal moves", text: "A vehicle that spends part of the year somewhere else, moved each way by the same carrier." },
-  { title: "Students and military", text: "A car that needs to be at a campus or a new duty station without adding miles to get there." },
-  { title: "Family vehicles", text: "Sending a car to a family member, or bringing one home." },
-  { title: "Dealer transfers", text: "Dealerships move vehicles the same way. See how we work with OEMs and dealerships.", kicker: "Commercial" },
-] as const;
-
-const QUOTE_ASIDE = [
-  { title: "Route", text: "Pickup city and state, delivery city and state." },
-  { title: "Vehicle", text: "Year, make and model — and whether it runs. Inoperable vehicles are quoted too." },
-  { title: "Timing", text: "A preferred date or window. We come back with a pickup window we can hold." },
-  { title: "Contact", text: "Name, phone and email so the carrier can confirm details with you directly." },
-] as const;
-
 const FAQ: readonly FaqItem[] = [
   {
-    q: "Is Solidify a broker or the actual carrier?",
-    a: "Solidify Transport is the motor carrier. We are not a broker. The company you get the quote from is the company that moves your vehicle.",
+    q: "Is Solidify the carrier?",
+    a: "Yes. Solidify Transport is the motor carrier that moves your vehicle.",
   },
   {
     q: "Where do you ship vehicles?",
-    a: "Across all 48 contiguous states. Our strongest coverage runs through the Western states — California, Oregon, Washington, Nevada, Arizona, Utah, Idaho, Montana, Wyoming, Colorado and New Mexico.",
-  },
-  {
-    q: "Can you move a vehicle that doesn't run?",
-    a: "Yes. Tell us it is inoperable when you request a quote so the right equipment is planned for loading and unloading.",
+    a: "Across all 48 contiguous states, with strong Western-US coverage — California, Oregon, Washington, Nevada, Arizona, Utah, Idaho, Montana, Wyoming, Colorado and New Mexico.",
   },
   {
     q: "What do I need to give you for a quote?",
-    a: "Pickup and delivery locations, the vehicle's year, make and model, whether it runs, a preferred date, and your contact details.",
+    a: "Pickup and delivery locations, the vehicle's year, make and model, its condition, a preferred date, and your contact details.",
   },
   {
     q: "What happens at pickup and delivery?",
-    a: "The vehicle is inspected and its condition documented at pickup before it is loaded and secured. At delivery it is unloaded and its condition is documented again at handover.",
+    a: "At pickup the vehicle is loaded and secured on the carrier. At delivery it is unloaded and handed over at the address you gave us.",
   },
   {
     q: "How do I get a price?",
@@ -79,53 +61,66 @@ export default function CarShippingPage() {
         ]}
       />
       <PageHero
-        eyebrow="Car shipping"
-        title="Car shipping by the carrier, coast to coast."
-        lead="Solidify Transport moves cars, trucks and SUVs across all 48 contiguous states as the motor carrier. One quote, one point of contact, and a documented process from pickup to delivery."
+        mark={{ index: 1, label: "Car shipping" }}
+        title={["Car shipping", "by the carrier,", "coast to coast."]}
+        lead="Solidify Transport moves cars, trucks and SUVs across all 48 contiguous states as the motor carrier. Tell us the route and the vehicle; we come back with a quote and a pickup window."
         slot="cs-hero"
+        grade="cool"
         primary={{ href: "#quote", label: "Get a vehicle shipping quote" }}
-        secondary={{ href: "#process", label: "How it works" }}
+        secondary={{ href: "#sequence", label: "How it works" }}
       />
-      <SplitFeature
+
+      <Editorial
         id="what"
-        eyebrow="What vehicle transport is"
-        title="Your vehicle rides on a car carrier, not on its own wheels."
-        text="Vehicle transport means your car is loaded onto a purpose-built car carrier at pickup, secured, driven to the destination on the carrier, and unloaded at delivery — with no miles added and no one else driving it."
-        bullets={["Loaded, secured and unloaded by the carrier", "Condition documented at both ends", "Operable and inoperable vehicles"]}
-        slot="cs-loading"
-        surface="navy"
+        layout="feature"
+        surface="graphite"
+        head="index"
+        mark={{ index: 3, label: "What vehicle transport is" }}
+        title={["Your vehicle rides", "on a car carrier."]}
+        lead="Vehicle transport means your car is loaded onto a purpose-built car carrier at pickup, secured, driven to the destination on the carrier, and unloaded at delivery — with no miles added."
+        graphic={
+          <div className="plate plate-steel relative overflow-hidden p-6 lg:-ml-[3vw] lg:p-8">
+            <div aria-hidden className="pointer-events-none absolute inset-0 guides" />
+            <div className="mb-4 flex items-center justify-between">
+              <span className="spec">Loaded · Secured · Carried</span>
+              <span className="spec !text-[var(--text-low)]">Fig. 03</span>
+            </div>
+            <Blueprint view="full" draw className="w-full" />
+          </div>
+        }
+        bullets={["Loaded, secured and unloaded by the carrier", "Carried on the carrier from pickup to delivery", "No miles added to your vehicle"]}
       />
-      <CardGrid
-        id="situations"
-        eyebrow="Who uses it"
-        title="Common reasons people ship a vehicle."
-        items={SITUATIONS}
-        columns={3}
-        surface="steel"
-      />
-      <ProcessSteps id="process" eyebrow={HOME.process.eyebrow} title={HOME.process.title} lead="One vehicle, one process — every time." steps={HOME.process.steps} />
-      <SplitFeature
+
+      <Situations />
+
+      <Sequence id="sequence" surface="deep" lead="One vehicle, one process — every time." />
+
+      <CoverageMap
         id="coverage"
-        eyebrow="Coverage"
-        title="All 48 contiguous states, strongest in the West."
-        text="Wherever the route runs in the contiguous United States, the carrier handles it. If your pickup or delivery is in the West, you are in the region we cover most deeply."
-        bullets={["Nationwide pickup and delivery", "Deep Western US coverage", "The same carrier at both ends"]}
-        slot="cs-situations"
-        flip
+        mark={{ index: 5, label: "Coverage" }}
+        title="All 48 contiguous states. Strong Western-US focus."
+        lead="Wherever the route runs in the contiguous United States, the carrier handles it, with strong Western-US coverage on both ends."
         surface="navy"
-        aspect={16 / 10}
       />
-      <FormSection
+
+      <FormConsole
         id="quote"
         lane="vehicle"
-        eyebrow="Get a quote"
-        title="Tell the carrier about the move."
+        mark={{ index: 6, label: "Get a quote" }}
+        title={["Tell the carrier", "about the move."]}
         lead="Four things and we can quote it: the route, the vehicle, the timing and how to reach you."
-        slot="cs-quote-ground"
-        aside={QUOTE_ASIDE}
+        specs={[
+          { label: "Route", value: "Pickup and delivery, city and state" },
+          { label: "Vehicle", value: "Year, make, model and condition" },
+          { label: "Timing", value: "A preferred date or window" },
+          { label: "Contact", value: "So the carrier can confirm with you" },
+        ]}
+        slot="quote-ground"
+        rail={<RouteMap />}
       />
-      <Faq title="Questions about car shipping" items={FAQ} surface="gunmetal" />
-      <SimpleCTA title="One vehicle. One carrier." text="Request a quote and the carrier comes back to you directly." primary={{ href: "#quote", label: "Get a vehicle shipping quote" }} secondary={CTA.oem} />
+
+      <Faq mark={{ index: 7, label: "Questions" }} title="Questions about car shipping" items={FAQ} surface="graphite" />
+      <Closing title={["One vehicle.", "One carrier."]} lead="Request a quote and the carrier comes back to you directly." primary={{ href: "#quote", label: "Get a vehicle shipping quote" }} secondary={CTA.oem} />
     </>
   );
 }

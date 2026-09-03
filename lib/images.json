@@ -52,6 +52,24 @@
       "jpg"
     ]
   },
+  "deck-aerial-yard": {
+    "width": 2400,
+    "height": 1484,
+    "aspect": 1.6173,
+    "widths": [
+      400,
+      640,
+      900,
+      1280,
+      1800,
+      2400
+    ],
+    "formats": [
+      "avif",
+      "webp",
+      "jpg"
+    ]
+  },
   "detail-amg-wheel": {
     "width": 2400,
     "height": 3600,
@@ -110,6 +128,24 @@
     "width": 2400,
     "height": 1348,
     "aspect": 1.7804,
+    "widths": [
+      400,
+      640,
+      900,
+      1280,
+      1800,
+      2400
+    ],
+    "formats": [
+      "avif",
+      "webp",
+      "jpg"
+    ]
+  },
+  "lot-chevrolet-covers": {
+    "width": 2400,
+    "height": 1600,
+    "aspect": 1.5,
     "widths": [
       400,
       640,

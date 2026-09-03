@@ -98,7 +98,7 @@ try {
     const acct = secrets.find((s) => s.n === "accountNumber");
     const rout = secrets.find((s) => s.n === "routingNumber");
     check("EIN and account inputs are type=text, masked, numeric, autocomplete off", !!ein && !!acct && [ein, acct].every((s) => s.type === "text" && s.masked && s.inputmode === "numeric" && s.autocomplete === "off"), JSON.stringify(secrets));
-    check("routing number is unmasked numeric text", !!rout && rout.type === "text" && !rout.masked, JSON.stringify(rout));
+    check("routing number is masked numeric text like the other secrets", !!rout && rout.type === "text" && rout.masked && rout.inputmode === "numeric" && rout.autocomplete === "off", JSON.stringify(rout));
     check("no password-type inputs anywhere in onboarding", (await page.$$("[data-onboarding] input[type=password]")).length === 0);
   } else {
     check("direct deposit rail button present", false);

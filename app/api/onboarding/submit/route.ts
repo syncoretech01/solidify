@@ -4,7 +4,7 @@ import { requireCsrf } from "@/lib/server/csrf";
 import { AppError } from "@/lib/server/errors";
 import { fail, json, limit, requireConfigured, requireSession } from "@/lib/server/guards";
 import { log } from "@/lib/server/log";
-import { finalize, isComplete, listSteps } from "@/lib/server/onboarding";
+import { finalize, getStep, isComplete, listSteps } from "@/lib/server/onboarding";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -34,7 +34,17 @@ export async function POST(req: Request) {
     const missing = ONBOARDING_STEPS.filter((s) => !completed.includes(s));
     if (missing.length > 0) throw new AppError("incomplete", "Steps missing.", { missing: [...missing] });
 
-    await finalize(id, { completedAt: new Date().toISOString(), steps: [...completed] });
+    // The direct-deposit step already stores the verbatim authorization text;
+    // the completion record pins the moment it was consented to and which version.
+    const directDeposit = await getStep(id, "direct-deposit");
+    const version = directDeposit?.payload.authorizationVersion;
+    const now = new Date().toISOString();
+    await finalize(id, {
+      completedAt: now,
+      consentAcceptedAt: now,
+      consentVersion: typeof version === "string" ? version : null,
+      steps: [...completed],
+    });
     log.info("onboarding: submission complete", { submissionId: id });
     return json({ ok: true, complete: true, submissionId: id });
   } catch (err) {

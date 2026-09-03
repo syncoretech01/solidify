@@ -1,39 +1,34 @@
 import type { Metadata } from "next";
 import { pageMetadata, breadcrumbLd } from "@/lib/seo";
-import { COMPANY, ADDRESS_LINES, CTA } from "@/lib/site";
+import { COMPANY, CLAIMS, CTA } from "@/lib/site";
 import { JsonLd } from "@/components/layout/JsonLd";
-import { PageHero } from "@/components/blocks/PageHero";
-import { PointsBand } from "@/components/blocks/PointsBand";
-import { CardGrid } from "@/components/blocks/CardGrid";
-import { SplitFeature } from "@/components/blocks/SplitFeature";
-import { TrustGrid } from "@/components/blocks/TrustGrid";
-import { SimpleCTA } from "@/components/blocks/SimpleCTA";
+import { Editorial } from "@/components/ui/Editorial";
+import { CoverageMap } from "@/components/blocks/CoverageMap";
+import { Closing } from "@/components/layout/Closing";
+import { Blueprint } from "@/components/graphics/Blueprint";
+import { Button } from "@/components/ui/Button";
+import { Reveal, RevealText } from "@/components/ui/Reveal";
+import { SectionMark, PhoneLink, Lines } from "@/components/ui/Primitives";
+import { LightSweep } from "@/components/ui/LightSweep";
 
 export const metadata: Metadata = pageMetadata({
   title: "About Solidify Transport — Auto Transport Motor Carrier, Tracy, CA",
   description:
-    "Solidify Transport LLC is an auto transport motor carrier based in Tracy, California, moving vehicles for OEMs, dealerships and consumers across all 48 contiguous states with strong Western US coverage.",
+    "Solidify Transport LLC is an auto transport motor carrier based in Tracy, California, moving vehicles for OEMs, dealerships and consumers across all 48 contiguous states with strong Western-US coverage.",
   path: "/about",
 });
 
-const WHAT_POINTS = [
-  { title: "Vehicles, only", text: "Cars, trucks and SUVs. Auto transport is the whole business, not one service among many." },
-  { title: "The carrier, not a broker", text: "Solidify performs the transport. No middleman, no hand-off." },
-  { title: "Nationwide, Western depth", text: "All 48 contiguous states, with the strongest coverage across the Western states." },
-] as const;
-
 const WHO = [
-  { title: "OEMs and manufacturers", text: "Vehicle movement between plants, distribution points and dealer networks.", kicker: "B2B" },
-  { title: "Dealerships and dealer groups", text: "Dealer transfers, inventory relocation and retail delivery.", kicker: "B2B" },
-  { title: "Consumers", text: "Relocations, out-of-state purchases, seasonal and family moves.", kicker: "B2C" },
-  { title: "Owner-operators", text: "Qualified operators who run their truck / power unit with Solidify.", kicker: "Partners" },
+  { title: "OEMs and manufacturers", text: "Vehicle movement between plants, distribution points and dealer networks.", meta: "B2B" },
+  { title: "Dealerships and dealer groups", text: "Dealer transfers, inventory relocation and retail delivery.", meta: "B2B" },
+  { title: "Consumers", text: "Relocations, out-of-state purchases, seasonal and family moves.", meta: "B2C" },
+  { title: "Owner-operators", text: "Qualified operators who run their Truck / Power Unit with Solidify and meet the carrier's insurance and equipment requirements.", meta: "Partners" },
 ] as const;
 
 const HOW = [
-  { title: "Carrier-direct", text: "The company that quotes the move is the company that performs it. One point of contact from start to finish." },
-  { title: "A documented process", text: "Condition documented at pickup and again at delivery. Every move follows the same steps." },
-  { title: "Straight communication", text: "Real people, a real phone number, and answers from the carrier rather than a middle layer." },
-  { title: "Qualified operators", text: "Our capacity runs on owner-operators who meet the carrier's insurance and equipment requirements before they move a vehicle." },
+  { title: "Quote", text: "Tell the carrier the route, the vehicle and the timing. The quote comes from the company that moves it." },
+  { title: "Schedule", text: "The carrier confirms a pickup window and the contact at each end." },
+  { title: "Carry", text: "The vehicle is loaded and secured on the carrier, travels on the carrier, and is unloaded and handed over at the delivery address." },
 ] as const;
 
 export default function AboutPage() {
@@ -45,73 +40,92 @@ export default function AboutPage() {
           { name: "About", path: "/about" },
         ])}
       />
-      <PageHero
-        eyebrow="About Solidify"
-        title="An auto transport motor carrier, built for the vehicle."
-        lead={`${COMPANY.legalName} is a motor carrier that transports vehicles. Based in ${COMPANY.city}, California, we move cars, trucks and SUVs for OEMs, dealerships and consumers across all 48 contiguous states, with our strongest coverage in the West.`}
-        slot="about-hero"
-        primary={CTA.quote}
-        secondary={CTA.oem}
-      />
-      <PointsBand
-        id="what"
-        eyebrow="What we are"
-        title="Not a broker. Not a freight fleet. A vehicle carrier."
-        lead="Every part of Solidify — equipment, process, people — is organised around moving vehicles safely from one place to another. That focus is the point."
-        points={WHAT_POINTS}
-        slot="about-detail"
-        surface="deep"
-      />
-      <CardGrid id="who" eyebrow="Who we work with" title="Four kinds of people rely on the carrier." items={WHO} columns={4} surface="navy" numbered={false} />
-      <SplitFeature
-        id="coverage"
-        eyebrow="Coverage"
-        title="Nationwide reach. Western strength."
-        text="Solidify moves vehicles across the contiguous United States. Our deepest coverage runs through the Western states — California, Oregon, Washington, Nevada, Arizona, Utah, Idaho, Montana, Wyoming, Colorado and New Mexico."
-        bullets={["All 48 contiguous states", "Strongest across the West", "Based in Tracy, California"]}
-        slot="about-coverage"
-        surface="steel"
-        flip
-        aspect={16 / 10}
-      />
-      <TrustGrid id="how" eyebrow="How we operate" title="Straightforward, documented, carrier-direct." items={HOW} slot="home-trust" surface="ice" />
-      <section data-section="identity" data-surface="gunmetal" className="section section-tight bg-[var(--surface)] text-[var(--text-hi)]" aria-labelledby="identity-title">
-        <div className="shell grid gap-8 lg:grid-cols-12">
-          <div className="flex flex-col gap-3 lg:col-span-5">
-            <span className="eyebrow">Company</span>
-            <h2 id="identity-title" className="display-sm">
-              {COMPANY.legalName}
-            </h2>
+
+      {/* Hero: the hauler, drawn */}
+      <section id="hero" data-section="hero" data-surface="deep" data-head="hero" aria-labelledby="hero-title" className="relative isolate overflow-hidden bg-[var(--surface)] text-[var(--text-hi)]">
+        <div aria-hidden className="pointer-events-none absolute inset-0 guides opacity-50" />
+        <div aria-hidden className="light-field opacity-70" />
+        <div className="shell relative z-10 flex min-h-[84svh] flex-col justify-end gap-10 pb-[clamp(2.5rem,6vh,4.5rem)] pt-[calc(var(--nav-h)+4rem)]">
+          <div className="grid gap-10 lg:grid-cols-12 lg:items-end">
+            <div className="flex flex-col gap-6 lg:col-span-6">
+              <Reveal immediate delay={0.1} y={10}>
+                <SectionMark index={1} label="About Solidify" />
+              </Reveal>
+              <RevealText as="h1" id="hero-title" immediate delay={0.25} className="display-lg max-w-[13ch]">
+                <Lines text={["An auto transport", "motor carrier.", "Vehicles are the", "whole business."]} />
+              </RevealText>
+              <Reveal immediate delay={0.7}>
+                <p className="lead max-w-[46ch]">
+                  {COMPANY.legalName} is the carrier, not a broker. Based in {COMPANY.city}, California, we move cars, trucks and SUVs for OEMs, dealerships and consumers across all 48 contiguous states, with strong Western-US coverage.
+                </p>
+              </Reveal>
+              <Reveal immediate delay={0.85} className="flex flex-wrap gap-3">
+                <Button href={CTA.quote.href}>{CTA.quote.label}</Button>
+                <Button href={CTA.oem.href} variant="steel">
+                  {CTA.oem.label}
+                </Button>
+              </Reveal>
+            </div>
+            <div className="plate plate-steel relative overflow-hidden p-5 lg:col-span-6 lg:p-7">
+              <LightSweep trigger="inview" delay={1.2} />
+              <div aria-hidden className="pointer-events-none absolute inset-0 guides" />
+              <div className="relative flex items-center justify-between">
+                <span className="spec">Auto hauler · elevation</span>
+                <span className="spec !text-[var(--text-low)]">Fig. 01</span>
+              </div>
+              <Blueprint view="full" draw immediate className="relative mt-4 w-full" title="Technical elevation of a loaded auto hauler" />
+            </div>
           </div>
-          <dl className="grid gap-6 sm:grid-cols-2 lg:col-span-7">
-            <div className="flex flex-col gap-1">
-              <dt className="label">Address</dt>
-              <dd className="body">
-                {ADDRESS_LINES[0]}
-                <br />
-                {ADDRESS_LINES[1]}
-              </dd>
-            </div>
-            <div className="flex flex-col gap-1">
-              <dt className="label">Phone</dt>
-              <dd className="body">
-                <a href={COMPANY.phoneHref} className="link-underline text-[var(--text-hi)]" data-phone-link>
-                  {COMPANY.phone}
-                </a>
-              </dd>
-            </div>
-            <div className="flex flex-col gap-1">
-              <dt className="label">Business</dt>
-              <dd className="body">{COMPANY.descriptor}</dd>
-            </div>
-            <div className="flex flex-col gap-1">
-              <dt className="label">Coverage</dt>
-              <dd className="body">All 48 contiguous states · Western US strength</dd>
-            </div>
-          </dl>
+          <div className="hairline-route" aria-hidden />
         </div>
       </section>
-      <SimpleCTA title="Work with the carrier." text="Get a quote for one vehicle, or start a commercial inquiry for many." />
+
+      <Editorial
+        id="identity"
+        layout="plate"
+        surface="graphite"
+        mark={{ index: 2, label: "The company" }}
+        title={[COMPANY.legalName]}
+        lead="Where the carrier is based, what it moves and where it runs."
+        specs={[
+          { label: "Business", value: COMPANY.descriptor },
+          { label: "Location", value: `${COMPANY.street}, ${COMPANY.city}, ${COMPANY.state} ${COMPANY.zip}` },
+          { label: "Phone", value: COMPANY.phone, href: COMPANY.phoneHref },
+          { label: "Coverage", value: CLAIMS.coverage },
+          { label: "Focus", value: CLAIMS.focus },
+        ]}
+        graphic={
+          <div className="flex h-full flex-col justify-center gap-4">
+            <div className="flex items-center justify-between">
+              <span className="spec">Power unit</span>
+              <span className="spec !text-[var(--text-low)]">Fig. 02</span>
+            </div>
+            <Blueprint view="cab" draw className="w-full" />
+          </div>
+        }
+      />
+
+      <Editorial id="who" layout="ledger" surface="navy" head="index" mark={{ index: 3, label: "Who we work with" }} title={["Four kinds of people", "rely on the carrier."]} rows={WHO} />
+
+      <CoverageMap id="coverage" mark={{ index: 4, label: "Coverage" }} title="All 48 contiguous states. Strong Western-US focus." lead="Solidify moves vehicles across the contiguous United States, with strong Western-US coverage — California, Oregon, Washington, Nevada, Arizona, Utah, Idaho, Montana, Wyoming, Colorado and New Mexico." surface="graphite" />
+
+      <Editorial
+        id="how"
+        layout="ledger"
+        surface="deep"
+        mark={{ index: 5, label: "How we operate" }}
+        title={["Quote.", "Schedule. Carry."]}
+        lead="The same three steps for one vehicle or a dealer's inventory."
+        rows={HOW}
+        actions={[{ href: CTA.quote.href, label: CTA.quote.label, variant: "steel" }]}
+      >
+        <div className="mt-8 flex flex-wrap items-baseline gap-x-4 gap-y-1">
+          <span className="label">Reach the carrier</span>
+          <PhoneLink className="font-display text-[var(--step-2)] font-semibold text-[var(--text-hi)]" />
+        </div>
+      </Editorial>
+
+      <Closing title={["Work with", "the carrier."]} lead="Get a quote for one vehicle, or start a commercial inquiry for many." />
     </>
   );
 }

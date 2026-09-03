@@ -6,6 +6,8 @@ import { useGSAP } from "@gsap/react";
 import { gsap, EASE, DUR } from "@/lib/motion";
 import { media, type MediaId } from "@/lib/media";
 
+export type Grade = "none" | "cool" | "deep" | "warm";
+
 type Props = {
   slot: MediaId;
   /** REQUIRED. What width the image renders at per breakpoint. */
@@ -21,13 +23,15 @@ type Props = {
   overscan?: number;
   /** Override the slot's reserved aspect (e.g. a full-bleed hero). */
   aspect?: number | "fill";
-  scrim?: "bottom" | "left" | "top" | "full" | "none";
+  scrim?: "bottom" | "left" | "left-soft" | "top" | "full" | "none";
   children?: ReactNode;
   radius?: string;
   cursor?: string;
   cursorLabel?: string;
   /** Extra dim for plates behind type. */
   dim?: number;
+  /** Per-slot photographic grade. */
+  grade?: Grade;
 };
 
 /**
@@ -35,11 +39,8 @@ type Props = {
  *
  * Resolves a slot from the media registry, emits a <picture> with the
  * AVIF/WebP/JPEG ladder and the REAL measured intrinsic width/height from the
- * manifest, applies the photograph's measured focal point, and — when the
- * slot has no honest photograph behind it — renders a designed reserved
- * composition instead of a wrong one. `sizes` is a required prop so the
- * "everything is 100vw" bug cannot recur; `priority` is opt-in so the hero
- * LCP image is never lazy by accident.
+ * manifest, and applies the photograph's measured focal point. A public slot
+ * with no photograph is a build error — nothing reserved ever ships.
  */
 export function Plate({
   slot,
@@ -56,9 +57,13 @@ export function Plate({
   cursor,
   cursorLabel,
   dim,
+  grade = "cool",
 }: Props) {
   const frame = useRef<HTMLDivElement>(null);
   const m = media(slot);
+  if (!m.photo || !m.manifest) {
+    throw new Error(`Plate: slot "${slot}" has no vetted photograph. Feed it a photo in lib/media.ts or recompose the section without one.`);
+  }
   const ratio = aspect === "fill" ? undefined : (aspect ?? m.aspect);
 
   useGSAP(
@@ -108,35 +113,30 @@ export function Plate({
   return (
     <div
       ref={frame}
-      className={clsx("frame", !m.photo && "frame-reserved", className)}
+      className={clsx("frame", className)}
       style={style}
       data-cursor={cursor}
       data-cursor-label={cursorLabel}
       data-slot={slot}
-      data-photo={m.photo?.file ?? undefined}
+      data-photo={m.photo.file}
+      data-grade={grade === "none" ? undefined : grade}
     >
-      {m.photo && m.manifest ? (
-        <div data-plate-img className="absolute inset-0 will-change-transform" style={overscanStyle}>
-          <Picture
-            file={m.photo.file}
-            alt={m.photo.alt}
-            focal={m.photo.focal}
-            widths={m.manifest.widths}
-            width={m.manifest.width}
-            height={m.manifest.height}
-            sizes={sizes}
-            priority={priority}
-          />
-        </div>
-      ) : (
-        <ReservedComposition awaiting={m.awaiting} />
-      )}
+      <div data-plate-img className="absolute inset-0 will-change-transform" style={overscanStyle}>
+        <Picture
+          file={m.photo.file}
+          alt={m.photo.alt}
+          focal={m.photo.focal}
+          widths={m.manifest.widths}
+          width={m.manifest.width}
+          height={m.manifest.height}
+          sizes={sizes}
+          priority={priority}
+        />
+      </div>
 
       {scrim !== "none" && <div aria-hidden className={clsx("absolute inset-0 z-[1]", `scrim-${scrim}`)} />}
 
-      {reveal && m.photo && (
-        <div aria-hidden data-plate-veil className="absolute inset-0 z-[3] bg-[var(--surface)] will-change-transform" />
-      )}
+      {reveal && <div aria-hidden data-plate-veil className="absolute inset-0 z-[3] bg-[var(--surface)] will-change-transform" />}
 
       {children && <div className="absolute inset-0 z-[2]">{children}</div>}
     </div>
@@ -182,20 +182,5 @@ function Picture({
         style={{ objectPosition: `${focal[0]}% ${focal[1]}%` }}
       />
     </picture>
-  );
-}
-
-/**
- * A slot with no honest photograph behind it. Reads as a designed steel
- * composition — grid, light, a hairline — not as a missing image.
- */
-function ReservedComposition({ awaiting }: { awaiting: string }) {
-  return (
-    <div className="absolute inset-0" aria-hidden data-reserved-for={awaiting}>
-      <div className="absolute inset-x-0 bottom-[22%] h-px bg-gradient-to-r from-transparent via-[rgba(143,179,255,0.45)] to-transparent" />
-      <div className="absolute left-[8%] top-[12%] h-[56%] w-px bg-gradient-to-b from-transparent via-[rgba(255,255,255,0.18)] to-transparent" />
-      <div className="absolute right-[10%] top-[18%] h-24 w-24 rounded-full border border-white/10" />
-      <div className="absolute right-[10%] top-[18%] h-24 w-24 rounded-full border border-[rgba(91,140,255,0.35)] [clip-path:polygon(0_0,100%_0,100%_50%,0_50%)]" />
-    </div>
   );
 }

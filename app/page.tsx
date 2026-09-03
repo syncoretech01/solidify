@@ -4,14 +4,12 @@ import { META } from "@/lib/site";
 import { HOME } from "@/lib/content/home";
 import { JsonLd } from "@/components/layout/JsonLd";
 import { Hero } from "@/components/home/Hero";
-import { AudiencePaths } from "@/components/blocks/AudiencePaths";
-import { PointsBand } from "@/components/blocks/PointsBand";
-import { SplitFeature } from "@/components/blocks/SplitFeature";
-import { ProcessSteps } from "@/components/blocks/ProcessSteps";
+import { Lanes } from "@/components/home/Lanes";
+import { Sequence } from "@/components/home/Sequence";
+import { Editorial } from "@/components/ui/Editorial";
 import { CoverageMap } from "@/components/blocks/CoverageMap";
-import { TrustGrid } from "@/components/blocks/TrustGrid";
-import { OperatorBand } from "@/components/blocks/OperatorBand";
-import { CTABand } from "@/components/blocks/CTABand";
+import { Closing } from "@/components/layout/Closing";
+import { Blueprint } from "@/components/graphics/Blueprint";
 
 export const metadata: Metadata = pageMetadata({
   title: META.defaultTitle,
@@ -30,37 +28,99 @@ export default function HomePage() {
         })}
       />
       <Hero />
-      <AudiencePaths eyebrow={HOME.paths.eyebrow} title={HOME.paths.title} items={HOME.paths.items} />
-      <PointsBand id="what" eyebrow={HOME.what.eyebrow} title={HOME.what.title} lead={HOME.what.lead} points={HOME.what.points} slot={HOME.what.slot} />
-      <SplitFeature
-        id="car-shipping"
-        eyebrow={HOME.carShipping.eyebrow}
-        title={HOME.carShipping.title}
-        text={HOME.carShipping.text}
-        bullets={HOME.carShipping.bullets}
-        href={HOME.carShipping.href}
-        cta={HOME.carShipping.cta}
-        slot={HOME.carShipping.slot}
-        surface="navy"
+      <Lanes />
+
+      <Editorial
+        id="statement"
+        layout="statement"
+        mark={HOME.statement.mark}
+        title={HOME.statement.title}
+        lead={HOME.statement.lead}
+        media={{ slot: HOME.statement.slot, grade: "deep" }}
+        specs={HOME.statement.specs}
       />
-      <SplitFeature
+
+      <Sequence id="sequence" />
+
+      <Editorial
+        id="car-shipping"
+        layout="feature"
+        surface="navy"
+        head="editorial"
+        mark={HOME.carShipping.mark}
+        title={HOME.carShipping.title}
+        lead={HOME.carShipping.lead}
+        graphic={
+          <div className="plate plate-steel relative overflow-hidden p-6 lg:-ml-[3vw] lg:p-8">
+            <div aria-hidden className="pointer-events-none absolute inset-0 guides" />
+            <div className="mb-4 flex items-center justify-between">
+              <span className="spec">Ramp · Load · Secure</span>
+              <span className="spec !text-[var(--text-low)]">Fig. 04</span>
+            </div>
+            <Blueprint view="ramp" draw className="w-full" />
+          </div>
+        }
+        specs={HOME.carShipping.specs}
+        actions={[{ href: HOME.carShipping.href, label: HOME.carShipping.cta }]}
+      />
+
+      <Editorial
         id="oem"
-        eyebrow={HOME.oem.eyebrow}
-        title={HOME.oem.title}
-        text={HOME.oem.text}
-        bullets={HOME.oem.bullets}
-        href={HOME.oem.href}
-        cta={HOME.oem.cta}
-        slot={HOME.oem.slot}
+        layout="feature"
         surface="steel"
         flip
-        aspect={16 / 11}
+        head="index"
+        mark={HOME.oem.mark}
+        title={HOME.oem.title}
+        lead={HOME.oem.lead}
+        media={{ slot: HOME.oem.slot, aspect: 16 / 11, grade: "cool", caption: "New-vehicle inventory, staged" }}
+        bullets={HOME.oem.bullets}
+        actions={[{ href: HOME.oem.href, label: HOME.oem.cta, variant: "steel" }]}
       />
-      <ProcessSteps eyebrow={HOME.process.eyebrow} title={HOME.process.title} lead={HOME.process.lead} steps={HOME.process.steps} />
-      <CoverageMap eyebrow={HOME.coverage.eyebrow} title={HOME.coverage.title} lead={HOME.coverage.lead} />
-      <TrustGrid eyebrow={HOME.trust.eyebrow} title={HOME.trust.title} items={HOME.trust.items} slot={HOME.trust.slot} />
-      <OperatorBand eyebrow={HOME.operator.eyebrow} title={HOME.operator.title} text={HOME.operator.text} href={HOME.operator.href} cta={HOME.operator.cta} />
-      <CTABand title={HOME.cta.title} text={HOME.cta.text} slot={HOME.cta.slot} />
+
+      <CoverageMap mark={HOME.coverage.mark} title={HOME.coverage.title} lead={HOME.coverage.lead} surface="navy" />
+
+      <Editorial
+        id="sheet"
+        layout="plate"
+        surface="graphite"
+        mark={HOME.sheet.mark}
+        title={HOME.sheet.title}
+        lead={HOME.sheet.lead}
+        specs={HOME.sheet.specs}
+        graphic={
+          <div className="flex h-full flex-col justify-center gap-4">
+            <div className="flex items-center justify-between">
+              <span className="spec">Auto hauler · elevation</span>
+              <span className="spec !text-[var(--text-low)]">Fig. 07</span>
+            </div>
+            <Blueprint view="full" draw className="w-full" />
+          </div>
+        }
+      />
+
+      <Editorial
+        id="operators"
+        layout="plate"
+        surface="navy"
+        flip
+        head="index"
+        mark={HOME.operator.mark}
+        title={HOME.operator.title}
+        lead={HOME.operator.lead}
+        specs={HOME.operator.specs}
+        actions={[{ href: HOME.operator.href, label: HOME.operator.cta, variant: "steel" }]}
+        graphic={
+          <div className="relative h-full min-h-[260px]">
+            <div className="absolute inset-y-0 -left-[4%] right-0 flex items-center">
+              <Blueprint view="deck" draw className="w-full opacity-90" />
+            </div>
+          </div>
+        }
+        tight
+      />
+
+      <Closing title={HOME.closing.title} lead={HOME.closing.lead} slot="closing" />
     </>
   );
 }

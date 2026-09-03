@@ -5,6 +5,8 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { SplitText } from "gsap/SplitText";
 import { CustomEase } from "gsap/CustomEase";
 import { DrawSVGPlugin } from "gsap/DrawSVGPlugin";
+import { Flip } from "gsap/Flip";
+import { MotionPathPlugin } from "gsap/MotionPathPlugin";
 import { useGSAP } from "@gsap/react";
 
 /**
@@ -22,7 +24,7 @@ import { useGSAP } from "@gsap/react";
 let registered = false;
 
 if (typeof window !== "undefined" && !registered) {
-  gsap.registerPlugin(useGSAP, ScrollTrigger, SplitText, CustomEase, DrawSVGPlugin);
+  gsap.registerPlugin(useGSAP, ScrollTrigger, SplitText, CustomEase, DrawSVGPlugin, Flip, MotionPathPlugin);
 
   CustomEase.create("arrive", "0.16, 1, 0.3, 1");
   CustomEase.create("track", "0.83, 0, 0.17, 1");
@@ -48,7 +50,7 @@ if (typeof window !== "undefined" && !registered) {
   }
 }
 
-export { gsap, ScrollTrigger, SplitText, CustomEase };
+export { gsap, ScrollTrigger, SplitText, CustomEase, Flip, MotionPathPlugin };
 
 export const EASE = {
   out: "arrive",

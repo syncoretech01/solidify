@@ -89,8 +89,9 @@ export function StateSelect({ id, label, error, note, optional, disabled, regist
         autoComplete={autoComplete}
         {...registration}
       >
-        <option value="" disabled>
-          Select state
+        {/* An optional select must let the user go back to blank. */}
+        <option value="" disabled={!optional}>
+          {optional ? "None" : "Select state"}
         </option>
         {STATE_OPTIONS}
       </select>
