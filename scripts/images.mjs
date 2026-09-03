@@ -14,19 +14,31 @@
  */
 
 import sharp from "sharp";
-import { readdirSync, statSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { readdirSync, statSync, existsSync, mkdirSync, writeFileSync, cpSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const SRC = join(ROOT, "assets", "media");
-const OUT = join(ROOT, "public", "media", "gen");
+const PUBLIC_OUT = join(ROOT, "public", "media", "gen");
 const MANIFEST = join(ROOT, "lib", "images.json");
+
+/*
+ * On Vercel the ladder is written into .next/cache, which persists between
+ * builds, and mirrored into public/. The mtime skip below then makes every
+ * build after the first take seconds instead of minutes. `--cache` opts into
+ * the same behaviour locally.
+ */
+const useCache = Boolean(process.env.VERCEL) || process.argv.includes("--cache");
+const OUT = useCache ? join(ROOT, ".next", "cache", "media-gen") : PUBLIC_OUT;
 
 /* The ladder stops where the layout stops caring. Never upscaled. */
 const WIDTHS = [400, 640, 900, 1280, 1800, 2400];
 const FORMATS = [
-  { ext: "avif", opts: { quality: 50, effort: 6 } },
+  // AVIF effort 4 is visually indistinguishable from 6 at this quality and
+  // encodes several times faster — the difference between a 15-minute and a
+  // 4-minute cold build.
+  { ext: "avif", opts: { quality: 50, effort: 4 } },
   { ext: "webp", opts: { quality: 74, effort: 5 } },
   { ext: "jpg", opts: { quality: 78, mozjpeg: true, progressive: true } },
 ];
@@ -77,5 +89,11 @@ for (const file of masters) {
 }
 
 writeFileSync(MANIFEST, JSON.stringify(manifest, null, 2) + "\n");
+
+if (useCache) {
+  mkdirSync(PUBLIC_OUT, { recursive: true });
+  cpSync(OUT, PUBLIC_OUT, { recursive: true });
+  console.log(`  mirrored cache → public/media/gen`);
+}
 console.log(`\n  wrote ${written} variants, reused ${skipped}`);
 console.log(`  manifest: lib/images.json (${Object.keys(manifest).length} images)`);
