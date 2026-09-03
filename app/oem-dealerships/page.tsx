@@ -8,7 +8,7 @@ import { CardGrid } from "@/components/blocks/CardGrid";
 import { SplitFeature } from "@/components/blocks/SplitFeature";
 import { CoverageMap } from "@/components/blocks/CoverageMap";
 import { FormSection } from "@/components/blocks/FormSection";
-import { CTABand } from "@/components/blocks/CTABand";
+import { SimpleCTA } from "@/components/blocks/SimpleCTA";
 
 export const metadata: Metadata = pageMetadata({
   title: "OEM & Dealership Vehicle Transport — Carrier-Operated",
@@ -107,7 +107,7 @@ export default function OemDealershipsPage() {
         lead="Tell us who you are, what needs to move and roughly how much. A member of the carrier's team follows up directly."
         aside={INQUIRY_ASIDE}
       />
-      <CTABand id="cta" title="Talk to the carrier about your vehicle movement." text="OEM, dealership or dealer group — start with a commercial inquiry." slot="oem-cta" primary={{ href: "#inquiry", label: "Start a commercial inquiry" }} secondary={CTA.quote} />
+      <SimpleCTA title="Talk to the carrier about your vehicle movement." text="OEM, dealership or dealer group — start with a commercial inquiry." primary={{ href: "#inquiry", label: "Start a commercial inquiry" }} secondary={CTA.quote} />
     </>
   );
 }

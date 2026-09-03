@@ -10,7 +10,10 @@ export const dynamic = "force-dynamic";
 /**
  * GET /api/onboarding/session
  *   200 { ok: true, configured: true, csrfToken, submissionId, completed, complete }  + fresh csrf cookie
- *   401 { error: "no_session", configured }
+ *   200 { ok: false, error: "no_session", configured }
+ *       — a probe, not an auth failure: every fresh visitor hits this on
+ *         boot, and a 401 would log a console error on a page that must
+ *         stay clean.
  * DELETE /api/onboarding/session → 200 { ok: true }, cookies cleared.
  */
 export async function GET(req: Request) {
@@ -20,15 +23,15 @@ export async function GET(req: Request) {
 
     const cfg = getConfig();
     if (!cfg.onboardingConfigured) {
-      return json({ error: "no_session", configured: false }, { status: 401, cookies: [clearSessionCookie(), clearCsrfCookie()] });
+      return json({ ok: false, error: "no_session", configured: false }, { status: 200, cookies: [clearSessionCookie(), clearCsrfCookie()] });
     }
 
     const session = readSession(req);
-    if (!session) return json({ error: "no_session", configured: true }, { status: 401 });
+    if (!session) return json({ ok: false, error: "no_session", configured: true }, { status: 200 });
 
     const id = session.submissionId;
     if (!(await exists(id))) {
-      return json({ error: "no_session", configured: true }, { status: 401, cookies: [clearSessionCookie(), clearCsrfCookie()] });
+      return json({ ok: false, error: "no_session", configured: true }, { status: 200, cookies: [clearSessionCookie(), clearCsrfCookie()] });
     }
 
     const [completed, complete] = await Promise.all([listSteps(id), isComplete(id)]);

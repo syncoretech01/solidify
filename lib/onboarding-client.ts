@@ -128,6 +128,16 @@ export async function interpret<T = unknown>(res: Response): Promise<Result<T>> 
   const error = typeof b.error === "string" ? b.error : undefined;
   const message = typeof b.message === "string" ? b.message : undefined;
 
+  // A 200 with ok:false is an explicit negative answer to a probe (currently
+  // only the session probe's "no session") — never a success.
+  if (res.ok && b.ok === false) {
+    if (error === "no_session") {
+      csrfToken = null;
+      return { kind: "no_session", ok: false, status: res.status, message: message ?? DEFAULT_MESSAGES.noSession };
+    }
+    return { kind: "failed", ok: false, status: res.status, message: message ?? DEFAULT_MESSAGES.failed };
+  }
+
   if (res.ok) {
     if (typeof b.csrfToken === "string") csrfToken = b.csrfToken;
     return { kind: "saved", ok: true, status: res.status, data: b as T, message };

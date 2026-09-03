@@ -164,13 +164,13 @@ export const SLOTS = {
     awaiting: "HERO. A loaded car carrier on an open Western highway, subject in the lower-right third, sky restrained. The first thing anyone sees.",
   },
   "home-what": {
-    photo: "supra-trailer-straps",
+    photo: "detail-amg-wheel",
     aspect: 4 / 5,
     tone: "dark",
     awaiting: "Vehicles secured on a carrier deck — straps, ramps, the equipment doing the work.",
   },
   "home-car-shipping": {
-    photo: null,
+    photo: "showroom-mc20",
     aspect: 16 / 10,
     tone: "dark",
     awaiting: "A vehicle being driven or winched onto a carrier.",
@@ -194,7 +194,7 @@ export const SLOTS = {
     awaiting: "Condition inspection detail — hands, clipboard or a walk-around at pickup.",
   },
   "home-operator": {
-    photo: null,
+    photo: "road-north-cascades",
     aspect: 16 / 10,
     tone: "dark",
     awaiting: "A professional driver at a car carrier. A stock subject; never captioned as a Solidify operator.",
@@ -208,19 +208,19 @@ export const SLOTS = {
 
   /* ---- Process (shared by home and car shipping, max two uses each) ---- */
   "process-pickup": {
-    photo: "supra-trailer-straps",
+    photo: null,
     aspect: 4 / 5,
     tone: "dark",
     awaiting: "Pickup: a vehicle at the point of loading.",
   },
   "process-transit": {
-    photo: "carrier-interstate-transit",
+    photo: "supra-trailer-straps",
     aspect: 4 / 5,
     tone: "dark",
     awaiting: "Transit: a loaded carrier at speed on the interstate.",
   },
   "process-delivery": {
-    photo: null,
+    photo: "carrier-interstate-transit",
     aspect: 4 / 5,
     tone: "dark",
     awaiting: "Delivery: a vehicle coming off the ramp.",
@@ -266,7 +266,7 @@ export const SLOTS = {
     awaiting: "A modern dealership or OEM environment — showroom or delivery area.",
   },
   "oem-movement": {
-    photo: "carrier-interstate-transit",
+    photo: "carrier-corvettes-highway",
     aspect: 16 / 10,
     tone: "dark",
     awaiting: "A carrier loaded with new vehicles.",
@@ -280,7 +280,7 @@ export const SLOTS = {
 
   /* ---- Owner operators ------------------------------------------------- */
   "oo-hero": {
-    photo: null,
+    photo: "road-utah-night",
     aspect: 16 / 9,
     tone: "dark",
     awaiting: "An owner-operator with a car carrier. A stock subject; never captioned as a Solidify operator.",
@@ -292,7 +292,7 @@ export const SLOTS = {
     awaiting: "A professional driver at work — cab, mirror, strap check.",
   },
   "oo-equipment": {
-    photo: null,
+    photo: "carrier-deck-socal",
     aspect: 16 / 10,
     tone: "dark",
     awaiting: "Car hauler equipment detail — deck, hydraulics, ramps.",
@@ -300,7 +300,7 @@ export const SLOTS = {
 
   /* ---- About ----------------------------------------------------------- */
   "about-hero": {
-    photo: "carrier-deck-socal",
+    photo: "road-utah-canyon",
     aspect: 16 / 9,
     tone: "dark",
     awaiting: "A carrier in a Western landscape.",
@@ -320,7 +320,7 @@ export const SLOTS = {
 
   /* ---- Contact --------------------------------------------------------- */
   "contact-hero": {
-    photo: "carrier-corvettes-highway",
+    photo: "road-death-valley",
     aspect: 16 / 9,
     tone: "dark",
     awaiting: "A carrier or loaded vehicle — calm, composed, room for the form.",

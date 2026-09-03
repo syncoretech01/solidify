@@ -74,7 +74,7 @@ export const HOME = {
     bullets: ["Nationwide pickup and delivery", "Operable and inoperable vehicles quoted", "One carrier from pickup to delivery"],
     href: "/car-shipping",
     cta: "Explore car shipping",
-    slot: "cs-loading",
+    slot: "cs-situations",
   },
 
   oem: {
@@ -84,7 +84,7 @@ export const HOME = {
     bullets: ["Dealer transfers and inventory moves", "Retail delivery to the customer", "A single carrier contact for your team"],
     href: "/oem-dealerships",
     cta: "OEM & dealership solutions",
-    slot: "oem-movement",
+    slot: "oem-hero",
   },
 
   process: {

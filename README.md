@@ -16,7 +16,16 @@ npm start
 npm run typecheck
 npm run qa           # headless multi-viewport QA (see below) — needs a running server
 npm run onboarding:smoke -- http://localhost:3000 --phase unconfigured|configured
+npm run env:local    # LOCAL ONLY: writes .env.local with an fs store + a test access code
+npm run onboarding:ui -- http://localhost:3000   # headless UI check of the stepper (needs SMOKE_ACCESS_CODE)
 ```
+
+Local verification, end to end: `npm run env:local` prints a test access code
+and admin token and writes a gitignored `.env.local` (filesystem store under
+`.data/`). Restart `next dev`, then run the configured smoke phase, the UI
+check and `npm run qa`. Remove it again with `npm run env:local -- --remove`.
+Rate limits are real even locally — back-to-back runs from one IP will be
+throttled by design; restart the dev server to reset the in-memory limiter.
 
 ## Routes
 

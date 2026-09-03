@@ -52,36 +52,46 @@ export function ProcessSteps({
         gsap.set(frames, { autoAlpha: 0, scale: 1.06 });
         gsap.set(frames[0], { autoAlpha: 1, scale: 1 });
 
-        const triggers: ScrollTrigger[] = [];
-        items.forEach((item, i) => {
-          triggers.push(
-            ScrollTrigger.create({
-              trigger: item,
-              start: "top 55%",
-              end: "bottom 55%",
-              onToggle: (self) => {
-                if (!self.isActive) return;
-                frames.forEach((f, j) => {
-                  gsap.to(f, { autoAlpha: j === i ? 1 : 0, scale: j === i ? 1 : 1.06, duration: 0.9, ease: "arrive", overwrite: true });
-                });
-                items.forEach((it, j) => it.setAttribute("data-active", j === i ? "true" : "false"));
-              },
-            }),
-          );
-        });
+        // The active step is derived from where the list sits relative to the
+        // viewport centre, not from per-item toggles — so a fast scroll or a
+        // programmatic jump can never skip a state and leave the wrong frame up.
+        let active = 0;
+        const activate = (i: number) => {
+          if (i === active) return;
+          active = i;
+          frames.forEach((f, j) => {
+            gsap.to(f, { autoAlpha: j === i ? 1 : 0, scale: j === i ? 1 : 1.06, duration: 0.9, ease: "arrive", overwrite: true });
+          });
+          items.forEach((it, j) => it.setAttribute("data-active", j === i ? "true" : "false"));
+        };
+        const nearest = () => {
+          const mid = window.innerHeight * 0.55;
+          let best = 0;
+          let bestD = Infinity;
+          items.forEach((it, i) => {
+            const r = it.getBoundingClientRect();
+            const c = r.top + r.height / 2;
+            const d = Math.abs(c - mid);
+            if (d < bestD) {
+              bestD = d;
+              best = i;
+            }
+          });
+          return best;
+        };
 
         const list = el.querySelector<HTMLElement>("[data-step-list]");
-        if (rail && list) {
-          triggers.push(
-            ScrollTrigger.create({
-              trigger: list,
-              start: "top 55%",
-              end: "bottom 55%",
-              onUpdate: (self) => (rail.style.transform = `scaleY(${self.progress.toFixed(4)})`),
-            }),
-          );
-        }
-        return () => triggers.forEach((t) => t.kill());
+        const st = ScrollTrigger.create({
+          trigger: list ?? el,
+          start: "top 80%",
+          end: "bottom 20%",
+          onUpdate: (self) => {
+            activate(nearest());
+            if (rail) rail.style.transform = `scaleY(${Math.min(1, Math.max(0, (self.progress - 0.1) / 0.8)).toFixed(4)})`;
+          },
+          onRefresh: () => activate(nearest()),
+        });
+        return () => st.kill();
       });
       return () => mm.revert();
     },

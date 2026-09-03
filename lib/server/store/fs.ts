@@ -17,6 +17,29 @@ import { assertSafeKey, type ObjectStore } from "./index";
 const DIR_MODE = 0o700;
 const FILE_MODE = 0o600;
 
+/**
+ * rename() replaces an existing destination atomically on POSIX. On Windows
+ * the same call can fail with a transient EPERM/EBUSY while an antivirus or
+ * indexer briefly holds the just-written destination, so re-saving a step
+ * would 500 for no good reason. Retry with a short backoff; the write itself
+ * is already durable in the temp file.
+ */
+async function renameWithRetry(from: string, to: string): Promise<void> {
+  let lastErr: unknown;
+  for (let attempt = 0; attempt < 8; attempt++) {
+    try {
+      await fs.rename(from, to);
+      return;
+    } catch (err) {
+      const code = (err as NodeJS.ErrnoException)?.code;
+      if (code !== "EPERM" && code !== "EBUSY" && code !== "EACCES") throw err;
+      lastErr = err;
+      await new Promise((r) => setTimeout(r, 25 * (attempt + 1)));
+    }
+  }
+  throw lastErr;
+}
+
 export class FsStore implements ObjectStore {
   readonly kind = "fs" as const;
   private readonly root: string;
@@ -54,7 +77,7 @@ export class FsStore implements ObjectStore {
       await handle.close();
     }
     try {
-      await fs.rename(tmp, full);
+      await renameWithRetry(tmp, full);
     } catch (err) {
       await fs.rm(tmp, { force: true }).catch(() => undefined);
       throw err;

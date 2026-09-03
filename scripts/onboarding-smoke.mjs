@@ -270,7 +270,7 @@ async function phaseUnconfigured() {
   check("access 503 message says nothing was saved", /Nothing you entered has been saved/.test(access.data?.message ?? ""));
 
   const session = await call("GET", "/api/onboarding/session", { origin: null });
-  check("session → 401 no_session", session.status === 401 && session.data?.error === "no_session", session.data);
+  check("session probe → no_session (200 ok:false)", session.status === 200 && session.data?.ok === false && session.data?.error === "no_session", session.data);
 
   const step = await call("POST", "/api/onboarding/step", { json: { step: "profile", data: PROFILE } });
   check("step → 503 (refused before anything else)", step.status === 503, step.status);
@@ -509,7 +509,7 @@ async function phaseConfigured() {
   check("session DELETE → 200", end.status === 200 && end.data?.ok === true, end.data);
   check("session DELETE clears both cookies", !jar.has("solidify_onb") && !jar.has("solidify_csrf"), [...jar.keys()]);
   const afterEnd = await call("GET", "/api/onboarding/session", { origin: null });
-  check("session after DELETE → 401", afterEnd.status === 401, afterEnd.status);
+  check("session after DELETE → no_session", afterEnd.status === 200 && afterEnd.data?.ok === false && afterEnd.data?.error === "no_session", afterEnd.data);
 }
 
 /* ── main ────────────────────────────────────────────────────────────────── */
