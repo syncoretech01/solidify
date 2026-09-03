@@ -277,6 +277,8 @@ try {
     });
     p.on("response", (r) => {
       try {
+        // 503 on /api/* is the backend's honest "not configured" refusal, asserted separately by the form and gate checks.
+        if (r.status() === 503 && r.url().includes("/api/")) return;
         if (r.status() >= 400 && new URL(r.url()).origin === new URL(TARGET).origin) netErrors.push(`HTTP ${r.status()} ${r.url().slice(0, 140)}`);
       } catch {}
     });
