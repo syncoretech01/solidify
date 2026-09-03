@@ -1,0 +1,20 @@
+# Only source is uploaded for CLI deploys. Everything derived is rebuilt on
+# Vercel (public/media/gen comes from `npm run build`), and nothing local,
+# generated or sensitive leaves this machine.
+node_modules
+.next
+out
+qa
+shots
+screenshots
+.audit
+.imagery-cache
+.data
+.vercel
+public/media/gen
+*.log
+.env
+.env.*
+!.env.example
+*.tsbuildinfo
+next-env.d.ts
