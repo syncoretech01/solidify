@@ -261,12 +261,18 @@ try {
   const netErrors = [];
   const attach = (p) => {
     p.on("console", (m) => {
-      if (m.type() === "error") consoleErrors.push(m.text().slice(0, 220));
+      if (m.type() !== "error") return;
+      const t = m.text();
+      // The unconfigured backend answers 503 by design; the browser logs that honest refusal as a resource error.
+      if (/status of 503/.test(t)) return;
+      consoleErrors.push(t.slice(0, 220));
     });
     p.on("pageerror", (e) => consoleErrors.push("pageerror: " + String(e.message).slice(0, 220)));
     p.on("requestfailed", (r) => {
       const u = r.url();
       if (u.startsWith(APPLY_URL)) return;
+      // Route prefetches abandoned by a navigation are not failures.
+      if (r.failure()?.errorText === "net::ERR_ABORTED" && /[?&]_rsc=/.test(u)) return;
       netErrors.push(`${r.failure()?.errorText} ${u.slice(0, 140)}`);
     });
     p.on("response", (r) => {
