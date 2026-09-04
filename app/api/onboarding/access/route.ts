@@ -1,10 +1,9 @@
 import { z } from "zod";
 import { getConfig } from "@/lib/server/config";
-import { safeEqual, sha256Hex } from "@/lib/server/crypto";
+import { newReference, safeEqual, sha256Hex } from "@/lib/server/crypto";
 import { csrfCookie, newCsrfToken, requireOrigin } from "@/lib/server/csrf";
 import { fail, json, limit, requireConfigured } from "@/lib/server/guards";
 import { log } from "@/lib/server/log";
-import { createSubmission } from "@/lib/server/onboarding";
 import { clientIp } from "@/lib/server/ratelimit";
 import { sessionCookie } from "@/lib/server/session";
 import { readJsonLimited } from "@/lib/server/validate";
@@ -18,7 +17,7 @@ const bodySchema = z.object({
 
 /**
  * POST /api/onboarding/access  { code }
- *   200 { ok: true, csrfToken, submissionId }  + session & csrf cookies
+ *   200 { ok: true, csrfToken, reference }  + session & csrf cookies
  *   401 { error: "invalid_code", message }
  *   503 { error: "backend_not_configured", message }
  * The code is hashed and compared against every configured digest without
@@ -48,10 +47,12 @@ export async function POST(req: Request) {
       return json({ error: "invalid_code", message: "That access code was not recognized." }, { status: 401 });
     }
 
-    const submissionId = await createSubmission();
+    // The reference is minted here and carried in the session, so a retry after
+    // a failed delivery quotes the same reference rather than a new one.
+    const submissionId = newReference(20);
     const csrfToken = newCsrfToken();
     log.info("onboarding: session opened", { submissionId });
-    return json({ ok: true, csrfToken, submissionId }, { cookies: [sessionCookie(submissionId), csrfCookie(csrfToken)] });
+    return json({ ok: true, csrfToken, reference: submissionId }, { cookies: [sessionCookie(submissionId), csrfCookie(csrfToken)] });
   } catch (err) {
     return fail(err, "onboarding/access");
   }

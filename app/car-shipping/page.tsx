@@ -5,13 +5,11 @@ import { JsonLd } from "@/components/layout/JsonLd";
 import { PageHero } from "@/components/blocks/PageHero";
 import { Editorial } from "@/components/ui/Editorial";
 import { Situations } from "@/components/car/Situations";
-import { Sequence } from "@/components/home/Sequence";
 import { CoverageMap } from "@/components/blocks/CoverageMap";
 import { FormConsole } from "@/components/forms/FormConsole";
 import { RouteMap } from "@/components/car/RouteMap";
 import { Faq, type FaqItem } from "@/components/blocks/Faq";
 import { Closing } from "@/components/layout/Closing";
-import { Blueprint } from "@/components/graphics/Blueprint";
 
 export const metadata: Metadata = pageMetadata({
   title: "Car Shipping — Nationwide Vehicle Transport by the Carrier",
@@ -78,22 +76,26 @@ export default function CarShippingPage() {
         mark={{ index: 3, label: "What vehicle transport is" }}
         title={["Your vehicle rides", "on a car carrier."]}
         lead="Vehicle transport means your car is loaded onto a purpose-built car carrier at pickup, secured, driven to the destination on the carrier, and unloaded at delivery — with no miles added."
-        graphic={
-          <div className="plate plate-steel relative overflow-hidden p-6 lg:-ml-[3vw] lg:p-8">
-            <div aria-hidden className="pointer-events-none absolute inset-0 guides" />
-            <div className="mb-4 flex items-center justify-between">
-              <span className="spec">Loaded · Secured · Carried</span>
-              <span className="spec !text-[var(--text-low)]">Fig. 03</span>
-            </div>
-            <Blueprint view="full" draw className="w-full" />
-          </div>
-        }
+        media={{ slot: "cs-hero", aspect: 16 / 10, grade: "cool", caption: "Vehicles on the deck, secured for the run" }}
         bullets={["Loaded, secured and unloaded by the carrier", "Carried on the carrier from pickup to delivery", "No miles added to your vehicle"]}
       />
 
       <Situations />
 
-      <Sequence id="sequence" surface="deep" lead="One vehicle, one process — every time." />
+      <Editorial
+        id="sequence"
+        layout="ledger"
+        surface="deep"
+        head="stack"
+        mark={{ index: 4, label: "How vehicle transport works" }}
+        title={["One vehicle,", "one process."]}
+        lead="The same three movements every time, whether it is your car or a dealer's inventory."
+        rows={[
+          { index: 1, title: "Pickup", meta: "Loaded and secured", text: "The vehicle is loaded and secured on the carrier at the agreed pickup point." },
+          { index: 2, title: "Transit", meta: "On the carrier", text: "It travels on the carrier to the destination — on the deck it was loaded on, with one contact for the whole move." },
+          { index: 3, title: "Delivery", meta: "Handed over", text: "It is unloaded and handed over at the delivery address by the same carrier that collected it." },
+        ]}
+      />
 
       <CoverageMap
         id="coverage"

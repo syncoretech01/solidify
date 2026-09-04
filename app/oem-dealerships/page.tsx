@@ -62,7 +62,7 @@ export default function OemDealershipsPage() {
         ]}
       />
 
-      <MovementBoard id="movement" mark={{ index: 3, label: "What we move" }} action={{ href: "#inquiry", label: "Start a commercial inquiry" }} />
+      <MovementBoard id="movement" mark={{ index: 3, label: "What we move" }} backdrop="oem-board" action={{ href: "#inquiry", label: "Start a commercial inquiry" }} />
 
       <Editorial
         id="engagement"

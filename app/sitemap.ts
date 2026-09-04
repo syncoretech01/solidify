@@ -7,6 +7,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/", priority: 1, changeFrequency: "weekly" },
     { path: "/car-shipping", priority: 0.9, changeFrequency: "weekly" },
     { path: "/oem-dealerships", priority: 0.9, changeFrequency: "weekly" },
+    { path: "/become-a-driver", priority: 0.85, changeFrequency: "weekly" },
     { path: "/owner-operators", priority: 0.8, changeFrequency: "weekly" },
     { path: "/about", priority: 0.6, changeFrequency: "monthly" },
     { path: "/contact", priority: 0.9, changeFrequency: "monthly" },

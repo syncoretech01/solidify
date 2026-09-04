@@ -32,7 +32,7 @@ type Props = {
   head?: HeadPattern;
   media?: EditorialMedia;
   inset?: EditorialMedia;
-  /** Any drawn graphic (a Blueprint view, a map) that stands in for media. */
+  /** Any bespoke node (a layered photograph, a map) that stands in for the media slot. */
   graphic?: ReactNode;
   flip?: boolean;
   specs?: readonly SpecItem[];

@@ -80,7 +80,7 @@ try {
     heading: document.querySelector("[data-onboarding-steps] h3, [data-onboarding-steps] h4")?.textContent?.trim().slice(0, 80),
     status: document.querySelector("[data-onboarding-status]")?.textContent?.trim().slice(0, 160),
   }));
-  check("profile step saves and the rail marks it Saved", /saved/i.test(saved.rail) || /saved/i.test(saved.status || ""), JSON.stringify(saved));
+  check("profile step validates and the rail marks it complete", /saved|complete|ready/i.test(saved.rail) || /saved|complete|ready/i.test(saved.status || ""), JSON.stringify(saved));
   check("stepper advanced to the equipment step", /equipment|truck|power unit/i.test(saved.heading || ""), JSON.stringify(saved));
 
   // Jump to direct deposit and inspect the secret inputs.
@@ -119,6 +119,20 @@ try {
     disabled: [...document.querySelectorAll("[data-onboarding-steps] input, [data-onboarding-steps] select, [data-onboarding-steps] textarea")].every((i) => i.disabled),
   }));
   check("ending the session locks the stepper again", !ended.unlocked && ended.gate && ended.disabled, JSON.stringify(ended));
+  const storage = await page.evaluate(async () => ({
+    ls: Object.keys(localStorage).length,
+    ss: Object.keys(sessionStorage).length,
+    // Next.js opens __next_debug_channel in dev; it is the framework's, not ours.
+    idb:
+      typeof indexedDB !== "undefined" && "databases" in indexedDB
+        ? (await indexedDB.databases()).filter((d) => !String(d.name).startsWith("__next")).length
+        : 0,
+  }));
+  check("nothing in localStorage, sessionStorage or IndexedDB after working through the form", storage.ls === 0 && storage.ss === 0 && storage.idb === 0, JSON.stringify(storage));
+
+  const claims = await page.evaluate(() => (document.querySelector("[data-onboarding]")?.textContent || "").toLowerCase());
+  check("onboarding makes no claim this site keeps a copy", !/stored encrypted|never emailed|secure storage/.test(claims), claims.slice(0, 140));
+
   check("no console/page errors", errors.length === 0, errors.join(" | "));
   await ctx.close();
 } catch (err) {

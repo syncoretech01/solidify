@@ -9,6 +9,12 @@
 
 import type { OnboardingStep } from "./schemas";
 
+export interface SubmitFile {
+  id: string;
+  purpose: UploadPurpose;
+  file: File;
+}
+
 export type Kind =
   | "saved"
   | "invalid"
@@ -20,7 +26,8 @@ export type Kind =
   | "offline"
   | "no_session"
   | "invalid_code"
-  | "too_large";
+  | "too_large"
+  | "delivery_failed";
 
 export interface Result<T = unknown> {
   kind: Kind;
@@ -44,36 +51,17 @@ export interface SessionData {
   ok: true;
   configured: boolean;
   csrfToken: string;
-  submissionId: string;
-  completed: OnboardingStep[];
-  complete: boolean;
+  reference: string;
 }
 export interface AccessData {
   ok: true;
   csrfToken: string;
-  submissionId: string;
-}
-export interface StepData {
-  ok: true;
-  step: OnboardingStep;
-  saved: true;
-}
-export interface UploadData {
-  ok: true;
-  fileId: string;
-  name: string;
-  bytes: number;
-  purpose: UploadPurpose;
+  reference: string;
 }
 export interface SubmitData {
   ok: true;
-  complete: true;
-  submissionId: string;
-}
-export interface ProgressData {
-  ok: true;
-  completed: OnboardingStep[];
-  complete: boolean;
+  reference: string;
+  deliveredAt: string;
 }
 export interface HealthData {
   ok: true;
@@ -82,20 +70,24 @@ export interface HealthData {
 }
 
 const JSON_TIMEOUT_MS = 10_000;
-const UPLOAD_TIMEOUT_MS = 60_000;
+// One request carries every document; a slow uplink needs room, and the
+// caller drives a real progress bar off XHR rather than showing a dead spinner.
+const SUBMIT_TIMEOUT_MS = 150_000;
 const CSRF_HEADER = "x-csrf-token";
 
 const DEFAULT_MESSAGES = {
   offline: "We could not reach the server. Check your connection and try again.",
   timeout: "The request timed out. Check your connection and try again.",
-  failed: "That did not save. Nothing was stored — please try again.",
+  failed: "That did not send. Nothing was saved — please try again.",
   blocked: "This request was blocked. Reload the page and try again.",
   noSession: "Your onboarding session has expired. Enter your access code again.",
   invalidCode: "That access code was not recognized.",
   invalid: "Please check the highlighted fields.",
-  tooLarge: "Files must be 4 MB or smaller.",
+  tooLarge: "Each document must be 2 MB or smaller.",
+  deliveryFailed:
+    "We could not deliver your submission, so it was not accepted. Nothing was saved anywhere. Your answers and documents are still on this page — press submit again, or call (510) 499-4552.",
   notConfigured:
-    "Onboarding is not accepting submissions yet because secure storage is not configured on this server. Nothing you entered has been saved. Please contact Solidify Transport directly.",
+    "Onboarding is not accepting submissions yet because delivery is not configured on this server. Nothing you enter here is saved or sent. Please contact Solidify Transport directly.",
   rateLimited: "Too many attempts. Please wait a few minutes and try again.",
 } as const;
 
@@ -158,7 +150,7 @@ export async function interpret<T = unknown>(res: Response): Promise<Result<T>> 
         const missing = Array.isArray(b.missing) ? (b.missing.filter((m) => typeof m === "string") as OnboardingStep[]) : [];
         return { ...base, kind: "incomplete", missing, message: message ?? "Finish every step before submitting." };
       }
-      return { ...base, kind: "blocked", message: message ?? "This application has already been submitted." };
+      return { ...base, kind: "blocked", message: message ?? "Finish every step before submitting." };
     case 413:
       return { ...base, kind: "too_large", message: message ?? DEFAULT_MESSAGES.tooLarge };
     case 422:
@@ -169,6 +161,8 @@ export async function interpret<T = unknown>(res: Response): Promise<Result<T>> 
       const retryAfter = Number.isFinite(fromBody) ? fromBody : Number.isFinite(header) ? header : 60;
       return { ...base, kind: "rate_limited", retryAfter, message: message ?? DEFAULT_MESSAGES.rateLimited };
     }
+    case 502:
+      return { ...base, kind: "delivery_failed", message: message ?? DEFAULT_MESSAGES.deliveryFailed };
     case 503:
       return { ...base, kind: "not_configured", message: message ?? DEFAULT_MESSAGES.notConfigured };
     default:
@@ -215,35 +209,48 @@ export function unlock(code: string): Promise<Result<AccessData>> {
   return request<AccessData>("/api/onboarding/access", jsonInit("POST", { code }, false), JSON_TIMEOUT_MS);
 }
 
-/** POST /api/onboarding/step — validate and store one step. */
-export async function saveStep(step: OnboardingStep, data: unknown): Promise<Result<StepData>> {
-  const gate = await ensureToken();
-  if (gate) return gate as unknown as Result<StepData>;
-  return request<StepData>("/api/onboarding/step", jsonInit("POST", { step, data }, true), JSON_TIMEOUT_MS);
-}
-
-/** POST /api/onboarding/upload — multipart; returns the fileId to reference from a step. */
-export async function uploadFile(purpose: UploadPurpose, file: File): Promise<Result<UploadData>> {
-  const gate = await ensureToken();
-  if (gate) return gate as unknown as Result<UploadData>;
-  const form = new FormData();
-  form.set("purpose", purpose);
-  form.set("file", file, file.name);
-  const headers: Record<string, string> = { accept: "application/json" };
-  if (csrfToken) headers[CSRF_HEADER] = csrfToken;
-  return request<UploadData>("/api/onboarding/upload", { method: "POST", headers, body: form }, UPLOAD_TIMEOUT_MS);
-}
-
-/** POST /api/onboarding/submit — finalise once all five steps are saved. */
-export async function submitAll(): Promise<Result<SubmitData>> {
+/**
+ * POST /api/onboarding/submit — the whole application, once.
+ *
+ * Every step and every document travels in one multipart request. There is no
+ * per-step save and no per-file upload: this site keeps no record, so nothing
+ * exists server-side until the applicant presses submit, and a 200 means the
+ * submission was delivered to Solidify.
+ *
+ * XHR rather than fetch, because `fetch` cannot report upload progress and a
+ * silent ninety-second wait on a slow uplink reads as a hang.
+ */
+export async function submitAll(payload: unknown, files: SubmitFile[], onProgress?: (fraction: number) => void): Promise<Result<SubmitData>> {
   const gate = await ensureToken();
   if (gate) return gate as unknown as Result<SubmitData>;
-  return request<SubmitData>("/api/onboarding/submit", jsonInit("POST", {}, true), JSON_TIMEOUT_MS);
-}
 
-/** GET /api/onboarding/progress — which steps are saved. */
-export function getProgress(): Promise<Result<ProgressData>> {
-  return request<ProgressData>("/api/onboarding/progress", { method: "GET", headers: { accept: "application/json" } }, JSON_TIMEOUT_MS);
+  const form = new FormData();
+  form.set("data", JSON.stringify(payload));
+  for (const f of files) form.append(`file.${f.purpose}.${f.id}`, f.file, f.file.name);
+
+  return new Promise<Result<SubmitData>>((resolve) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", "/api/onboarding/submit", true);
+    xhr.timeout = SUBMIT_TIMEOUT_MS;
+    xhr.responseType = "text";
+    xhr.setRequestHeader("accept", "application/json");
+    if (csrfToken) xhr.setRequestHeader(CSRF_HEADER, csrfToken);
+    if (onProgress && xhr.upload) {
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable && e.total > 0) onProgress(Math.min(1, e.loaded / e.total));
+      };
+    }
+    xhr.onload = () => {
+      const body = new Response(xhr.responseText, {
+        status: xhr.status,
+        headers: { "content-type": xhr.getResponseHeader("content-type") ?? "application/json" },
+      });
+      void interpret<SubmitData>(body).then(resolve);
+    };
+    xhr.ontimeout = () => resolve({ ok: false, status: 0, kind: "offline", message: DEFAULT_MESSAGES.timeout });
+    xhr.onerror = () => resolve({ ok: false, status: 0, kind: "offline", message: DEFAULT_MESSAGES.offline });
+    xhr.send(form);
+  });
 }
 
 /** DELETE /api/onboarding/session — clear cookies and forget the token. */

@@ -48,7 +48,7 @@ export function W9Step({ initial, disabled, handlers, onBack, files }: FileStepP
         onOutcome={handlers.onOutcome}
         disabled={disabled}
         error={err("w9FileId")}
-        note="The server checks the file's actual contents, not just its name. Stored encrypted; never emailed."
+        note="The server checks the file's actual contents, not just its name. It is delivered to Solidify with your submission and not kept by this website."
         inputRef={w9.ref}
       />
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useReducer } from "react";
+import { useCallback, useEffect, useReducer, useRef } from "react";
 import { ONBOARDING_STEPS, type OnboardingStep } from "@/lib/schemas";
 import {
   checkHealth,
@@ -9,6 +9,7 @@ import {
   submitAll,
   unlock as unlockRequest,
   type Result,
+  type SubmitFile,
 } from "@/lib/onboarding-client";
 import { COMPANY } from "@/lib/site";
 import {
@@ -26,12 +27,13 @@ import {
 
 /* ── Copy ──────────────────────────────────────────────────────────────── */
 
-export const LOCKED_MESSAGE = `Onboarding is not accepting submissions yet because secure storage is not configured on this server. Nothing you enter here is saved. Please contact Solidify Transport directly at ${COMPANY.phone}.`;
+export const LOCKED_MESSAGE = `Onboarding is not accepting submissions yet because delivery is not configured on this server. Nothing you enter here is saved or sent. Please contact Solidify Transport directly at ${COMPANY.phone}.`;
 
-const GATE_MESSAGE = "Enter the access code Solidify Transport gave you to begin. Each step is saved to the server when you choose Save and continue.";
+const GATE_MESSAGE =
+  "Enter the access code Solidify Transport gave you to begin. Complete all six steps in one sitting — nothing leaves this page until you submit, and this website keeps no copy afterwards.";
 
 const SESSION_LOST_MESSAGE =
-  "Your onboarding session has expired. Enter your access code again. Steps saved and files uploaded under the expired session are not carried over, so they will need to be entered again.";
+  "Your onboarding session has expired. Enter your access code again — what you have filled in on this page is still here.";
 
 export function retryText(retryAfter?: number): string {
   const mins = Math.max(1, Math.ceil((retryAfter ?? 60) / 60));
@@ -120,7 +122,7 @@ const blankStatus = (): Record<OnboardingStep, StepStatus> => ({
 const initialState: OnboardingState = {
   phase: "booting",
   busy: false,
-  message: { tone: "neutral", text: "Checking secure storage…" },
+  message: { tone: "neutral", text: "Checking whether onboarding is open…" },
   current: "profile",
   navCount: 0,
   session: 0,
@@ -301,6 +303,9 @@ function reducer(state: OnboardingState, action: Action): OnboardingState {
 
 export function useOnboarding() {
   const [state, dispatch] = useReducer(reducer, initialState);
+  // submit() reads the latest drafts and blobs without re-creating itself.
+  const stateRef = useRef(state);
+  stateRef.current = state;
 
   // Boot: health first (so a locked server never triggers a needless 401),
   // then try to resume a session cookie.
@@ -316,7 +321,7 @@ export function useOnboarding() {
       const session = await openSession();
       if (cancelled) return;
       if (session.ok && session.data) {
-        dispatch({ type: "RESUMED", submissionId: session.data.submissionId, completed: session.data.completed ?? [], complete: !!session.data.complete });
+        dispatch({ type: "RESUMED", submissionId: session.data.reference, completed: [], complete: false });
         return;
       }
       if (session.kind === "not_configured") {
@@ -353,7 +358,7 @@ export function useOnboarding() {
     const result = await unlockRequest(trimmed);
     dispatch({ type: "BUSY", busy: false });
     if (result.ok && result.data) {
-      dispatch({ type: "UNLOCKED", submissionId: result.data.submissionId });
+      dispatch({ type: "UNLOCKED", submissionId: result.data.reference });
       return;
     }
     if (result.kind === "not_configured") {
@@ -379,11 +384,24 @@ export function useOnboarding() {
   const addFile = useCallback((file: UploadedFile) => dispatch({ type: "FILE", file }), []);
   const onSaved = useCallback((step: OnboardingStep, values: AnyStepForm) => dispatch({ type: "SAVED", step, values }), []);
 
+  /**
+   * The whole application, in one request. On any failure the drafts and the
+   * document blobs stay exactly where they are, so pressing submit again costs
+   * the applicant nothing — which is the point of holding it all in memory.
+   */
   const submit = useCallback(async () => {
     dispatch({ type: "BUSY", busy: true });
-    const result = await submitAll();
+
+    const payload: Record<string, unknown> = {};
+    for (const step of ONBOARDING_STEPS) {
+      const values = stateRef.current.saved[step] ?? stateRef.current.drafts[step];
+      if (values) payload[step] = values;
+    }
+    const files: SubmitFile[] = Object.values(stateRef.current.files).map((f) => ({ id: f.fileId, purpose: f.purpose, file: f.blob }));
+
+    const result = await submitAll(payload, files);
     if (result.ok && result.data) {
-      dispatch({ type: "SUBMITTED", submissionId: result.data.submissionId });
+      dispatch({ type: "SUBMITTED", submissionId: result.data.reference });
       return;
     }
     dispatch({ type: "BUSY", busy: false });

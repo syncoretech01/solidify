@@ -8,12 +8,13 @@ import { Reveal, RevealText } from "@/components/ui/Reveal";
 import { Section, SectionMark, PhoneLink, Lines } from "@/components/ui/Primitives";
 import { Plate } from "@/components/ui/Plate";
 import { LightSweep } from "@/components/ui/LightSweep";
+import { Button } from "@/components/ui/Button";
 import { Closing } from "@/components/layout/Closing";
 
 export const metadata: Metadata = pageMetadata({
   title: "Get a Quote — Contact Solidify Transport",
   description:
-    "Get a vehicle shipping quote, start an OEM or dealership inquiry, or reach Solidify Transport about owner-operator opportunities. Auto transport motor carrier, Tracy, California. (510) 499-4552.",
+    "Get a vehicle shipping quote or start an OEM and dealership inquiry with Solidify Transport, an auto transport motor carrier in Tracy, California. (510) 499-4552.",
   path: "/contact",
 });
 
@@ -41,14 +42,14 @@ export default function ContactPage() {
                 <Lines text={["Get a quote,", "or reach the carrier."]} />
               </RevealText>
               <Reveal immediate delay={0.6}>
-                <p className="lead max-w-[48ch]">Vehicle shipping quotes, OEM and dealership movement, and owner-operator questions — each to the right place, straight to Solidify Transport.</p>
+                <p className="lead max-w-[48ch]">Vehicle shipping quotes and OEM or dealership movement — straight to Solidify Transport, the carrier that performs the move.</p>
               </Reveal>
             </div>
             <Reveal immediate delay={0.8} y={16} className="plate plate-steel relative overflow-hidden p-6 lg:col-span-5 lg:p-7">
               <LightSweep trigger="inview" delay={1} />
               <div className="relative flex flex-col gap-3">
                 <span className="label">Call the carrier</span>
-                <PhoneLink className="font-display text-[clamp(1.9rem,1.2rem+2.2vw,3.2rem)] font-semibold leading-none tracking-[-0.02em] text-[var(--text-hi)] [font-stretch:105%]" />
+                <PhoneLink className="font-display text-[clamp(1.7rem,1.15rem+1.7vw,2.7rem)] font-medium leading-none tracking-[-0.015em] text-[var(--text-hi)]" />
                 <span className="spec">{COMPANY.legalName} · {COMPANY.city}, {COMPANY.state}</span>
               </div>
             </Reveal>
@@ -79,7 +80,7 @@ export default function ContactPage() {
                 <Reveal as="address" className="mt-auto flex flex-col gap-5 not-italic">
                   <div className="flex flex-col gap-1">
                     <span className="label">Phone</span>
-                    <PhoneLink className="font-display text-[var(--step-2)] font-semibold text-[var(--text-hi)]" />
+                    <PhoneLink className="font-display text-[var(--step-2)] font-medium text-[var(--text-hi)]" />
                   </div>
                   <div className="flex flex-col gap-1">
                     <span className="label">Office</span>
@@ -104,6 +105,28 @@ export default function ContactPage() {
                   <ContactLanes />
                 </Suspense>
               </div>
+            </div>
+          </div>
+        </div>
+      </Section>
+
+      <Section surface="graphite" id="drive" ariaLabelledBy="drive-title" head="index">
+        <div className="shell relative">
+          <div className="plate plate-steel relative overflow-hidden">
+            <div aria-hidden className="pointer-events-none absolute inset-0 guides" />
+            <LightSweep trigger="inview" delay={0.6} />
+            <div className="relative grid gap-8 p-6 sm:p-8 lg:grid-cols-[auto_1fr_auto] lg:items-center lg:gap-12 lg:p-10">
+              <span className="index-xl !text-[clamp(1.8rem,1.3rem+1.4vw,2.8rem)]">03</span>
+              <div className="flex flex-col gap-3">
+                <SectionMark index={3} label="Owner-operators" />
+                <h2 id="drive-title" className="display-sm max-w-[20ch]">
+                  Interested in driving with Solidify?
+                </h2>
+                <p className="body max-w-[52ch]">Review the opportunity, the requirements and the application process — then continue to the driver application.</p>
+              </div>
+              <Button href="/become-a-driver" variant="steel" className="lg:justify-self-end">
+                Become a driver
+              </Button>
             </div>
           </div>
         </div>

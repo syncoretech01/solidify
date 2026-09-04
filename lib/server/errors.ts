@@ -1,15 +1,15 @@
 /**
  * Coded errors shared by every server layer.
  *
- * Lower layers (store, crypto, record layer) throw these; `guards.fail()`
- * turns them into HTTP responses. Keeping the class here means the store
- * never has to import `next/server`.
+ * Lower layers (validation, crypto, delivery) throw these; `guards.fail()`
+ * turns them into HTTP responses. Keeping the class here means no lower layer
+ * has to import `next/server`.
  */
 
 export type AppErrorCode =
   | "backend_not_configured"
   | "inquiry_not_configured"
-  | "admin_not_configured"
+  | "delivery_failed"
   | "payload_too_large"
   | "file_too_large"
   | "bad_json"
@@ -17,9 +17,6 @@ export type AppErrorCode =
   | "validation_failed"
   | "rate_limited"
   | "not_found"
-  | "key_mismatch"
-  | "decrypt_failed"
-  | "already_complete"
   | "incomplete";
 
 export interface AppErrorExtra {

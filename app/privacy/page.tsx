@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import { COMPANY, ADDRESS_LINES } from "@/lib/site";
-import { PHOTOS } from "@/lib/media";
 import { Section, SectionMark, PhoneLink } from "@/components/ui/Primitives";
 import { Closing } from "@/components/layout/Closing";
 
 export const metadata: Metadata = pageMetadata({
   title: "Privacy Notice — Solidify Transport",
-  description: "How Solidify Transport LLC collects, uses, stores and deletes the information submitted through this website, including owner-operator onboarding data.",
+  description: "How Solidify Transport LLC handles the information submitted through this website, including owner-operator onboarding data, and why this site keeps no copy of it.",
   path: "/privacy",
 });
 
@@ -33,17 +32,18 @@ const SECTIONS = [
     ],
   },
   {
-    h: "How onboarding data is protected",
+    h: "What happens to what you send",
     p: [
-      "Onboarding data is submitted over an encrypted connection to our own server-side application and stored encrypted at rest. Taxpayer identification numbers and bank account numbers are never sent by email, never written to logs, and never stored in your browser.",
-      "Access to stored onboarding records is restricted to authorised Solidify personnel, and sensitive values are masked by default when records are reviewed.",
+      "Everything you submit through this website — quote and contact inquiries, and approved-operator onboarding including the W-9 and direct-deposit details — is validated, then delivered directly to Solidify over an encrypted connection.",
+      "This website does not keep a copy. There is no submissions database and no document store behind it; once a submission has been delivered, nothing about it remains on the site. Nothing is saved in your browser either, and sensitive values are masked on screen while you type them.",
+      "If delivery does not succeed, the submission is not accepted and you are told so plainly — the site never reports a success it did not receive.",
       "Onboarding is only available to operators who have been approved and given an access code by Solidify.",
     ],
   },
   {
     h: "Retention and deletion",
     p: [
-      "Inquiry data is kept as long as needed to respond to and follow up on the inquiry. Onboarding data is kept for the period required to maintain the operator relationship and meet tax and record-keeping obligations, after which it is deleted from our systems on a scheduled basis.",
+      "Because this website keeps no copy of your submission, there is nothing here to retain or delete. Solidify keeps the delivered information for the period required to respond to your inquiry, maintain the operator relationship and meet tax and record-keeping obligations.",
       "You can ask us to delete information we hold about you by contacting us using the details below. We will confirm what we can delete and what we are required to retain.",
     ],
   },
@@ -51,8 +51,8 @@ const SECTIONS = [
     h: "Third parties",
     p: [
       "This site does not use third-party analytics, advertising trackers or session-recording tools.",
-      "New owner-operator applications are made through an external driver application portal operated by a third party. That portal is governed by its own privacy terms, and information you enter there is not collected by this website.",
-      "We use infrastructure providers to host this website and to store data securely. They process information on our behalf and under our instructions.",
+      "New owner-operator applications are completed through an external driver application portal. That portal is governed by its own privacy terms, and information you enter there is not collected by this website.",
+      "We use infrastructure providers to host this website and to deliver submissions to Solidify. They process information on our behalf and under our instructions.",
     ],
   },
   {
@@ -62,7 +62,6 @@ const SECTIONS = [
 ] as const;
 
 export default function PrivacyPage() {
-  const credits = Object.values(PHOTOS);
   return (
     <>
       <Section surface="navy" id="privacy" className="pt-[calc(var(--nav-h)+4rem)]" ariaLabelledBy="privacy-title" head="stack">
@@ -94,23 +93,7 @@ export default function PrivacyPage() {
             Phone: <PhoneLink className="link-underline text-[var(--text-hi)]" />
           </p>
 
-          <section id="credits" aria-labelledby="credits-title" className="flex flex-col gap-4 border-t border-[var(--line-strong)] pt-8">
-            <SectionMark index={2} label="Photography" />
-            <h2 id="credits-title" className="title">
-              Photography credits
-            </h2>
-            <p className="body">
-              Photographs on this site are licensed stock. People shown in any frame are stock subjects, not Solidify personnel, operators or customers.
-            </p>
-            <ul role="list" className="flex flex-col gap-1.5">
-              {credits.map((p) => (
-                <li key={p.file} className="small">
-                  <span className="text-[var(--text-hi)]">{p.file}</span> — {p.source}
-                </li>
-              ))}
-            </ul>
-          </section>
-        </div>
+          </div>
       </Section>
       <Closing compact />
     </>

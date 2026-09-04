@@ -4,12 +4,12 @@ import { useEffect, useRef, useState } from "react";
 import { useGSAP } from "@gsap/react";
 import { gsap, EASE, MQ } from "@/lib/motion";
 import map from "@/lib/us-map.json";
-import { WESTERN_STATES } from "@/lib/site";
+import { FOCUS_STATES } from "@/lib/site";
 
 type St = { id: string; abbr: string; name: string; d: string; cx: number; cy: number };
 const STATES = (map as { viewBox: string; states: St[] }).states;
 const VIEWBOX = (map as { viewBox: string }).viewBox;
-const WEST = new Set<string>(WESTERN_STATES);
+const WEST = new Set<string>(FOCUS_STATES);
 
 export type RouteDetail = { pickupState?: string; deliveryState?: string };
 export const ROUTE_EVENT = "solidify:route";

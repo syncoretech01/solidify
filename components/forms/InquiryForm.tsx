@@ -305,7 +305,7 @@ export function InquiryForm({ lane, className, compact = false, bare = false }: 
         <div className="plate flex flex-col gap-3 p-5" role="alert" data-form-state="not-configured">
           <span className="label">Not accepting online inquiries yet</span>
           <p className="body !text-[var(--text-hi)]">{status.message}</p>
-          <PhoneLink className="font-display text-[var(--step-2)] font-semibold text-[var(--text-hi)]" />
+          <PhoneLink className="font-display text-[var(--step-2)] font-medium text-[var(--text-hi)]" />
           <p className="field-note">Nothing you entered was sent or stored.</p>
         </div>
       )}

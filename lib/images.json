@@ -70,17 +70,16 @@
       "jpg"
     ]
   },
-  "detail-amg-wheel": {
-    "width": 2400,
-    "height": 3600,
-    "aspect": 0.6667,
+  "deck-corvette-detail": {
+    "width": 1700,
+    "height": 1150,
+    "aspect": 1.4783,
     "widths": [
       400,
       640,
       900,
       1280,
-      1800,
-      2400
+      1700
     ],
     "formats": [
       "avif",
@@ -88,17 +87,16 @@
       "jpg"
     ]
   },
-  "detail-cadillac-crest": {
-    "width": 2400,
-    "height": 1600,
-    "aspect": 1.5,
+  "deck-ramp-detail": {
+    "width": 1600,
+    "height": 960,
+    "aspect": 1.6667,
     "widths": [
       400,
       640,
       900,
       1280,
-      1800,
-      2400
+      1600
     ],
     "formats": [
       "avif",
@@ -106,17 +104,34 @@
       "jpg"
     ]
   },
-  "hands-wheel-detail": {
-    "width": 2400,
-    "height": 2400,
-    "aspect": 1,
+  "deck-socal-detail": {
+    "width": 2000,
+    "height": 900,
+    "aspect": 2.2222,
     "widths": [
       400,
       640,
       900,
       1280,
       1800,
-      2400
+      2000
+    ],
+    "formats": [
+      "avif",
+      "webp",
+      "jpg"
+    ]
+  },
+  "deck-strapped-sedan": {
+    "width": 1430,
+    "height": 900,
+    "aspect": 1.5889,
+    "widths": [
+      400,
+      640,
+      900,
+      1280,
+      1430
     ],
     "formats": [
       "avif",
@@ -160,6 +175,22 @@
       "jpg"
     ]
   },
+  "lot-covers-detail": {
+    "width": 1250,
+    "height": 940,
+    "aspect": 1.3298,
+    "widths": [
+      400,
+      640,
+      900,
+      1250
+    ],
+    "formats": [
+      "avif",
+      "webp",
+      "jpg"
+    ]
+  },
   "lot-dealer-row": {
     "width": 2400,
     "height": 1807,
@@ -178,17 +209,16 @@
       "jpg"
     ]
   },
-  "road-death-valley": {
-    "width": 2400,
-    "height": 1350,
-    "aspect": 1.7778,
+  "lot-rows-detail": {
+    "width": 1400,
+    "height": 1100,
+    "aspect": 1.2727,
     "widths": [
       400,
       640,
       900,
       1280,
-      1800,
-      2400
+      1400
     ],
     "formats": [
       "avif",
@@ -196,71 +226,17 @@
       "jpg"
     ]
   },
-  "road-north-cascades": {
-    "width": 2400,
-    "height": 1602,
-    "aspect": 1.4981,
+  "strap-wheel-detail": {
+    "width": 1900,
+    "height": 1250,
+    "aspect": 1.52,
     "widths": [
       400,
       640,
       900,
       1280,
       1800,
-      2400
-    ],
-    "formats": [
-      "avif",
-      "webp",
-      "jpg"
-    ]
-  },
-  "road-utah-canyon": {
-    "width": 2400,
-    "height": 1603,
-    "aspect": 1.4972,
-    "widths": [
-      400,
-      640,
-      900,
-      1280,
-      1800,
-      2400
-    ],
-    "formats": [
-      "avif",
-      "webp",
-      "jpg"
-    ]
-  },
-  "road-utah-night": {
-    "width": 2400,
-    "height": 1600,
-    "aspect": 1.5,
-    "widths": [
-      400,
-      640,
-      900,
-      1280,
-      1800,
-      2400
-    ],
-    "formats": [
-      "avif",
-      "webp",
-      "jpg"
-    ]
-  },
-  "showroom-mc20": {
-    "width": 2400,
-    "height": 3134,
-    "aspect": 0.7658,
-    "widths": [
-      400,
-      640,
-      900,
-      1280,
-      1800,
-      2400
+      1900
     ],
     "formats": [
       "avif",

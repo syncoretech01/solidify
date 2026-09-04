@@ -141,7 +141,7 @@ export function Hero() {
           ))}
         </p>
 
-        <RevealText as="h1" id="hero-title" immediate delay={0.25} className="display-xl max-w-[12ch] !text-[clamp(3rem,1.5rem+4.3vw,6rem)]" mode="lines">
+        <RevealText as="h1" id="hero-title" immediate delay={0.25} className="display-xl max-w-[13ch]" mode="lines">
           <Lines text={h.title} />
         </RevealText>
 
@@ -172,7 +172,7 @@ export function Hero() {
               {h.claims.map((c) => (
                 <div key={c.label} className="flex flex-col gap-1.5">
                   <dt className="sr-only">{c.label}</dt>
-                  <dd className="font-display text-[var(--step-3)] font-semibold leading-none tracking-[-0.03em] [font-stretch:105%]">{c.value}</dd>
+                  <dd className="font-display text-[var(--step-3)] font-medium leading-none tracking-[-0.015em]">{c.value}</dd>
                   <dd className="spec !text-[var(--text-low)]">{c.label}</dd>
                 </div>
               ))}

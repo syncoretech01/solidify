@@ -73,8 +73,8 @@
   --color-signal-700: #143158;
 
   /* ---- Typography ------------------------------------------------------- */
-  --font-display: var(--font-archivo), "Archivo", "Helvetica Neue", Arial, sans-serif;
-  --font-sans: var(--font-inter), "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: var(--font-display-face), "Inter Tight", "Helvetica Neue", Arial, sans-serif;
+  --font-sans: var(--font-body), "Manrope", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: var(--font-plex-mono), "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
   /* ---- Motion — mirrored in lib/motion.ts -------------------------------- */
@@ -108,22 +108,19 @@
     --accent-ink: #05070b;
     --glow: rgba(127, 182, 255, 0.18);
     --plate-dim: 1;
-    --bp-stroke: #c8cfd8;
-    --bp-highlight: #b3d4ff;
-    --bp-text: #8b95a4;
 
     --nav-h: 84px;
 
     /* Fluid type. Body never below 17px; the smallest label is 13px. */
     --step--2: clamp(0.8125rem, 0.79rem + 0.1vw, 0.875rem);
     --step--1: clamp(0.9375rem, 0.9rem + 0.15vw, 1rem);
-    --step-0: clamp(1.0625rem, 1rem + 0.25vw, 1.125rem);
-    --step-1: clamp(1.2rem, 1.1rem + 0.5vw, 1.5rem);
-    --step-2: clamp(1.5rem, 1.3rem + 1vw, 2.1rem);
-    --step-3: clamp(1.9rem, 1.4rem + 1.6vw, 2.7rem);
-    --step-4: clamp(2.4rem, 1.6rem + 2.4vw, 3.6rem);
-    --step-5: clamp(3rem, 1.9rem + 3.6vw, 5rem);
-    --step-6: clamp(3.6rem, 2rem + 5vw, 6.6rem);
+    --step-0: clamp(1.0625rem, 0.99rem + 0.3vw, 1.1875rem);
+    --step-1: clamp(1.15rem, 1.08rem + 0.35vw, 1.35rem);
+    --step-2: clamp(1.3rem, 1.2rem + 0.5vw, 1.6rem);
+    --step-3: clamp(1.45rem, 1.25rem + 0.8vw, 1.9rem);
+    --step-4: clamp(1.95rem, 1.5rem + 1.6vw, 3.1rem);
+    --step-5: clamp(2.35rem, 1.7rem + 2.2vw, 4.1rem);
+    --step-6: clamp(2.9rem, 1.9rem + 3.4vw, 5.1rem);
     /* Display scale — the editorial hierarchy. */
     --d-1: var(--step-4);
     --d-2: var(--step-5);
@@ -198,9 +195,6 @@
     --accent: #1a3f70;
     --accent-ink: #f4f7fb;
     --glow: rgba(26, 63, 112, 0.14);
-    --bp-stroke: #2b313a;
-    --bp-highlight: #1a3f70;
-    --bp-text: #5f6d80;
   }
 
   html {
@@ -231,7 +225,7 @@
 
   h1, h2, h3, h4 {
     font-family: var(--font-display);
-    font-weight: 600;
+    font-weight: 520;
     letter-spacing: -0.025em;
     line-height: 1.02;
     color: var(--text-hi);
@@ -335,51 +329,49 @@
   .display-xl {
     font-family: var(--font-display);
     font-size: var(--d-3);
-    font-weight: 620;
-    font-stretch: 112%;
-    line-height: 0.94;
-    letter-spacing: -0.035em;
+    font-weight: 530;
+    line-height: 1;
+    letter-spacing: -0.021em;
   }
   .display-lg {
     font-family: var(--font-display);
     font-size: var(--d-2);
-    font-weight: 600;
-    font-stretch: 108%;
-    line-height: 0.98;
-    letter-spacing: -0.03em;
+    font-weight: 520;
+    line-height: 1.04;
+    letter-spacing: -0.018em;
   }
   .display-md {
     font-family: var(--font-display);
     font-size: var(--d-1);
-    font-weight: 600;
-    font-stretch: 105%;
-    line-height: 1.02;
-    letter-spacing: -0.028em;
+    font-weight: 510;
+    line-height: 1.08;
+    letter-spacing: -0.015em;
   }
   .display-sm {
     font-family: var(--font-display);
     font-size: var(--step-3);
-    font-weight: 600;
-    line-height: 1.06;
-    letter-spacing: -0.024em;
+    font-weight: 500;
+    line-height: 1.14;
+    letter-spacing: -0.012em;
   }
   .title {
     font-family: var(--font-display);
     font-size: var(--step-2);
-    font-weight: 600;
-    line-height: 1.12;
-    letter-spacing: -0.018em;
+    font-weight: 500;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
   }
   .title-sm {
     font-family: var(--font-display);
     font-size: var(--step-1);
-    font-weight: 600;
-    line-height: 1.2;
-    letter-spacing: -0.012em;
+    font-weight: 500;
+    line-height: 1.3;
+    letter-spacing: -0.008em;
   }
   .lead {
     font-size: var(--step-1);
-    line-height: 1.5;
+    line-height: 1.55;
+    max-width: 46ch;
     color: color-mix(in srgb, var(--text-hi) 90%, var(--text-mid));
     text-wrap: pretty;
   }

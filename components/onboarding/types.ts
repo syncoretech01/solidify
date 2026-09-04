@@ -13,31 +13,31 @@ export const STEP_META: Record<StepKey, { label: string; title: string; lead: st
     label: "Profile",
     title: "Business information",
     lead: "Who the carrier contracts with, and how to reach you.",
-    save: "Save and continue",
+    save: "Continue",
   },
   equipment: {
     label: "Equipment & licensing",
     title: "Equipment, licensing & service",
     lead: "The Truck / Power Unit you run, your operating authority, where you run, and how you track.",
-    save: "Save and continue",
+    save: "Continue",
   },
   insurance: {
     label: "Insurance",
     title: "Insurance and certificates",
     lead: "Your policies, your agent, and the certificates that name Solidify Transport LLC as certificate holder.",
-    save: "Save and continue",
+    save: "Continue",
   },
   w9: {
     label: "W-9",
     title: "Form W-9",
     lead: "Upload the official IRS form, completed and signed.",
-    save: "Save and continue",
+    save: "Continue",
   },
   "direct-deposit": {
     label: "Direct deposit",
     title: "Direct deposit authorization",
     lead: "Where settlements are deposited. Sensitive values are masked on screen and sent as digits only.",
-    save: "Save and review",
+    save: "Continue to review",
   },
   review: {
     label: "Review & submit",
@@ -75,12 +75,26 @@ export interface UploadedFile {
   fileId: string;
   name: string;
   bytes: number;
+  /** Before any client-side reduction, so the UI can say what it saved. */
+  originalBytes: number;
+  reduced: boolean;
+  mime: string;
   purpose: UploadPurpose;
+  /** The bytes themselves. They live here until the application is submitted. */
+  blob: File;
 }
 
-export const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
+/** Matches the server's isSafeId: 16-64 of [A-Za-z0-9_-]. */
+export const newFileId = (): string =>
+  typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID().replaceAll("-", "")
+    : Array.from({ length: 32 }, () => "abcdefghijklmnopqrstuvwxyz0123456789"[Math.floor(Math.random() * 36)]).join("");
+
+export const MAX_UPLOAD_BYTES = 2 * 1024 * 1024;
+export const MAX_TOTAL_UPLOAD_BYTES = 3.5 * 1024 * 1024;
+export const MAX_FILES_PER_SUBMISSION = 5;
 export const ACCEPT = "application/pdf,image/jpeg,image/png,.pdf,.jpg,.jpeg,.png";
-export const TOO_LARGE = "Files must be 4 MB or smaller.";
+export const TOO_LARGE = "Each document must be 2 MB or smaller.";
 export const WRONG_TYPE = "Files must be a PDF, JPEG or PNG.";
 
 /* ── Form value shapes (what react-hook-form holds; zod validates them) ── */

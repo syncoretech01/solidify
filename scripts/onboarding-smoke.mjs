@@ -1,42 +1,35 @@
 #!/usr/bin/env node
 /**
- * Onboarding API smoke test. Runs against a live server; the CALLER starts
- * the server and injects its environment. Two phases, two server runs.
+ * Onboarding API smoke test. Runs against a live server; the CALLER starts the
+ * server and injects its environment.
  *
- *   node scripts/onboarding-smoke.mjs [baseUrl] --phase unconfigured|configured
- *   baseUrl defaults to http://localhost:3000
+ *   node scripts/onboarding-smoke.mjs [baseUrl] --phase unconfigured|configured|delivery-failure
  *
- * Script env (all optional except where noted per phase):
- *   SMOKE_ACCESS_CODE   the plaintext code whose sha256 is in ONBOARDING_ACCESS_CODE_HASHES  (both phases)
- *   SMOKE_ADMIN_TOKEN   must equal the server's ONBOARDING_ADMIN_TOKEN                        (configured)
- *   SMOKE_STORE_DIR     the server's ONBOARDING_STORE_DIR, for the on-disk plaintext sweep   (both phases)
- *   SMOKE_CRON_SECRET   the server's CRON_SECRET, to exercise the purge route                (optional)
+ * This site keeps no submission record. There is no store to sweep and no
+ * reviewer route to read back: the whole application travels in ONE multipart
+ * request and the ONLY route to success is a 2xx from the mail provider. These
+ * three phases exist to prove exactly that.
  *
- * ── Phase 1: unconfigured ──────────────────────────────────────────────────
- * Proves the backend refuses instead of pretending. Start the server with an
- * EMPTY key; everything else may be set:
+ * Script env:
+ *   SMOKE_ACCESS_CODE   the plaintext code whose sha256 is in ONBOARDING_ACCESS_CODE_HASHES
+ *   SMOKE_MAIL_DIR      where the local mail sink wrote messages (default .data/mail)
  *
- *   ONBOARDING_ENCRYPTION_KEY= ONBOARDING_STORE=fs ONBOARDING_STORE_DIR=/tmp/onb-smoke \
- *   ONBOARDING_ACCESS_CODE_HASHES=<sha256hex(code)> ONBOARDING_SESSION_SECRET=<32+ chars> \
- *     npx next dev
+ * ── unconfigured ───────────────────────────────────────────────────────────
+ * Start the server with no RESEND_API_KEY. Every write must refuse with 503
+ * and say plainly that nothing was saved or sent.
  *
- *   SMOKE_ACCESS_CODE=<code> SMOKE_STORE_DIR=/tmp/onb-smoke \
- *     node scripts/onboarding-smoke.mjs http://localhost:3000 --phase unconfigured
+ * ── configured ─────────────────────────────────────────────────────────────
+ *   node scripts/mail-sink.mjs 3479 &
+ *   node scripts/local-env.mjs        # writes .env.local pointing at the sink
+ *   npx next dev -p 3477
  *
- * ── Phase 2: configured ────────────────────────────────────────────────────
- *   ONBOARDING_ENCRYPTION_KEY=$(node -e "console.log(require('crypto').randomBytes(32).toString('base64'))") \
- *   ONBOARDING_KEY_ID=k1 ONBOARDING_STORE=fs ONBOARDING_STORE_DIR=/tmp/onb-smoke \
- *   ONBOARDING_ACCESS_CODE_HASHES=<sha256hex(code)> ONBOARDING_SESSION_SECRET=<32+ chars> \
- *   ONBOARDING_ADMIN_TOKEN=<16+ chars> \
- *     npx next dev
+ * ── delivery-failure ───────────────────────────────────────────────────────
+ *   node scripts/mail-sink.mjs 3479 --fail &
+ * Same server, refusing sink. Submit must answer 502 and never 200.
  *
- *   SMOKE_ACCESS_CODE=<code> SMOKE_ADMIN_TOKEN=<token> SMOKE_STORE_DIR=/tmp/onb-smoke \
- *     node scripts/onboarding-smoke.mjs http://localhost:3000 --phase configured
- *
- * Use `next dev` (NODE_ENV=development) so http://localhost:3000 is an
- * allowed Origin. With `next start`, NEXT_PUBLIC_SITE_URL must equal the
- * server URL. On Windows PowerShell set the variables with $env:NAME="..."
- * before each command, or put the server variables in .env.local.
+ * Use `next dev` (NODE_ENV=development) so http://localhost:<port> is an
+ * allowed Origin, and so RESEND_API_BASE is honoured at all — it is ignored
+ * in production by design.
  *
  * Exit code 1 on any failure. Fixed test secrets: EIN 987654321, routing
  * 021000021 (valid ABA), account 55512345678.
@@ -44,6 +37,7 @@
 
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
+import { tmpdir } from "node:os";
 
 const argv = process.argv.slice(2);
 const BASE = (argv.find((a) => !a.startsWith("--")) ?? "http://localhost:3000").replace(/\/+$/, "");
@@ -51,9 +45,7 @@ const phaseIdx = argv.indexOf("--phase");
 const PHASE = phaseIdx === -1 ? "configured" : (argv[phaseIdx + 1] ?? "configured");
 
 const ACCESS_CODE = process.env.SMOKE_ACCESS_CODE ?? "";
-const ADMIN_TOKEN = process.env.SMOKE_ADMIN_TOKEN ?? "";
-const STORE_DIR = process.env.SMOKE_STORE_DIR ?? process.env.ONBOARDING_STORE_DIR ?? "";
-const CRON_SECRET = process.env.SMOKE_CRON_SECRET ?? "";
+const MAIL_DIR = process.env.SMOKE_MAIL_DIR ?? join(process.cwd(), ".data", "mail");
 
 const SECRETS = { ein: "987654321", routing: "021000021", account: "55512345678" };
 const PLAIN_MARKERS = ["Smoke Test Carrier LLC", "smoke-operator@example.com", "5GZCZ43D13S812715"];
@@ -102,8 +94,13 @@ function absorb(res) {
 /**
  * opts: json | form | headers | origin (null = omit) | cookies (bool) | csrf | bearer
  */
+let ipSeq = 0;
 async function call(method, path, opts = {}) {
   const headers = { accept: "application/json", ...(opts.headers ?? {}) };
+  // The limiter keys on the client IP. Every call here is a distinct caller so
+  // that a 429 never stands in for the answer under test; the limiter itself is
+  // exercised deliberately in its own check.
+  if (!headers["x-forwarded-for"]) headers["x-forwarded-for"] = `10.0.0.${++ipSeq % 250}`;
   if (opts.origin !== null) headers.origin = opts.origin ?? BASE;
   if (opts.cookies !== false && jar.size) headers.cookie = cookieHeader();
   if (opts.csrf) headers["x-csrf-token"] = opts.csrf;
@@ -144,11 +141,48 @@ const PNG_BYTES = Buffer.concat([
 ]);
 const MZ_BYTES = Buffer.concat([Buffer.from("MZ"), Buffer.alloc(200, 0x90)]);
 
-function multipart(purpose, bytes, name, type) {
+/** A client-minted id: 32 of [A-Za-z0-9_-], which is what the server accepts. */
+let idSeq = 0;
+const fid = (tag) => (tag + "0".repeat(32)).slice(0, 32).replace(/0$/, String(++idSeq % 10));
+
+/**
+ * One submission: the five steps as JSON plus its documents, with the purpose
+ * and the id encoded in each part name. `parts` entries are
+ * { id, purpose, bytes, name, type }.
+ */
+function submission(data, parts) {
   const form = new FormData();
-  if (purpose !== undefined) form.set("purpose", purpose);
-  form.set("file", new File([bytes], name, { type }), name);
+  form.set("data", JSON.stringify(data));
+  for (const p of parts) form.append(`file.${p.purpose}.${p.id}`, new File([p.bytes], p.name, { type: p.type }), p.name);
   return form;
+}
+
+const CERT_ID = fid("cert");
+const W9_ID = fid("w9doc");
+const CHECK_ID = fid("check");
+
+const fullPayload = (over = {}) => ({
+  profile: PROFILE,
+  equipment: EQUIPMENT,
+  insurance: insurance([CERT_ID]),
+  w9: w9(W9_ID),
+  "direct-deposit": directDeposit(CHECK_ID),
+  ...over,
+});
+
+const fullParts = () => [
+  { id: CERT_ID, purpose: "certificate", bytes: PDF_BYTES, name: "COI 2026.pdf", type: "application/pdf" },
+  { id: W9_ID, purpose: "w9", bytes: PDF_BYTES, name: "w9 signed.pdf", type: "application/pdf" },
+  { id: CHECK_ID, purpose: "voided-check", bytes: PNG_BYTES, name: "check.png", type: "image/png" },
+];
+
+/** What the mail sink actually received, newest first. */
+function sentMessages() {
+  if (!existsSync(MAIL_DIR)) return [];
+  return readdirSync(MAIL_DIR)
+    .filter((f) => f.endsWith(".json"))
+    .map((f) => ({ file: f, body: JSON.parse(readFileSync(join(MAIL_DIR, f), "utf8")) }))
+    .sort((a, b) => b.file.localeCompare(a.file));
 }
 
 const PROFILE = {
@@ -213,45 +247,71 @@ const directDeposit = (voidedId, routing = "021-000-021") => ({
   signatureDate: "2026-09-03",
 });
 const INQUIRY = {
-  lane: "operator",
+  lane: "vehicle",
   name: "Smoke Inquirer",
   phone: "5105550102",
   email: "smoke-inquiry@example.com",
-  homeBase: "Tracy, CA",
-  equipment: "",
+  pickupCity: "Tracy",
+  pickupState: "CA",
+  deliveryCity: "Phoenix",
+  deliveryState: "AZ",
+  vehicleYear: "2021",
+  vehicleMake: "Toyota",
+  vehicleModel: "Tacoma",
+  operable: "operable",
   notes: "",
   website: "",
   startedAt: Date.now() - 10_000,
 };
-
-/* ── disk sweep ──────────────────────────────────────────────────────────── */
+/* ── "the site writes nothing" ───────────────────────────────────────────── */
 
 function walk(dir, out = []) {
   if (!existsSync(dir)) return out;
-  for (const name of readdirSync(dir)) {
+  let names = [];
+  try {
+    names = readdirSync(dir);
+  } catch {
+    return out; // another process's directory; not ours to inspect
+  }
+  for (const name of names) {
     const p = join(dir, name);
-    if (statSync(p).isDirectory()) walk(p, out);
-    else out.push(p);
+    try {
+      if (statSync(p).isDirectory()) walk(p, out);
+      else out.push(p);
+    } catch {
+      /* vanished or locked mid-walk */
+    }
   }
   return out;
 }
 
-function sweepStore(label) {
-  if (!STORE_DIR) {
-    console.log(`  SKIP  ${label}: SMOKE_STORE_DIR not set`);
-    return;
+/**
+ * There is no store to sweep any more, which is itself the thing to assert:
+ * after a full submission nothing exists on disk under the old locations and
+ * no temp file was left behind.
+ */
+function sweepNothingWritten(label) {
+  const legacy = [join(process.cwd(), ".data", "onboarding"), join(process.cwd(), "server", "data")];
+  const written = legacy.flatMap((d) => walk(d));
+  check(`${label}: no submission store exists`, written.length === 0, written.slice(0, 5));
+  // Shallow, and only our own names: the system temp directory is shared.
+  let tmpNames = [];
+  try {
+    tmpNames = readdirSync(tmpdir());
+  } catch {
+    tmpNames = [];
   }
-  const files = walk(STORE_DIR);
-  const tmp = files.filter((f) => f.endsWith(".tmp"));
-  check(`${label}: no .tmp files left behind`, tmp.length === 0, tmp);
+  // Only artefacts the app could have produced. The QA harness's own browser
+  // profiles (solidify-edge-*, solidify-apply-qa*) live here too and are not ours.
+  const strays = tmpNames.filter((f) => /onboarding/i.test(f) || /.(enc|tmp)$/i.test(f) && /solidify/i.test(f));
+  check(`${label}: nothing left in the temp directory`, strays.length === 0, strays.slice(0, 5));
+}
+
+/** No secret digit run may appear anywhere in a response body. */
+function assertNoSecretEcho(label, res) {
   const needles = [...Object.values(SECRETS), ...PLAIN_MARKERS];
-  const leaks = [];
-  for (const f of files) {
-    const text = readFileSync(f).toString("latin1");
-    for (const n of needles) if (text.includes(n)) leaks.push(`${f} contains ${n.slice(0, 4)}…`);
-  }
-  check(`${label}: no plaintext secrets or fields in ${files.length} stored object(s)`, leaks.length === 0, leaks);
-  return files;
+  const hit = needles.filter((n) => (res.text ?? "").includes(n));
+  check(`${label}: response echoes no submitted value`, hit.length === 0, hit);
 }
 
 /* ── phase: unconfigured ─────────────────────────────────────────────────── */
@@ -266,6 +326,8 @@ async function phaseUnconfigured() {
     "health: reasons never contain an env value (only names)",
     JSON.stringify(health.data?.onboarding?.reasons ?? []).match(/[A-Za-z0-9+/]{40,}={0,2}/) === null,
   );
+  const reasonText = JSON.stringify(health.data ?? {});
+  check("health: reasons no longer mention a store or an encryption key", !/S3_|ONBOARDING_STORE|ENCRYPTION_KEY/.test(reasonText), reasonText.slice(0, 160));
 
   const access = await call("POST", "/api/onboarding/access", { json: { code: ACCESS_CODE || "anything" } });
   check("access with a valid code → 503 backend_not_configured", access.status === 503 && access.data?.error === "backend_not_configured", {
@@ -273,263 +335,205 @@ async function phaseUnconfigured() {
     body: access.data,
   });
   check("access 503 sets no cookies", access.setCookies.length === 0, access.setCookies);
-  check("access 503 message says nothing was saved", /Nothing you entered has been saved/.test(access.data?.message ?? ""));
+  check("access 503 message says nothing was saved or sent", /Nothing you enter here is saved or sent/.test(access.data?.message ?? ""), access.data?.message);
 
   const session = await call("GET", "/api/onboarding/session", { origin: null });
   check("session probe → no_session (200 ok:false)", session.status === 200 && session.data?.ok === false && session.data?.error === "no_session", session.data);
 
-  const step = await call("POST", "/api/onboarding/step", { json: { step: "profile", data: PROFILE } });
-  check("step → 503 (refused before anything else)", step.status === 503, step.status);
+  const submit = await call("POST", "/api/onboarding/submit", { form: submission(fullPayload(), fullParts()) });
+  check("submit → 503 (refused before the body is read)", submit.status === 503, submit.status);
 
-  const upload = await call("POST", "/api/onboarding/upload", { form: multipart("certificate", PDF_BYTES, "c.pdf", "application/pdf") });
-  check("upload → 503", upload.status === 503, upload.status);
+  const inquiry = await call("POST", "/api/inquiry", { json: INQUIRY });
+  check("inquiry → 503 inquiry_not_configured", inquiry.status === 503 && inquiry.data?.error === "inquiry_not_configured", { status: inquiry.status, body: inquiry.data });
+  check("inquiry 503 message gives the phone number", /\(510\) 499-4552/.test(inquiry.data?.message ?? ""));
 
-  if (health.data?.inquiry?.configured === false) {
-    const inq = await call("POST", "/api/inquiry", { json: INQUIRY });
-    check("inquiry → 503 inquiry_not_configured", inq.status === 503 && inq.data?.error === "inquiry_not_configured", inq.data);
-    check("inquiry 503 message gives the phone number", /\(510\) 499-4552/.test(inq.data?.message ?? ""));
-  } else {
-    console.log("  SKIP  inquiry 503 check: inquiry pipeline is configured on this server");
+  for (const [method, path] of [
+    ["POST", "/api/onboarding/upload"],
+    ["POST", "/api/onboarding/step"],
+    ["GET", "/api/onboarding/progress"],
+    ["GET", "/api/onboarding/purge"],
+    ["GET", "/api/onboarding/records/abc"],
+  ]) {
+    const gone = await call(method, path, {});
+    check(`${method} ${path} no longer exists`, gone.status === 404 || gone.status === 405, gone.status);
   }
 
-  if (STORE_DIR) {
-    const files = walk(STORE_DIR);
-    check("nothing written to the store directory", files.length === 0, files);
-  } else {
-    console.log("  SKIP  store directory sweep: SMOKE_STORE_DIR not set");
-  }
+  sweepNothingWritten("unconfigured");
+  finish();
 }
 
 /* ── phase: configured ───────────────────────────────────────────────────── */
 
 async function phaseConfigured() {
   console.log(`\nPhase: configured against ${BASE}\n`);
-  if (!ACCESS_CODE) console.log("  WARN  SMOKE_ACCESS_CODE not set; access checks will fail");
-  if (!ADMIN_TOKEN) console.log("  WARN  SMOKE_ADMIN_TOKEN not set; reviewer checks will fail");
+  if (!ACCESS_CODE) {
+    console.log("  FAIL  SMOKE_ACCESS_CODE is required for the configured phase");
+    process.exit(1);
+  }
 
   const health = await call("GET", "/api/health", { origin: null });
   check("health: onboarding.configured === true", health.data?.onboarding?.configured === true, health.data);
+  check("health: inquiry.configured === true", health.data?.inquiry?.configured === true, health.data);
 
-  /* access */
-  const wrong = await call("POST", "/api/onboarding/access", { json: { code: "definitely-not-the-code" } });
-  check("access with wrong code → 401 invalid_code", wrong.status === 401 && wrong.data?.error === "invalid_code", wrong.data);
-  check("wrong code sets no cookies", wrong.setCookies.length === 0);
+  /* ── the gate ──────────────────────────────────────────────────────────── */
+  const wrong = await call("POST", "/api/onboarding/access", { json: { code: `${ACCESS_CODE}-nope` } });
+  check("wrong access code → 401", wrong.status === 401 && wrong.data?.error === "invalid_code", { status: wrong.status, body: wrong.data });
 
-  const foreignAccess = await call("POST", "/api/onboarding/access", { json: { code: ACCESS_CODE }, origin: "https://evil.example" });
-  check("access from foreign Origin → 403", foreignAccess.status === 403, foreignAccess.status);
+  const foreign = await call("POST", "/api/onboarding/access", { json: { code: ACCESS_CODE }, origin: "https://evil.example" });
+  check("foreign Origin → 403", foreign.status === 403, foreign.status);
 
   const access = await call("POST", "/api/onboarding/access", { json: { code: ACCESS_CODE } });
-  check("access with right code → 200", access.status === 200 && access.data?.ok === true, access.data);
-  const submissionId = access.data?.submissionId;
-  let csrf = access.data?.csrfToken;
-  check("access returns a well-formed submissionId", typeof submissionId === "string" && /^[A-Za-z0-9_-]{16,64}$/.test(submissionId));
-  check("access returns a csrfToken", typeof csrf === "string" && csrf.length >= 16);
-  const onb = access.setCookies.find((c) => c.startsWith("solidify_onb="));
+  check("right code → 200 with a reference and a csrf token", access.status === 200 && typeof access.data?.reference === "string" && typeof access.data?.csrfToken === "string", access.data);
+  const reference = access.data?.reference ?? "";
+  const csrf = access.data?.csrfToken ?? "";
+  check("reference is phone-readable (no 0/O/1/I)", /^[A-HJ-NP-Z2-9]{16,32}$/.test(reference), reference);
+
+  const sessionCookie = access.setCookies.find((c) => c.startsWith("solidify_onb="));
+  check("session cookie is HttpOnly and SameSite=Strict", /HttpOnly/i.test(sessionCookie ?? "") && /SameSite=Strict/i.test(sessionCookie ?? ""), sessionCookie);
+  check("session cookie carries no submitted value", !Object.values(SECRETS).some((v) => (sessionCookie ?? "").includes(v)));
   const csrfCookie = access.setCookies.find((c) => c.startsWith("solidify_csrf="));
-  check("session cookie set, HttpOnly, SameSite=Strict", !!onb && /httponly/i.test(onb) && /samesite=strict/i.test(onb), onb);
-  check("csrf cookie set, NOT HttpOnly, SameSite=Strict", !!csrfCookie && !/httponly/i.test(csrfCookie) && /samesite=strict/i.test(csrfCookie), csrfCookie);
-  check("csrf cookie value equals csrfToken", !!csrfCookie && csrfCookie.split(";")[0].split("=")[1] === csrf);
-  check("session cookie carries no plaintext secrets", !!onb && !Object.values(SECRETS).some((s) => onb.includes(s)));
+  check("csrf cookie is readable by script (double submit)", csrfCookie !== undefined && !/HttpOnly/i.test(csrfCookie), csrfCookie);
 
-  /* session */
-  const sess = await call("GET", "/api/onboarding/session", { origin: null });
-  check("session → 200 with empty completed[]", sess.status === 200 && Array.isArray(sess.data?.completed) && sess.data.completed.length === 0, sess.data);
-  check("session reports complete:false", sess.data?.complete === false);
-  check("session refreshes csrfToken", typeof sess.data?.csrfToken === "string" && sess.data.csrfToken !== csrf);
-  csrf = sess.data?.csrfToken ?? csrf;
+  const resumed = await call("GET", "/api/onboarding/session", { origin: null });
+  check("session resumes and re-issues the cookie (sliding window)", resumed.status === 200 && resumed.data?.ok === true && resumed.data?.reference === reference, resumed.data);
+  check("session reports no server-side progress", resumed.data?.completed === undefined && resumed.data?.complete === undefined, resumed.data);
+  const csrf2 = resumed.data?.csrfToken ?? csrf;
 
-  /* csrf / origin */
-  const noCsrf = await call("POST", "/api/onboarding/step", { json: { step: "profile", data: PROFILE } });
-  check("step without csrf header → 403", noCsrf.status === 403 && noCsrf.data?.error === "csrf", noCsrf.data);
-  const badCsrf = await call("POST", "/api/onboarding/step", { json: { step: "profile", data: PROFILE }, csrf: "x".repeat(32) });
-  check("step with mismatched csrf → 403", badCsrf.status === 403, badCsrf.status);
-  const foreign = await call("POST", "/api/onboarding/step", { json: { step: "profile", data: PROFILE }, csrf, origin: "https://evil.example" });
-  check("step from foreign Origin → 403 origin_rejected", foreign.status === 403 && foreign.data?.error === "origin_rejected", foreign.data);
-  const noOrigin = await call("POST", "/api/onboarding/step", { json: { step: "profile", data: PROFILE }, csrf, origin: null });
-  check("step with no Origin and no Sec-Fetch-Site → 403 (fail closed)", noOrigin.status === 403, noOrigin.status);
-  const sfs = await call("POST", "/api/onboarding/step", {
-    json: { step: "profile", data: PROFILE },
-    csrf,
+  /* ── the guard chain on submit ─────────────────────────────────────────── */
+  const noCsrf = await call("POST", "/api/onboarding/submit", { form: submission(fullPayload(), fullParts()) });
+  check("submit without the csrf header → 403", noCsrf.status === 403, noCsrf.status);
+
+  const badCsrf = await call("POST", "/api/onboarding/submit", { form: submission(fullPayload(), fullParts()), csrf: "not-the-token" });
+  check("submit with a mismatched csrf token → 403", badCsrf.status === 403, badCsrf.status);
+
+  const noOrigin = await call("POST", "/api/onboarding/submit", { form: submission(fullPayload(), fullParts()), csrf: csrf2, origin: null });
+  check("submit with no Origin fails closed → 403", noOrigin.status === 403, noOrigin.status);
+
+  const sameSite = await call("POST", "/api/onboarding/submit", {
+    form: submission(fullPayload(), fullParts()),
+    csrf: csrf2,
     origin: null,
     headers: { "sec-fetch-site": "same-origin" },
   });
-  check("step with no Origin but Sec-Fetch-Site: same-origin → accepted", sfs.status === 200, { status: sfs.status, body: sfs.data });
+  check("Sec-Fetch-Site: same-origin is accepted in place of Origin", sameSite.status !== 403, sameSite.status);
 
-  /* validation without echo */
-  const bad = await call("POST", "/api/onboarding/step", {
-    json: { step: "profile", data: { ...PROFILE, email: "not-an-email-XYZZY", zip: "ABCDE-QUUX" } },
-    csrf,
+  /* ── validation, before anything is sent ───────────────────────────────── */
+  const before = sentMessages().length;
+
+  const missingStep = await call("POST", "/api/onboarding/submit", {
+    form: submission({ profile: PROFILE, equipment: EQUIPMENT, insurance: insurance([CERT_ID]), w9: w9(W9_ID) }, fullParts()),
+    csrf: csrf2,
   });
-  check("invalid profile → 422 validation_failed", bad.status === 422 && bad.data?.error === "validation_failed", bad.data);
-  check("422 names the email field", typeof bad.data?.fields?.email === "string", bad.data?.fields);
-  check("422 names the zip field", typeof bad.data?.fields?.zip === "string", bad.data?.fields);
-  check("422 does not echo the submitted values", !bad.text.includes("XYZZY") && !bad.text.includes("QUUX"));
-  const badStep = await call("POST", "/api/onboarding/step", { json: { step: "nonsense", data: {} }, csrf });
-  check("unknown step → 422", badStep.status === 422, badStep.status);
+  check("a missing step → 409 incomplete, naming it", missingStep.status === 409 && (missingStep.data?.missing ?? []).includes("direct-deposit"), missingStep.data);
 
-  /* steps 1-2 */
-  const p = await call("POST", "/api/onboarding/step", { json: { step: "profile", data: PROFILE }, csrf });
-  check("profile saves", p.status === 200 && p.data?.saved === true && p.data?.step === "profile", p.data);
-  const e = await call("POST", "/api/onboarding/step", { json: { step: "equipment", data: EQUIPMENT }, csrf });
-  check("equipment saves", e.status === 200 && e.data?.saved === true, e.data);
+  const badAba = await call("POST", "/api/onboarding/submit", {
+    form: submission(fullPayload({ "direct-deposit": directDeposit(CHECK_ID, "021000022") }), fullParts()),
+    csrf: csrf2,
+  });
+  check("a routing number that fails its checksum → 422, naming the field by its full path", badAba.status === 422 && "direct-deposit.routingNumber" in (badAba.data?.fields ?? {}), badAba.data);
+  assertNoSecretEcho("routing rejection", badAba);
 
-  /* uploads */
-  const mz = await call("POST", "/api/onboarding/upload", { form: multipart("certificate", MZ_BYTES, "cert.pdf", "application/pdf"), csrf });
-  check("MZ blob declared as PDF → 422 fields.file", mz.status === 422 && typeof mz.data?.fields?.file === "string", mz.data);
-  const mismatch = await call("POST", "/api/onboarding/upload", { form: multipart("certificate", PDF_BYTES, "cert.png", "image/png"), csrf });
-  check("PDF bytes declared as PNG → 422", mismatch.status === 422, mismatch.data);
-  const badPurpose = await call("POST", "/api/onboarding/upload", { form: multipart("passport", PDF_BYTES, "x.pdf", "application/pdf"), csrf });
-  check("unknown purpose → 422 fields.purpose", badPurpose.status === 422 && typeof badPurpose.data?.fields?.purpose === "string", badPurpose.data);
-  const noCsrfUpload = await call("POST", "/api/onboarding/upload", { form: multipart("certificate", PDF_BYTES, "c.pdf", "application/pdf") });
-  check("upload without csrf → 403", noCsrfUpload.status === 403, noCsrfUpload.status);
+  const mzParts = fullParts().map((p) => (p.purpose === "w9" ? { ...p, bytes: MZ_BYTES } : p));
+  const mz = await call("POST", "/api/onboarding/submit", { form: submission(fullPayload(), mzParts), csrf: csrf2 });
+  check("an executable declared as a PDF → 422", mz.status === 422, { status: mz.status, body: mz.data });
 
-  const big = Buffer.concat([PDF_BYTES, Buffer.alloc(4.5 * 1024 * 1024, 0x20)]);
-  const tooBig = await call("POST", "/api/onboarding/upload", { form: multipart("certificate", big, "big.pdf", "application/pdf"), csrf });
-  check("4.5 MB PDF → 413 file_too_large", tooBig.status === 413 && tooBig.data?.error === "file_too_large", { status: tooBig.status, body: tooBig.data });
+  const pngAsPdf = fullParts().map((p) => (p.purpose === "certificate" ? { ...p, bytes: PNG_BYTES, type: "application/pdf" } : p));
+  const mismatch = await call("POST", "/api/onboarding/submit", { form: submission(fullPayload(), pngAsPdf), csrf: csrf2 });
+  check("a PNG declared as a PDF → 422", mismatch.status === 422, mismatch.status);
 
-  const cert = await call("POST", "/api/onboarding/upload", { form: multipart("certificate", PDF_BYTES, "COI 2026.pdf", "application/pdf"), csrf });
-  check("certificate PDF uploads", cert.status === 200 && typeof cert.data?.fileId === "string", cert.data);
-  check("upload echoes purpose/bytes/name", cert.data?.purpose === "certificate" && cert.data?.bytes === PDF_BYTES.length && cert.data?.name === "COI 2026.pdf", cert.data);
-  const w9f = await call("POST", "/api/onboarding/upload", { form: multipart("w9", PDF_BYTES, "w9.pdf", "application/pdf"), csrf });
-  check("W-9 PDF uploads", w9f.status === 200 && typeof w9f.data?.fileId === "string", w9f.data);
-  const chk = await call("POST", "/api/onboarding/upload", { form: multipart("voided-check", PNG_BYTES, "check.png", "image/png"), csrf });
-  check("voided check PNG uploads", chk.status === 200 && typeof chk.data?.fileId === "string", chk.data);
+  const orphan = await call("POST", "/api/onboarding/submit", {
+    form: submission(fullPayload(), [...fullParts(), { id: fid("extra"), purpose: "certificate", bytes: PDF_BYTES, name: "extra.pdf", type: "application/pdf" }]),
+    csrf: csrf2,
+  });
+  check("a document no step refers to → 422", orphan.status === 422, orphan.status);
 
-  /* steps 3-5 with file references */
-  const bogusRef = await call("POST", "/api/onboarding/step", { json: { step: "insurance", data: insurance(["AAAAAAAAAAAAAAAAAAAAAAAA"]) }, csrf });
-  check("insurance with unknown fileId → 422 fields.certificateFileIds", bogusRef.status === 422 && !!bogusRef.data?.fields?.certificateFileIds, bogusRef.data);
-  const wrongPurposeRef = await call("POST", "/api/onboarding/step", { json: { step: "insurance", data: insurance([w9f.data?.fileId]) }, csrf });
-  check("insurance referencing the W-9 upload → 422 (wrong purpose)", wrongPurposeRef.status === 422, wrongPurposeRef.data);
-  const ins = await call("POST", "/api/onboarding/step", { json: { step: "insurance", data: insurance([cert.data?.fileId]) }, csrf });
-  check("insurance saves", ins.status === 200 && ins.data?.saved === true, ins.data);
-  const w9s = await call("POST", "/api/onboarding/step", { json: { step: "w9", data: w9(w9f.data?.fileId) }, csrf });
-  check("w9 saves", w9s.status === 200 && w9s.data?.saved === true, w9s.data);
+  const danglingId = fid("ghost");
+  const dangling = await call("POST", "/api/onboarding/submit", {
+    form: submission(fullPayload({ insurance: insurance([danglingId]) }), fullParts().filter((p) => p.purpose !== "certificate")),
+    csrf: csrf2,
+  });
+  check("a step referencing a document that was not attached → 422", dangling.status === 422, dangling.status);
 
-  const early = await call("POST", "/api/onboarding/submit", { json: {}, csrf });
-  check("submit before direct-deposit → 409 incomplete listing the step", early.status === 409 && early.data?.error === "incomplete" && early.data?.missing?.includes("direct-deposit"), early.data);
+  const big = Buffer.alloc(2.5 * 1024 * 1024, 0x41);
+  const oversize = fullParts().map((p) => (p.purpose === "w9" ? { ...p, bytes: Buffer.concat([PDF_BYTES, big]) } : p));
+  const tooBig = await call("POST", "/api/onboarding/submit", { form: submission(fullPayload(), oversize), csrf: csrf2 });
+  check("a document over the per-file cap → 413", tooBig.status === 413, tooBig.status);
 
-  const badAba = await call("POST", "/api/onboarding/step", { json: { step: "direct-deposit", data: directDeposit(chk.data?.fileId, "021000022") }, csrf });
-  check("ABA-invalid routing → 422 fields.routingNumber", badAba.status === 422 && typeof badAba.data?.fields?.routingNumber === "string", badAba.data);
-  check("ABA 422 does not echo the routing number", !badAba.text.includes("021000022"));
-  const dd = await call("POST", "/api/onboarding/step", { json: { step: "direct-deposit", data: directDeposit(chk.data?.fileId) }, csrf });
-  check("direct-deposit saves", dd.status === 200 && dd.data?.saved === true, dd.data);
-  check("direct-deposit response echoes no secrets", !Object.values(SECRETS).some((s) => dd.text.includes(s)));
+  check("nothing was sent while every one of those was rejected", sentMessages().length === before, `${sentMessages().length} vs ${before}`);
 
-  const prog = await call("GET", "/api/onboarding/progress", { origin: null });
-  check("progress lists all five steps", prog.status === 200 && Array.isArray(prog.data?.completed) && prog.data.completed.length === 5, prog.data);
+  /* ── the one path to success ───────────────────────────────────────────── */
+  const ok = await call("POST", "/api/onboarding/submit", { form: submission(fullPayload(), fullParts()), csrf: csrf2 });
+  check("a complete submission → 200 with the reference it was given", ok.status === 200 && ok.data?.ok === true && ok.data?.reference === reference, ok.data);
+  check("the 200 carries a delivery timestamp", typeof ok.data?.deliveredAt === "string", ok.data);
+  assertNoSecretEcho("submit success", ok);
 
-  /* submit */
-  const sub = await call("POST", "/api/onboarding/submit", { json: {}, csrf });
-  check("submit → 200 complete:true", sub.status === 200 && sub.data?.complete === true && sub.data?.submissionId === submissionId, sub.data);
-  const after = await call("POST", "/api/onboarding/step", { json: { step: "profile", data: PROFILE }, csrf });
-  check("step after completion → 409 already_complete", after.status === 409 && after.data?.error === "already_complete", after.data);
-  const sess2 = await call("GET", "/api/onboarding/session", { origin: null });
-  check("session reports complete:true", sess2.data?.complete === true, sess2.data);
+  const sent = sentMessages();
+  check("exactly one message was delivered", sent.length === before + 1, `${sent.length} vs ${before}`);
+  const msg = sent[0]?.body ?? {};
+  check("it went to the onboarding mailbox, not the inquiry one", /onboarding@/.test(String(msg.to)), msg.to);
+  check("the subject carries the company and the reference, and no secret", String(msg.subject).includes(reference) && !Object.values(SECRETS).some((v) => String(msg.subject).includes(v)), msg.subject);
+  check("the body carries the routing number in full (it is the delivery mechanism)", String(msg.text).includes(SECRETS.routing), "missing");
+  const flat = String(msg.text).replace(/\s+/g, " ");
+  check("the body carries the verbatim authorization", flat.includes(DDA_TEXT), "missing");
+  check("the body records the authorization version", String(msg.text).includes(DDA_VERSION), "missing");
+  check("three documents are attached", (msg.attachments ?? []).length === 3, (msg.attachments ?? []).length);
+  check(
+    "attachment names are server-generated from the reference, not the uploader's filename",
+    (msg.attachments ?? []).every((a) => String(a.filename).startsWith(reference)) && !(msg.attachments ?? []).some((a) => ["COI 2026.pdf", "w9 signed.pdf", "check.png"].includes(String(a.filename))),
+    (msg.attachments ?? []).map((a) => a.filename),
+  );
+  check("the reply-to is the operator", String(msg.reply_to ?? "").includes("smoke-operator@example.com"), msg.reply_to);
 
-  /* reviewer read-back */
-  const rec = (path, extra = {}) => call("GET", path, { origin: null, cookies: false, ...extra });
-  const noAuth = await rec(`/api/onboarding/records/${submissionId}`);
-  check("records without auth → 401", noAuth.status === 401, noAuth.status);
-  const badAuth = await rec(`/api/onboarding/records/${submissionId}`, { bearer: "nope-nope-nope-nope" });
-  check("records with wrong token → 401", badAuth.status === 401, badAuth.status);
+  sweepNothingWritten("after a delivered submission");
 
-  const masked = await rec(`/api/onboarding/records/${submissionId}`, { bearer: ADMIN_TOKEN });
-  check("records with token → 200", masked.status === 200 && masked.data?.ok === true, { status: masked.status, body: masked.data });
-  check("records masked by default", masked.data?.masked === true);
-  const mdd = masked.data?.steps?.["direct-deposit"]?.payload ?? {};
-  check("masked routing shows last4 only", mdd.routingNumber === "•••• 0021", mdd.routingNumber);
-  check("masked account shows last4 only", mdd.accountNumber === "•••• 5678", mdd.accountNumber);
-  check("masked EIN shows last4 only", mdd.ein === "•••• 4321", mdd.ein);
-  check("masked response contains no full secret", !Object.values(SECRETS).some((s) => masked.text.includes(s)));
-  check("records list the three uploads with metadata", Array.isArray(masked.data?.files) && masked.data.files.length === 3 && masked.data.files.every((f) => f.fileId && f.purpose && f.bytes > 0));
-  check("records report complete with completedAt", masked.data?.complete === true && typeof masked.data?.completedAt === "string");
+  /* ── inquiries take the same route ─────────────────────────────────────── */
+  const inqBefore = sentMessages().length;
+  const inquiry = await call("POST", "/api/inquiry", { json: INQUIRY });
+  check("a valid inquiry → 200 with a reference", inquiry.status === 200 && typeof inquiry.data?.reference === "string", inquiry.data);
+  check("the inquiry was delivered", sentMessages().length === inqBefore + 1, sentMessages().length);
 
-  const full = await rec(`/api/onboarding/records/${submissionId}?reveal=1`, { bearer: ADMIN_TOKEN });
-  const fdd = full.data?.steps?.["direct-deposit"]?.payload ?? {};
-  check("reveal=1 → masked:false", full.status === 200 && full.data?.masked === false, full.data?.masked);
-  check("reveal returns full routing equal to input digits", fdd.routingNumber === SECRETS.routing, fdd.routingNumber);
-  check("reveal returns full account equal to input digits", fdd.accountNumber === SECRETS.account, fdd.accountNumber);
-  check("reveal returns full EIN equal to input digits", fdd.ein === SECRETS.ein, fdd.ein);
-  check("reveal round-trips profile fields", full.data?.steps?.profile?.payload?.companyName === PROFILE.companyName);
+  const honeypot = await call("POST", "/api/inquiry", { json: { ...INQUIRY, website: "spam" } });
+  check("a filled honeypot → 422", honeypot.status === 422, honeypot.status);
 
-  const unknown = await rec(`/api/onboarding/records/AAAAAAAAAAAAAAAAAAAAAAAA`, { bearer: ADMIN_TOKEN });
-  check("records unknown id → 404", unknown.status === 404, unknown.status);
-  const malformed = await rec(`/api/onboarding/records/..%2F..%2Fetc`, { bearer: ADMIN_TOKEN });
-  check("records malformed id → 404 (not 500)", malformed.status === 404, malformed.status);
-
-  const dl = await rec(`/api/onboarding/records/${submissionId}/files/${cert.data?.fileId}`, { bearer: ADMIN_TOKEN });
-  check("file download → 200 with PDF content-type", dl.status === 200 && (dl.headers.get("content-type") ?? "").startsWith("application/pdf"), dl.headers.get("content-type"));
-  check("file download is an attachment", /^attachment/.test(dl.headers.get("content-disposition") ?? ""), dl.headers.get("content-disposition"));
-  check("file download bytes round-trip", dl.buffer && dl.buffer.equals(PDF_BYTES));
-  const dlNoAuth = await rec(`/api/onboarding/records/${submissionId}/files/${cert.data?.fileId}`);
-  check("file download without auth → 401", dlNoAuth.status === 401, dlNoAuth.status);
-
-  /* disk */
-  const files = sweepStore("store sweep");
-  if (files) {
-    const mine = files.filter((f) => f.includes(submissionId));
-    check("store holds objects for this submission (created + 5 steps + 3×2 files + complete = 13)", mine.length === 13, mine.length);
-  }
-
-  /* purge (optional) */
-  if (CRON_SECRET) {
-    const purge = await call("GET", "/api/onboarding/purge", { origin: null, cookies: false, bearer: CRON_SECRET });
-    check("purge with CRON_SECRET → 200 and keeps the fresh submission", purge.status === 200 && purge.data?.ok === true && purge.data?.deleted === 0, purge.data);
-  } else {
-    console.log("  SKIP  purge: SMOKE_CRON_SECRET not set");
-  }
-  const purgeNoAuth = await call("POST", "/api/onboarding/purge", { origin: null, cookies: false, json: {} });
-  check("purge without auth → 401 or 503", purgeNoAuth.status === 401 || purgeNoAuth.status === 503, purgeNoAuth.status);
-
-  /* delete */
-  const del = await call("DELETE", `/api/onboarding/records/${submissionId}`, { origin: null, cookies: false, bearer: ADMIN_TOKEN });
-  check("admin DELETE → 200 with object count", del.status === 200 && del.data?.deleted === 13, del.data);
-  const gone = await rec(`/api/onboarding/records/${submissionId}`, { bearer: ADMIN_TOKEN });
-  check("records after delete → 404", gone.status === 404, gone.status);
-  if (STORE_DIR) {
-    const left = walk(STORE_DIR).filter((f) => f.includes(submissionId));
-    check("no objects remain on disk after delete", left.length === 0, left);
-  }
-
-  /* inquiry (only when configured) */
-  if (health.data?.inquiry?.configured === true) {
-    const inq = await call("POST", "/api/inquiry", { json: INQUIRY, cookies: false });
-    check("inquiry → 200 with reference", inq.status === 200 && typeof inq.data?.reference === "string" && inq.data.reference.length >= 8, inq.data);
-    const fast = await call("POST", "/api/inquiry", { json: { ...INQUIRY, startedAt: Date.now() }, cookies: false });
-    check("inquiry filled too fast → 422", fast.status === 422 && !!fast.data?.fields?.startedAt, fast.data);
-    const honey = await call("POST", "/api/inquiry", { json: { ...INQUIRY, website: "http://spam" }, cookies: false });
-    check("inquiry with honeypot → 422", honey.status === 422, honey.data);
-    const foreignInq = await call("POST", "/api/inquiry", { json: INQUIRY, cookies: false, origin: "https://evil.example" });
-    check("inquiry from foreign Origin → 403", foreignInq.status === 403, foreignInq.status);
-    if (STORE_DIR) {
-      const stored = walk(join(STORE_DIR, "inquiries"));
-      const leak = stored.some((f) => readFileSync(f).toString("latin1").includes("smoke-inquiry@example.com"));
-      check("inquiry stored encrypted (email not in plaintext on disk)", stored.length > 0 && !leak, { stored: stored.length, leak });
-    }
-  } else {
-    console.log("  SKIP  inquiry checks: inquiry pipeline not configured");
-  }
-
-  /* end session */
-  const end = await call("DELETE", "/api/onboarding/session", {});
-  check("session DELETE → 200", end.status === 200 && end.data?.ok === true, end.data);
-  check("session DELETE clears both cookies", !jar.has("solidify_onb") && !jar.has("solidify_csrf"), [...jar.keys()]);
-  const afterEnd = await call("GET", "/api/onboarding/session", { origin: null });
-  check("session after DELETE → no_session", afterEnd.status === 200 && afterEnd.data?.ok === false && afterEnd.data?.error === "no_session", afterEnd.data);
+  finish();
 }
 
-/* ── main ────────────────────────────────────────────────────────────────── */
+/* ── phase: delivery-failure ─────────────────────────────────────────────── */
+
+async function phaseDeliveryFailure() {
+  console.log(`\nPhase: delivery-failure against ${BASE}\n`);
+  if (!ACCESS_CODE) {
+    console.log("  FAIL  SMOKE_ACCESS_CODE is required for the delivery-failure phase");
+    process.exit(1);
+  }
+
+  const access = await call("POST", "/api/onboarding/access", { json: { code: ACCESS_CODE } });
+  check("the gate still opens (delivery is a later concern)", access.status === 200, access.status);
+  const csrf = access.data?.csrfToken ?? "";
+
+  const submit = await call("POST", "/api/onboarding/submit", { form: submission(fullPayload(), fullParts()), csrf });
+  check("a complete submission whose delivery fails → 502", submit.status === 502 && submit.data?.error === "delivery_failed", { status: submit.status, body: submit.data });
+  check("it is never reported as accepted", submit.data?.ok !== true, submit.data);
+  check("the message tells the applicant nothing was saved", /Nothing was saved anywhere/i.test(submit.data?.message ?? ""), submit.data?.message);
+  check("the message gives the phone number", /\(510\) 499-4552/.test(submit.data?.message ?? ""), submit.data?.message);
+  check("the provider's own error is not leaked to the caller", !/sink refusing/i.test(submit.text ?? ""), submit.text?.slice(0, 120));
+  assertNoSecretEcho("delivery failure", submit);
+
+  const inquiry = await call("POST", "/api/inquiry", { json: INQUIRY });
+  check("an inquiry whose delivery fails → 502, never a fake success", inquiry.status === 502 && inquiry.data?.ok !== true, { status: inquiry.status, body: inquiry.data });
+
+  sweepNothingWritten("after a failed delivery");
+  finish();
+}
+
+/* ── run ─────────────────────────────────────────────────────────────────── */
 
 try {
-  const probe = await fetch(`${BASE}/api/health`).catch(() => null);
-  if (!probe) {
-    console.error(`Cannot reach ${BASE}. Start the server first (see header of this file).`);
-    process.exit(2);
-  }
   if (PHASE === "unconfigured") await phaseUnconfigured();
   else if (PHASE === "configured") await phaseConfigured();
+  else if (PHASE === "delivery-failure") await phaseDeliveryFailure();
   else {
-    console.error(`Unknown phase "${PHASE}". Use --phase unconfigured or --phase configured.`);
+    console.error(`Unknown phase "${PHASE}". Use --phase unconfigured, configured or delivery-failure.`);
     process.exit(2);
   }
 } catch (err) {

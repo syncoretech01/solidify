@@ -26,10 +26,10 @@ export const WINDOW_10_MIN = 10 * 60 * 1000;
 
 export const LIMITS = {
   access: { max: 10, windowMs: WINDOW_10_MIN },
-  step: { max: 40, windowMs: WINDOW_10_MIN },
-  upload: { max: 20, windowMs: WINDOW_10_MIN },
+  // Generous enough for an operator retrying a failed delivery, tight enough
+  // that the submit endpoint cannot be used as a mail cannon.
+  submit: { max: 5, windowMs: WINDOW_10_MIN },
   inquiry: { max: 8, windowMs: WINDOW_10_MIN },
-  admin: { max: 30, windowMs: WINDOW_10_MIN },
   session: { max: 60, windowMs: WINDOW_10_MIN },
 } as const;
 

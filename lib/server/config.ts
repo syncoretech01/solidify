@@ -7,54 +7,38 @@
  * where env is injected per deployment, never mutated in flight.
  *
  * "Configured" is a hard, honest gate. If it is false, the write endpoints
- * answer 503 and store nothing. There is no degraded mode that pretends.
+ * answer 503 and deliver nothing. There is no degraded mode that pretends.
+ *
+ * This site keeps no submission record: there is no object store, no database
+ * and no encryption-at-rest key here, because there is nothing at rest. What
+ * configuration remains is what it takes to gate onboarding and to deliver a
+ * submission to Solidify.
  */
-
-import path from "node:path";
-
-export type StoreKind = "s3" | "fs";
-
-export interface S3Settings {
-  bucket: string;
-  region: string;
-  endpoint: string | null;
-  accessKeyId: string;
-  secretAccessKey: string;
-  /** Namespace prefix inside the bucket; "" means bucket root. */
-  prefix: string;
-}
 
 export interface ServerConfig {
   isVercel: boolean;
   isProd: boolean;
 
-  /** Canonical origin from NEXT_PUBLIC_SITE_URL, or null when unset/invalid. */
+  /** The public origin, when set. */
   siteOrigin: string | null;
-  /** Origins a browser request may carry. Empty means every cross-check fails. */
+  /** Every origin a same-site POST may come from. */
   allowedOrigins: string[];
 
-  encryptionKey: Buffer | null;
-  keyId: string;
-  /** Older keys, decrypt-only, keyed by key id. See README "Key rotation". */
-  previousKeys: ReadonlyMap<string, Buffer>;
-
-  storeKind: StoreKind | null;
-  storeConfigured: boolean;
-  storeReasons: string[];
-  s3: S3Settings | null;
-  fsDir: string | null;
-
+  /** sha256 hex digests of the access codes that unlock onboarding. */
   accessCodeHashes: string[];
   sessionSecret: string | null;
-  adminToken: string | null;
-  cronSecret: string | null;
 
-  retentionDays: number;
+  /** Per document, after any client-side reduction. */
   maxUploadBytes: number;
+  /** Every document in one submission, added together. */
+  maxTotalUploadBytes: number;
 
   inquiryToEmail: string | null;
-  inquiryFromEmail: string;
+  onboardingToEmail: string | null;
+  mailFromEmail: string;
   resendApiKey: string | null;
+  /** Non-production only: point the mailer at a local sink for tests. */
+  resendApiBase: string;
   mailConfigured: boolean;
 
   upstash: { url: string; token: string } | null;
@@ -65,13 +49,11 @@ export interface ServerConfig {
   inquiryReasons: string[];
 }
 
-const DEFAULT_KEY_ID = "k1";
-const DEFAULT_RETENTION_DAYS = 90;
-const DEFAULT_MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
-const DEFAULT_FS_DIR = "./.data/onboarding";
+const DEFAULT_MAX_UPLOAD_BYTES = 2 * 1024 * 1024; // 2 MiB per document
+const DEFAULT_MAX_TOTAL_UPLOAD_BYTES = 3.5 * 1024 * 1024; // 3.5 MiB per submission
 const DEFAULT_FROM = "quotes@solidifytransport.com";
+const DEFAULT_RESEND_BASE = "https://api.resend.com";
 const MIN_SESSION_SECRET_CHARS = 32;
-const MIN_ADMIN_TOKEN_CHARS = 16;
 
 let cached: ServerConfig | undefined;
 
@@ -93,13 +75,6 @@ function intEnv(name: string, fallback: number, reasons: string[]): number {
   return n;
 }
 
-/** Strict-ish base64 decode: must be base64/base64url characters and decode to `bytes`. */
-function decodeKey(raw: string, bytes: number): Buffer | null {
-  if (!/^[A-Za-z0-9+/=_-]+$/.test(raw)) return null;
-  const buf = Buffer.from(raw, "base64");
-  return buf.length === bytes ? buf : null;
-}
-
 function parseOrigin(raw: string | null): string | null {
   if (!raw) return null;
   try {
@@ -110,6 +85,9 @@ function parseOrigin(raw: string | null): string | null {
     return null;
   }
 }
+
+/** Deliberately loose: enough to catch a typo, not to police the RFC. */
+const looksLikeEmail = (s: string) => /^[^\s@]+@[^\s@.]+\.[^\s@]+$/.test(s);
 
 function build(): ServerConfig {
   const isVercel = env("VERCEL") !== null;
@@ -137,80 +115,7 @@ function build(): ServerConfig {
   }
   const allowedOrigins = [...allowed];
 
-  /* ── encryption ──────────────────────────────────────────────────────── */
-  const keyReasons: string[] = [];
-  const rawKey = env("ONBOARDING_ENCRYPTION_KEY");
-  let encryptionKey: Buffer | null = null;
-  if (rawKey === null) {
-    keyReasons.push("ONBOARDING_ENCRYPTION_KEY is not set");
-  } else {
-    encryptionKey = decodeKey(rawKey, 32);
-    if (!encryptionKey) keyReasons.push("ONBOARDING_ENCRYPTION_KEY must be base64 of exactly 32 bytes");
-  }
-  const keyId = env("ONBOARDING_KEY_ID") ?? DEFAULT_KEY_ID;
-  if (!/^[A-Za-z0-9_-]{1,32}$/.test(keyId)) keyReasons.push("ONBOARDING_KEY_ID must be 1-32 characters of [A-Za-z0-9_-]");
-
-  const previousKeys = new Map<string, Buffer>();
-  const rawPrev = env("ONBOARDING_PREVIOUS_KEYS");
-  if (rawPrev) {
-    for (const entry of rawPrev.split(",")) {
-      const [kid, b64] = entry.split("=").map((s) => s.trim());
-      if (!kid || !b64) {
-        keyReasons.push("ONBOARDING_PREVIOUS_KEYS entries must look like kid=base64");
-        continue;
-      }
-      const k = decodeKey(b64, 32);
-      if (!k) {
-        keyReasons.push(`ONBOARDING_PREVIOUS_KEYS entry "${kid}" is not base64 of exactly 32 bytes`);
-        continue;
-      }
-      previousKeys.set(kid, k);
-    }
-  }
-
-  /* ── store ───────────────────────────────────────────────────────────── */
-  const storeReasons: string[] = [];
-  const rawStore = env("ONBOARDING_STORE");
-  let storeKind: StoreKind | null = null;
-  let s3: S3Settings | null = null;
-  let fsDir: string | null = null;
-
-  if (rawStore === null) {
-    storeReasons.push("ONBOARDING_STORE is not set (expected s3 or fs)");
-  } else if (rawStore === "s3") {
-    storeKind = "s3";
-    const bucket = env("S3_BUCKET");
-    const accessKeyId = env("S3_ACCESS_KEY_ID");
-    const secretAccessKey = env("S3_SECRET_ACCESS_KEY");
-    const endpoint = env("S3_ENDPOINT");
-    const region = env("S3_REGION") ?? (endpoint ? "auto" : "us-east-1");
-    if (!bucket) storeReasons.push("S3_BUCKET is not set");
-    if (!accessKeyId) storeReasons.push("S3_ACCESS_KEY_ID is not set");
-    if (!secretAccessKey) storeReasons.push("S3_SECRET_ACCESS_KEY is not set");
-    if (endpoint && !parseOrigin(endpoint)) storeReasons.push("S3_ENDPOINT must be an http(s) URL");
-    if (bucket && accessKeyId && secretAccessKey && (!endpoint || parseOrigin(endpoint))) {
-      s3 = {
-        bucket,
-        region,
-        endpoint: endpoint ?? null,
-        accessKeyId,
-        secretAccessKey,
-        prefix: (env("S3_PREFIX") ?? "").replace(/^\/+|\/+$/g, ""),
-      };
-    }
-  } else if (rawStore === "fs") {
-    storeKind = "fs";
-    if (isVercel) {
-      storeReasons.push("fs store refused on Vercel: filesystem is ephemeral");
-    } else {
-      fsDir = path.resolve(/* turbopackIgnore: true */ process.cwd(), env("ONBOARDING_STORE_DIR") ?? DEFAULT_FS_DIR);
-    }
-  } else {
-    storeReasons.push("ONBOARDING_STORE must be s3 or fs");
-  }
-  const storeConfigured = storeReasons.length === 0 && (s3 !== null || fsDir !== null);
-
-  /* ── access / session / admin ────────────────────────────────────────── */
+  /* ── the onboarding gate ─────────────────────────────────────────────── */
   const accessReasons: string[] = [];
   const accessCodeHashes: string[] = [];
   const rawHashes = env("ONBOARDING_ACCESS_CODE_HASHES");
@@ -228,26 +133,30 @@ function build(): ServerConfig {
     if (accessCodeHashes.length === 0) accessReasons.push("ONBOARDING_ACCESS_CODE_HASHES contains no valid sha256 hex digest");
   }
 
-  const sessionSecret = env("ONBOARDING_SESSION_SECRET");
-  if (sessionSecret === null) accessReasons.push("ONBOARDING_SESSION_SECRET is not set");
-  else if (sessionSecret.length < MIN_SESSION_SECRET_CHARS)
-    accessReasons.push(`ONBOARDING_SESSION_SECRET must be at least ${MIN_SESSION_SECRET_CHARS} characters`);
-
-  let adminToken = env("ONBOARDING_ADMIN_TOKEN");
-  if (adminToken !== null && adminToken.length < MIN_ADMIN_TOKEN_CHARS) adminToken = null;
-
-  const cronSecret = env("CRON_SECRET");
+  const rawSecret = env("ONBOARDING_SESSION_SECRET");
+  if (rawSecret === null) accessReasons.push("ONBOARDING_SESSION_SECRET is not set");
+  else if (rawSecret.length < MIN_SESSION_SECRET_CHARS) accessReasons.push(`ONBOARDING_SESSION_SECRET must be at least ${MIN_SESSION_SECRET_CHARS} characters`);
+  const sessionSecret = rawSecret !== null && rawSecret.length >= MIN_SESSION_SECRET_CHARS ? rawSecret : null;
 
   /* ── limits ──────────────────────────────────────────────────────────── */
   const limitReasons: string[] = [];
-  const retentionDays = intEnv("ONBOARDING_RETENTION_DAYS", DEFAULT_RETENTION_DAYS, limitReasons);
   const maxUploadBytes = intEnv("ONBOARDING_MAX_UPLOAD_BYTES", DEFAULT_MAX_UPLOAD_BYTES, limitReasons);
+  const maxTotalUploadBytes = intEnv("ONBOARDING_MAX_TOTAL_UPLOAD_BYTES", DEFAULT_MAX_TOTAL_UPLOAD_BYTES, limitReasons);
 
-  /* ── mail ────────────────────────────────────────────────────────────── */
-  const inquiryToEmail = env("INQUIRY_TO_EMAIL");
+  /* ── delivery ────────────────────────────────────────────────────────── */
+  const mailReasons: string[] = [];
   const resendApiKey = env("RESEND_API_KEY");
-  const inquiryFromEmail = env("INQUIRY_FROM_EMAIL") ?? DEFAULT_FROM;
-  const mailConfigured = inquiryToEmail !== null && resendApiKey !== null;
+  if (resendApiKey === null) mailReasons.push("RESEND_API_KEY is not set");
+
+  const inquiryToEmail = env("INQUIRY_TO_EMAIL");
+  // Deliberately no fallback to INQUIRY_TO_EMAIL: a taxpayer identification
+  // number and a bank account must land in a mailbox chosen on purpose.
+  const onboardingToEmail = env("ONBOARDING_TO_EMAIL");
+  const mailFromEmail = env("MAIL_FROM_EMAIL") ?? env("INQUIRY_FROM_EMAIL") ?? DEFAULT_FROM;
+  if (!looksLikeEmail(mailFromEmail)) mailReasons.push("MAIL_FROM_EMAIL must be a valid address");
+  const mailConfigured = resendApiKey !== null && looksLikeEmail(mailFromEmail);
+
+  const resendApiBase = (!isProd && parseOrigin(env("RESEND_API_BASE")) ? env("RESEND_API_BASE")!.replace(/\/+$/, "") : DEFAULT_RESEND_BASE);
 
   /* ── rate limiting ───────────────────────────────────────────────────── */
   const upstashUrl = env("UPSTASH_REDIS_REST_URL");
@@ -257,55 +166,28 @@ function build(): ServerConfig {
   /* ── verdicts ────────────────────────────────────────────────────────── */
   const originReasons = allowedOrigins.length === 0 ? ["no allowed origin: set NEXT_PUBLIC_SITE_URL to the public https origin"] : [];
 
-  const onboardingReasons = [
-    ...keyReasons,
-    ...(sessionSecret !== null && sessionSecret.length >= MIN_SESSION_SECRET_CHARS && accessCodeHashes.length > 0 ? [] : accessReasons),
-    ...(storeConfigured ? [] : storeReasons.map((r) => `store: ${r}`)),
-    ...originReasons,
-    ...limitReasons,
-  ];
-  const onboardingConfigured =
-    encryptionKey !== null &&
-    keyReasons.length === 0 &&
-    storeConfigured &&
-    sessionSecret !== null &&
-    sessionSecret.length >= MIN_SESSION_SECRET_CHARS &&
-    accessCodeHashes.length > 0 &&
-    allowedOrigins.length > 0;
+  const onboardingConfigured = mailConfigured && onboardingToEmail !== null && sessionSecret !== null && accessCodeHashes.length > 0 && allowedOrigins.length > 0;
+  const onboardingReasons = onboardingConfigured
+    ? []
+    : [...mailReasons, ...(onboardingToEmail === null ? ["ONBOARDING_TO_EMAIL is not set"] : []), ...accessReasons, ...originReasons, ...limitReasons];
 
-  const inquiryStoreOk = storeConfigured && encryptionKey !== null && keyReasons.length === 0;
-  const inquiryConfigured = (inquiryStoreOk || mailConfigured) && allowedOrigins.length > 0;
-  const inquiryReasons: string[] = [];
-  if (!inquiryConfigured) {
-    if (!inquiryStoreOk) {
-      inquiryReasons.push(...storeReasons.map((r) => `store: ${r}`), ...keyReasons.map((r) => `store: ${r}`));
-    }
-    if (!mailConfigured) inquiryReasons.push("mail: RESEND_API_KEY and INQUIRY_TO_EMAIL are not both set");
-    inquiryReasons.push(...originReasons);
-  }
+  const inquiryConfigured = mailConfigured && inquiryToEmail !== null && allowedOrigins.length > 0;
+  const inquiryReasons = inquiryConfigured ? [] : [...mailReasons, ...(inquiryToEmail === null ? ["INQUIRY_TO_EMAIL is not set"] : []), ...originReasons];
 
   return {
     isVercel,
     isProd,
     siteOrigin,
     allowedOrigins,
-    encryptionKey,
-    keyId,
-    previousKeys,
-    storeKind,
-    storeConfigured,
-    storeReasons,
-    s3,
-    fsDir,
     accessCodeHashes,
-    sessionSecret: sessionSecret !== null && sessionSecret.length >= MIN_SESSION_SECRET_CHARS ? sessionSecret : null,
-    adminToken,
-    cronSecret,
-    retentionDays,
+    sessionSecret,
     maxUploadBytes,
+    maxTotalUploadBytes,
     inquiryToEmail,
-    inquiryFromEmail,
+    onboardingToEmail,
+    mailFromEmail,
     resendApiKey,
+    resendApiBase,
     mailConfigured,
     upstash,
     onboardingConfigured,

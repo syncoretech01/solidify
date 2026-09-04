@@ -3,7 +3,7 @@
 import clsx from "clsx";
 import { ONBOARDING_STEPS, STATE_NAMES, type OnboardingStep } from "@/lib/schemas";
 import { StepShell } from "./StepShell";
-import { STATUS_LABEL, STEP_META, lastFour, stepNumber, type StepForms, type StepStatus, type UploadedFile } from "./types";
+import { MAX_FILES_PER_SUBMISSION, MAX_TOTAL_UPLOAD_BYTES, STATUS_LABEL, STEP_META, formatBytes, lastFour, stepNumber, type StepForms, type StepStatus, type UploadedFile } from "./types";
 
 interface Row {
   label: string;
@@ -110,9 +110,9 @@ const BADGE: Record<StepStatus, string> = {
 };
 
 /**
- * Step 6. Everything the server holds for this submission, as the browser
- * knows it: secrets last-four only, files by name. Submit asks the server;
- * only its answer decides.
+ * Step 6. Everything this page is holding, ready to send: secrets last-four
+ * only, documents by name. Submit delivers the whole application in one
+ * request; only the server's answer decides whether it succeeded.
  */
 export function ReviewStep({
   status,
@@ -136,11 +136,15 @@ export function ReviewStep({
   onSubmit: () => void;
 }) {
   const unsaved = ONBOARDING_STEPS.filter((s) => status[s] !== "saved" && status[s] !== "submitted");
+  const attached = Object.values(files);
+  const fileCount = attached.length;
+  const totalBytes = attached.reduce((n, f) => n + f.bytes, 0);
+  const overBudget = totalBytes > MAX_TOTAL_UPLOAD_BYTES;
 
   return (
     <StepShell
       step="review"
-      disabled={disabled}
+      disabled={disabled || overBudget}
       busy={busy}
       onBack={onBack}
       onSubmit={(e) => {
@@ -155,7 +159,6 @@ export function ReviewStep({
           const s = status[step];
           const rows = rowsFor(step, saved, files);
           const isMissing = missing.includes(step);
-          const resumed = s === "saved" && !saved[step];
           return (
             <li
               key={step}
@@ -170,7 +173,7 @@ export function ReviewStep({
                 </div>
                 <div className="flex items-center gap-3">
                   <span className={clsx("inline-flex items-center rounded-full border px-2 py-[2px] text-[var(--step--2)] leading-[1.3]", BADGE[s])}>
-                    {s === "saved" ? "Saved on server" : STATUS_LABEL[s]}
+                    {s === "saved" ? "Ready to send" : STATUS_LABEL[s]}
                   </span>
                   <button type="button" className="btn btn-ghost !min-h-[40px] !px-4" onClick={() => onEdit(step)} disabled={disabled || busy} aria-label={`Edit ${STEP_META[step].title}`}>
                     Edit
@@ -187,15 +190,13 @@ export function ReviewStep({
                     </div>
                   ))}
                 </dl>
-              ) : resumed ? (
-                <p className="small">Saved on the server in an earlier visit. Saved values are not re-displayed in the browser; choose Edit to enter and re-save this step if anything has changed.</p>
               ) : (
                 <p className="small">Not saved yet.</p>
               )}
 
               {isMissing && (
                 <p className="field-error" role="alert">
-                  The server has no saved copy of this step. Complete and save it before submitting.
+                  This step is not complete yet. Fill it in before submitting.
                 </p>
               )}
             </li>
@@ -205,11 +206,22 @@ export function ReviewStep({
 
       {unsaved.length > 0 && (
         <p className="small" data-review-unsaved>
-          Still to save: {unsaved.map((s) => STEP_META[s].title).join(", ")}. Submitting now will be refused by the server until every step is saved.
+          Still to complete: {unsaved.map((s) => STEP_META[s].title).join(", ")}. Every step must be complete before this can be submitted.
         </p>
       )}
+
+      <p className="small" data-review-budget>
+        Documents: <span className="numeral text-[var(--text-hi)]">{formatBytes(totalBytes)}</span> of {formatBytes(MAX_TOTAL_UPLOAD_BYTES)} used ·{" "}
+        <span className="numeral text-[var(--text-hi)]">{fileCount}</span> of {MAX_FILES_PER_SUBMISSION} files
+      </p>
+      {overBudget && (
+        <p className="field-error" role="alert">
+          Your documents total {formatBytes(totalBytes)}. One submission can carry {formatBytes(MAX_TOTAL_UPLOAD_BYTES)}. Remove or replace the largest before submitting.
+        </p>
+      )}
+
       <p className="field-note">
-        Submitting confirms the information above is accurate and complete. Once submitted, the steps can no longer be changed through this page; contact Solidify Transport for corrections.
+        Submitting confirms the information above is accurate and complete. Everything on this page is sent in one encrypted request and delivered to Solidify Transport; this website keeps no copy. If delivery does not succeed, nothing is submitted and your answers stay on this page so you can try again.
       </p>
     </StepShell>
   );

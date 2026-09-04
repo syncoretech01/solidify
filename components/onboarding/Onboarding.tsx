@@ -181,9 +181,7 @@ export function Onboarding() {
       </div>
 
       <p className="border-t border-[var(--line)] px-5 py-4 text-[var(--step--2)] leading-relaxed text-[var(--text-low)] sm:px-6 lg:px-8">
-        Your entries travel over an encrypted connection to Solidify Transport&apos;s own application and are stored encrypted. They are never emailed and never saved in this browser. Each step is
-        stored when you save it; if you reload or close this page, anything not yet saved is lost.
-      </p>
+        Your entries travel over an encrypted connection and are delivered directly to Solidify Transport. This website does not keep a copy of your submission, and nothing is saved in this browser. Complete all six steps in one sitting — if you reload or close this page, anything not yet submitted is lost.</p>
     </div>
   );
 }

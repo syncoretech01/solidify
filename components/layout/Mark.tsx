@@ -18,7 +18,7 @@ export function Mark({ className, title = "Solidify Transport" }: { className?: 
 export function Wordmark({ className, stacked = false }: { className?: string; stacked?: boolean }) {
   return (
     <span className={clsx("font-display leading-none tracking-[0.18em]", stacked ? "flex flex-col gap-[0.35em]" : "inline-flex items-baseline gap-[0.6em]", className)}>
-      <span className="font-semibold">SOLIDIFY</span>
+      <span className="font-medium">SOLIDIFY</span>
       <span className={clsx("font-medium text-[var(--text-mid)]", stacked ? "text-[0.62em]" : "text-[0.78em]")}>TRANSPORT</span>
     </span>
   );

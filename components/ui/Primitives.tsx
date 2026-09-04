@@ -177,7 +177,7 @@ export function SpecStrip({
   layout?: "list" | "row" | "grid";
   tone?: "default" | "quiet";
 }) {
-  const valueCls = clsx("font-display font-semibold leading-tight tracking-[-0.01em]", tone === "quiet" ? "text-[var(--step-0)] text-[var(--text-hi)]" : "text-[var(--step-1)] text-[var(--text-hi)]");
+  const valueCls = clsx("font-display font-medium leading-tight tracking-[-0.01em]", tone === "quiet" ? "text-[var(--step-0)] text-[var(--text-hi)]" : "text-[var(--step-1)] text-[var(--text-hi)]");
   if (layout === "row") {
     return (
       <dl className={clsx("flex flex-wrap items-start gap-x-10 gap-y-5", className)}>

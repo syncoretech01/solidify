@@ -2,18 +2,30 @@
 
 import { useEffect, useRef, useState, type DragEvent, type ChangeEvent, type Ref } from "react";
 import clsx from "clsx";
-import { uploadFile, type Result, type UploadPurpose } from "@/lib/onboarding-client";
+import { type Result, type UploadPurpose } from "@/lib/onboarding-client";
+import { downscaleIfImage } from "@/lib/image-downscale";
 import { Field } from "@/components/forms/Field";
-import { ACCEPT, MAX_UPLOAD_BYTES, TOO_LARGE, WRONG_TYPE, formatBytes, type UploadedFile } from "./types";
+import { ACCEPT, MAX_TOTAL_UPLOAD_BYTES, MAX_UPLOAD_BYTES, TOO_LARGE, WRONG_TYPE, formatBytes, newFileId, type UploadedFile } from "./types";
 
 const OK_TYPES = new Set(["application/pdf", "image/jpeg", "image/png"]);
 const OK_EXT = /\.(pdf|jpe?g|png)$/i;
 
-/** Client-side pre-checks. The server still sniffs the bytes. */
-export function checkFile(file: File): string | null {
+/**
+ * Client-side pre-checks. The server still sniffs the bytes, and enforces the
+ * same two budgets — this exists so the applicant learns about a file that is
+ * too big at the moment they pick it, not ninety seconds into a submit.
+ */
+export function checkFile(file: File, usedBytes = 0): string | null {
   if (file.size === 0) return "That file is empty.";
-  if (file.size > MAX_UPLOAD_BYTES) return TOO_LARGE;
   if (!OK_TYPES.has(file.type) && !OK_EXT.test(file.name)) return WRONG_TYPE;
+  if (file.size > MAX_UPLOAD_BYTES) {
+    return file.type === "application/pdf"
+      ? `${file.name} is ${formatBytes(file.size)}. ${TOO_LARGE} PDFs cannot be reduced in your browser — re-scan it in black and white or at 150 dpi, then try again. If you cannot, call (510) 499-4552 and we will take it another way.`
+      : `${file.name} is ${formatBytes(file.size)} after being reduced. ${TOO_LARGE} Take the photo again in better light and closer to the document.`;
+  }
+  if (usedBytes + file.size > MAX_TOTAL_UPLOAD_BYTES) {
+    return `Your documents would total ${formatBytes(usedBytes + file.size)}. One submission can carry ${formatBytes(MAX_TOTAL_UPLOAD_BYTES)}. Remove or replace the largest before adding this one.`;
+  }
   return null;
 }
 
@@ -24,9 +36,12 @@ interface Pending {
 }
 
 /**
- * Click-to-choose + drag-and-drop. Every selected file uploads immediately
- * through `uploadFile`; the form field holds the returned fileId(s). A failed
- * upload shows inline and never disturbs files already stored.
+ * Click-to-choose + drag-and-drop.
+ *
+ * Nothing is uploaded here. The file is decoded, reduced if it is an oversized
+ * image, and held in memory with a client-minted id; the form field holds that
+ * id. Everything travels in one request when the application is submitted,
+ * because this site keeps no record and so has nowhere to put a file early.
  */
 export function FileField({
   id,
@@ -63,6 +78,8 @@ export function FileField({
   const nativeRef = useRef<HTMLInputElement | null>(null);
   const idsRef = useRef(ids);
   idsRef.current = ids;
+  const usedBytesRef = useRef(0);
+  usedBytesRef.current = Object.values(files).reduce((n, x) => n + x.bytes, 0);
   const keyRef = useRef(0);
   const mounted = useRef(true);
   useEffect(() => {
@@ -91,33 +108,37 @@ export function FileField({
     if (picked.length > space) {
       setLocalError(multiple ? `You can upload up to ${max} files here.` : "Only one file can be uploaded here. Remove the current file first.");
     }
-    for (const file of picked) {
+    for (const original of picked) {
       if (space <= 0) break;
-      const problem = checkFile(file);
-      if (problem) {
-        setLocalError(problem);
-        continue;
-      }
       space -= 1;
       const key = ++keyRef.current;
-      setPending((p) => [...p, { key, name: file.name, bytes: file.size }]);
-      const result = await uploadFile(purpose, file);
+      setPending((p) => [...p, { key, name: original.name, bytes: original.size }]);
+
+      const { file, originalBytes, reduced } = await downscaleIfImage(original);
       if (!mounted.current) return;
       setPending((p) => p.filter((x) => x.key !== key));
-      if (result.ok && result.data) {
-        const meta: UploadedFile = { fileId: result.data.fileId, name: result.data.name, bytes: result.data.bytes, purpose: result.data.purpose };
-        onUploaded(meta);
-        const next = [...idsRef.current, meta.fileId];
-        idsRef.current = next;
-        onIdsChange(next);
+
+      const problem = checkFile(file, usedBytesRef.current);
+      if (problem) {
+        setLocalError(problem);
+        space += 1;
         continue;
       }
-      space += 1;
-      if (result.kind === "invalid") setLocalError(result.fields?.file ?? result.message ?? WRONG_TYPE);
-      else if (result.kind === "too_large") setLocalError(result.message ?? TOO_LARGE);
-      else if (result.kind === "failed" || result.kind === "offline") setLocalError(result.message ?? "That upload did not complete. Nothing was stored — please try again.");
-      else onOutcome(result);
-      if (result.kind === "no_session" || result.kind === "not_configured") return;
+
+      const meta: UploadedFile = {
+        fileId: newFileId(),
+        name: file.name,
+        bytes: file.size,
+        originalBytes,
+        reduced,
+        mime: file.type,
+        purpose,
+        blob: file,
+      };
+      onUploaded(meta);
+      const next = [...idsRef.current, meta.fileId];
+      idsRef.current = next;
+      onIdsChange(next);
     }
   }
 

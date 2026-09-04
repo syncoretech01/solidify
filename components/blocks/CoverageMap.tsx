@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { useGSAP } from "@gsap/react";
 import clsx from "clsx";
 import { gsap, EASE } from "@/lib/motion";
-import { WESTERN_STATES } from "@/lib/site";
+import { FOCUS_STATES } from "@/lib/site";
 import { STATE_NAMES } from "@/lib/schemas";
 import map from "@/lib/us-map.json";
 import { Reveal, RevealText } from "@/components/ui/Reveal";
@@ -13,7 +13,7 @@ import { Section, Eyebrow, SectionMark, type Surface } from "@/components/ui/Pri
 type St = { id: string; abbr: string; name: string; d: string; cx: number; cy: number };
 const STATES = (map as { viewBox: string; states: St[] }).states;
 const VIEWBOX = (map as { viewBox: string }).viewBox;
-const WEST = new Set<string>(WESTERN_STATES);
+const WEST = new Set<string>(FOCUS_STATES);
 
 /**
  * S4 — Coverage: the 48 contiguous states drawn on as you arrive, the Western
@@ -162,7 +162,7 @@ export function CoverageMap({
 
           <div className="plate plate-steel absolute bottom-3 right-3 flex min-w-[230px] flex-col gap-1 px-4 py-3" aria-live="polite">
             <span className="label">{hover ? (WEST.has(hover.abbr) ? "Western focus" : "Coverage") : "Coverage"}</span>
-            <span className="font-display text-[var(--step-1)] font-semibold leading-tight">{hover ? hover.name : "48 contiguous states"}</span>
+            <span className="font-display text-[var(--step-1)] font-medium leading-tight">{hover ? hover.name : "48 contiguous states"}</span>
             <span className="small !text-[var(--text-low)]">{hover ? (WEST.has(hover.abbr) ? "Western focus" : "Served") : "Strong Western-US coverage"}</span>
           </div>
         </div>

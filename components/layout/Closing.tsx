@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/Button";
 import { Reveal, RevealText } from "@/components/ui/Reveal";
 import { PhoneLink, Lines } from "@/components/ui/Primitives";
 import { Mark } from "./Mark";
-import { Blueprint } from "@/components/graphics/Blueprint";
 import type { MediaId } from "@/lib/media";
 
 const WORD = "SOLIDIFY";
@@ -83,12 +82,7 @@ export function Closing({
             {slot ? (
               <Plate slot={slot} sizes="100vw" aspect="fill" parallax={0} reveal={false} overscan={1.0} grade="deep" dim={0.8} className="!absolute inset-0 h-full w-full" />
             ) : (
-              <>
-                <div className="light-field" aria-hidden />
-                <div aria-hidden className="absolute inset-y-0 right-[-6%] flex w-[78%] items-center opacity-[0.28] lg:w-[64%]">
-                  <Blueprint view="transit" draw className="w-full" />
-                </div>
-              </>
+              <div className="light-field" aria-hidden />
             )}
             <div aria-hidden className="absolute inset-0 scrim-left-soft" />
             <div aria-hidden className="absolute inset-x-0 bottom-0 h-[60%] scrim-bottom" />
@@ -113,7 +107,7 @@ export function Closing({
             </Reveal>
             <Reveal className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
               <span className="label">Or call</span>
-              <PhoneLink className="font-display text-[var(--step-3)] font-semibold leading-none tracking-[-0.02em] text-[var(--text-hi)] [font-stretch:105%]" />
+              <PhoneLink className="font-display text-[var(--step-3)] font-medium leading-none tracking-[-0.015em] text-[var(--text-hi)]" />
               <span className="spec">{COMPANY.city}, {COMPANY.state}</span>
             </Reveal>
           </div>
@@ -132,7 +126,7 @@ export function Closing({
             <div className="flex flex-col gap-6">
               <Link href="/" className="flex items-center gap-3" aria-label={`${COMPANY.name} — home`}>
                 <Mark className="h-10 w-10" />
-                <span className="font-display text-[1rem] font-semibold tracking-[0.18em]">SOLIDIFY</span>
+                <span className="font-display text-[1rem] font-medium tracking-[0.18em]">SOLIDIFY</span>
               </Link>
               <p className="body max-w-[36ch]">
                 {COMPANY.descriptor}. {CLAIMS.coverage}, with a strong Western-US focus.
@@ -206,14 +200,8 @@ export function Closing({
               {has("mc") && <> MC {CLIENT_DATA.mc}.</>}
             </span>
             <span className="flex flex-wrap gap-x-5 gap-y-1">
-              <Link href="/owner-operators" className="link-underline text-[var(--text-mid)]">
-                Owner-operators: apply
-              </Link>
               <Link href="/privacy" className="link-underline text-[var(--text-mid)]">
                 Privacy
-              </Link>
-              <Link href="/privacy#credits" className="link-underline text-[var(--text-mid)]">
-                Photography
               </Link>
             </span>
           </div>
@@ -221,7 +209,7 @@ export function Closing({
 
         {/* wordmark from steel slats */}
         <div aria-hidden className="pointer-events-none relative -mb-[2.5vw] overflow-hidden px-[var(--spacing-gutter)]">
-          <div className="flex justify-between font-display font-bold leading-[0.82] tracking-[-0.03em] text-transparent [font-stretch:112%]" style={{ fontSize: "clamp(3.6rem, 14.5vw, 15.5rem)" }}>
+          <div className="flex justify-between font-display font-medium leading-[0.84] tracking-[-0.02em] text-transparent" style={{ fontSize: "clamp(3rem, 11.5vw, 12rem)" }}>
             {WORD.split("").map((ch, i) => (
               <span
                 key={i}

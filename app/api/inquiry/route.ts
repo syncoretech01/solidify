@@ -1,12 +1,11 @@
 import { inquirySchema, type Inquiry } from "@/lib/schemas";
 import { getConfig } from "@/lib/server/config";
-import { newReference, sealJson } from "@/lib/server/crypto";
+import { newReference } from "@/lib/server/crypto";
 import { requireOrigin } from "@/lib/server/csrf";
 import { AppError } from "@/lib/server/errors";
 import { fail, json, limit, requireInquiryConfigured } from "@/lib/server/guards";
 import { log } from "@/lib/server/log";
 import { formatInquiryEmail, getMailer } from "@/lib/server/mail";
-import { getStore } from "@/lib/server/store";
 import { readJsonLimited } from "@/lib/server/validate";
 
 export const runtime = "nodejs";
@@ -18,10 +17,12 @@ const MIN_FILL_MS = 2500;
  * POST /api/inquiry  (JSON, one of the inquirySchema lanes)
  *   200 { ok: true, reference }
  *   422 { error: "validation_failed", fields }
+ *   502 { error: "delivery_failed", message }
  *   503 { error: "inquiry_not_configured", message }
- * Stored encrypted at inquiries/<yyyy-mm>/<reference>.json.enc when a store
- * is configured; emailed when Resend is configured. At least one must
- * succeed or the request fails; nothing is ever silently dropped.
+ *
+ * Validate, then deliver. This site keeps no copy of an inquiry: the email is
+ * the record, and a 200 is returned only after the provider accepted it.
+ * Nothing is ever silently dropped.
  */
 export async function POST(req: Request) {
   try {
@@ -55,29 +56,18 @@ export async function POST(req: Request) {
     const receivedAt = new Date().toISOString();
     const cfg = getConfig();
 
-    let stored = false;
-    if (cfg.storeConfigured && cfg.encryptionKey) {
-      const store = await getStore();
-      const key = `inquiries/${receivedAt.slice(0, 7)}/${reference}.json.enc`;
-      await store.put(key, sealJson({ reference, receivedAt, inquiry: clean }, `inquiry:${reference}`));
-      stored = true;
-    }
-
-    let mailed = false;
     const mailer = getMailer();
-    if (mailer && cfg.inquiryToEmail) {
-      const { subject, text } = formatInquiryEmail(clean, reference, receivedAt);
-      try {
-        await mailer.send({ to: cfg.inquiryToEmail, subject, text, replyTo: clean.email });
-        mailed = true;
-      } catch (err) {
-        if (!stored) throw err;
-        log.error("inquiry: stored but email delivery failed", err, { reference });
-      }
+    if (!mailer || !cfg.inquiryToEmail) throw new AppError("inquiry_not_configured");
+
+    const { subject, text } = formatInquiryEmail(clean, reference, receivedAt);
+    try {
+      await mailer.send({ to: cfg.inquiryToEmail, subject, text, replyTo: clean.email });
+    } catch (err) {
+      log.error("inquiry: delivery refused by provider", err instanceof Error ? err.message : "unknown");
+      throw new AppError("delivery_failed");
     }
 
-    if (!stored && !mailed) throw new AppError("inquiry_not_configured");
-    log.info("inquiry: received", { reference, lane: clean.lane, stored, mailed });
+    log.info("inquiry: delivered", { reference, lane: clean.lane });
     return json({ ok: true, reference });
   } catch (err) {
     return fail(err, "inquiry");

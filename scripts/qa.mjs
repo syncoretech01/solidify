@@ -29,6 +29,7 @@ const PAGES = [
   { path: "/", name: "home" },
   { path: "/car-shipping", name: "car-shipping" },
   { path: "/oem-dealerships", name: "oem-dealerships" },
+  { path: "/become-a-driver", name: "become-a-driver" },
   { path: "/owner-operators", name: "owner-operators" },
   { path: "/about", name: "about" },
   { path: "/contact", name: "contact" },
@@ -54,6 +55,27 @@ const BANNED_PHRASES = [
   "numbers we made up", "real company", "person answers", "hand-off", "handoff", "third-party carrier", "inoperable", "operable",
   "inspected", "condition documented", "authority to", "renegotiate", "tenth move", "guarantee", "tracking your",
   "deepest coverage", "strongest coverage", "strongest in the west", "western density", "home base",
+  // V2 — claims the email-only architecture made false
+  "stored encrypted",
+  "never emailed",
+  "encrypted at rest",
+  "secure storage",
+  // V2 — public photography credits are gone site-wide
+  "photography credits",
+  "photo credits",
+  "image credits",
+  "photography by",
+  "photo by",
+  "image source",
+  "stock photography",
+  "unsplash",
+  "pexels",
+  "wikimedia",
+  "creative commons",
+  // V2 — geography stays exactly "strong Western-US focus"
+  "western-us + texas",
+  "western us and texas",
+  "western-us and texas",
 ];
 const BANNED_WORDS = ["tractor"];
 
@@ -230,6 +252,27 @@ const GATHER = () => {
     contrastFailures: bad.slice(0, 12),
     linksToApi: [...document.querySelectorAll('a[href*="/api/"]')].length,
     reserved: document.querySelectorAll(".frame-reserved, [data-reserved-for]").length,
+    blueprints: document.querySelectorAll("[data-blueprint]").length,
+    canvases: document.querySelectorAll("canvas").length,
+    creditLinks: [...document.querySelectorAll("a[href]")].filter((a) => /\/credits|#credits/i.test(a.getAttribute("href") || "")).length,
+    applyLinks: document.querySelectorAll('a[href^="https://account.neweratitans.com"]').length,
+    driverLinks: document.querySelectorAll('a[href^="/become-a-driver"]').length,
+    laneTabs: document.querySelectorAll('[role="tab"]').length,
+    // An element whose ENTIRE trimmed text is one of these is illustration
+    // chrome. The words themselves stay legal: "Truck / Power Unit" is the
+    // client's own terminology and must never be caught by this.
+    callouts: [...document.querySelectorAll("main *")]
+      .filter((el) => el.children.length === 0)
+      .map((el) => (el.textContent || "").trim().toLowerCase())
+      .filter((t) => ["power unit", "upper deck", "ramp · load · secure", "loaded · secured · carried"].includes(t)),
+    heavy: [...document.querySelectorAll("main h1, main h2, main h3, main .display-xl, main .display-lg, main .display-md")]
+      .map((el) => ({ el, cs: getComputedStyle(el) }))
+      .filter(({ cs }) => Number(cs.fontWeight) > 560 || parseFloat(cs.fontSize) > 88)
+      .map(({ el, cs }) => el.tagName + " " + cs.fontWeight + "/" + cs.fontSize),
+    stretched: [...document.querySelectorAll("main *")].filter((el) => {
+      const v = getComputedStyle(el).fontStretch;
+      return v && v !== "100%" && v !== "normal";
+    }).length,
     heads: [...document.querySelectorAll("main [data-section][data-head]")].map((s) => s.getAttribute("data-head")),
     blueButtons: [...document.querySelectorAll(".btn")]
       .filter((b) => {
@@ -265,6 +308,9 @@ try {
       const t = m.text();
       // The unconfigured backend answers 503 by design; the browser logs that honest refusal as a resource error.
       if (/status of 503/.test(t)) return;
+      // This harness deliberately submits a wrong access code; the 401 that
+      // comes back is the assertion, not an error.
+      if (/status of 401/.test(t)) return;
       consoleErrors.push(t.slice(0, 220));
     });
     p.on("pageerror", (e) => consoleErrors.push("pageerror: " + String(e.message).slice(0, 220)));
@@ -279,6 +325,8 @@ try {
       try {
         // 503 on /api/* is the backend's honest "not configured" refusal, asserted separately by the form and gate checks.
         if (r.status() === 503 && r.url().includes("/api/")) return;
+        // Deliberate: the wrong-code check above provokes this 401.
+        if (r.status() === 401 && r.url().includes("/api/onboarding/access")) return;
         if (r.status() >= 400 && new URL(r.url()).origin === new URL(TARGET).origin) netErrors.push(`HTTP ${r.status()} ${r.url().slice(0, 140)}`);
       } catch {}
     });
@@ -341,6 +389,21 @@ try {
         for (const w of BANNED_WORDS) check(`[${pg.name}] copy does not use the word "${w}"`, !new RegExp(`\\b${w}\\b`).test(f.text) && !new RegExp(`\\b${w}\\b`).test(f.alts.join(" ").toLowerCase()));
         check(`[${pg.name}] states it is a carrier`, /\bcarrier\b/.test(f.text));
         check(`[${pg.name}] no reserved / placeholder frames`, f.reserved === 0, String(f.reserved));
+
+        // ── V2 ────────────────────────────────────────────────────────────
+        // Figure chrome is banned; operational vocabulary is not.
+        check(`[${pg.name}] no figure numbering`, !/\bfig\.\s*\d|\bfig\s+\d/i.test(f.text), "figure caption found");
+        check(`[${pg.name}] no technical elevation chrome`, !/auto hauler ·|· elevation|hydraulic upright/i.test(f.text), "elevation chrome found");
+        check(`[${pg.name}] no illustration callouts`, f.callouts.length === 0, f.callouts.join(" | "));
+        check(`[${pg.name}] no blueprint drawings`, f.blueprints === 0, String(f.blueprints));
+        check(`[${pg.name}] uses the client's own equipment wording`, pg.name !== "become-a-driver" || /truck \/ power unit/i.test(f.text), "missing");
+        check(`[${pg.name}] display type is not overweight`, f.heavy.length === 0, f.heavy.slice(0, 4).join(" | "));
+        check(`[${pg.name}] no stretched type`, f.stretched === 0, String(f.stretched));
+        check(`[${pg.name}] no photography-credit links`, f.creditLinks === 0, String(f.creditLinks));
+        check(`[${pg.name}] WebGL only on the home hero`, pg.name === "home" ? f.canvases <= 1 : f.canvases === 0, String(f.canvases));
+        if (pg.name === "become-a-driver") check("[become-a-driver] carries the one external portal link", f.applyLinks === 1, String(f.applyLinks));
+        else check(`[${pg.name}] the portal is reached through the driver journey`, f.applyLinks === 0, String(f.applyLinks));
+        if (pg.name === "contact") check("[contact] two inquiry lanes, no owner-operator lane", f.laneTabs === 2, String(f.laneTabs));
         check(`[${pg.name}] no blue-filled buttons`, f.blueButtons.length === 0, f.blueButtons.join(", "));
         const dupHead = f.heads.find((h, i) => i > 0 && h && h === f.heads[i - 1] && h !== "stack");
         check(`[${pg.name}] consecutive sections use different heading patterns`, !dupHead, f.heads.join(" > "));
@@ -371,7 +434,7 @@ try {
           check(`[${pg.name}] apply CTAs open safely`, f.applyCtas.every((a) => a.target === "_blank" && /noopener/.test(a.rel)), "");
         }
         if (pg.name === "owner-operators") {
-          check(`[${pg.name}] apply CTA exists`, f.applyCtas.length >= 2, String(f.applyCtas.length));
+                  check("[owner-operators] routes drivers through the journey, not straight to the portal", f.driverLinks >= 1 && f.applyLinks === 0, `journey=${f.driverLinks} portal=${f.applyLinks}`);
           check(`[${pg.name}] nothing in localStorage`, f.localStorageKeys.length === 0, f.localStorageKeys.join(", "));
           check(`[${pg.name}] nothing in sessionStorage`, f.sessionStorageKeys.length === 0, f.sessionStorageKeys.join(", "));
           check(`[${pg.name}] states the confirmed insurance minimums`, f.text.includes("$500,000") && f.text.includes("$1,000,000"));

@@ -13,7 +13,6 @@ import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 import { fieldErrors } from "@/lib/schemas";
 import { getConfig } from "./config";
-import { safeEqual } from "./crypto";
 import { isAppError } from "./errors";
 import { log } from "./log";
 import { clientIp, getRateLimiter, LIMITS, type LimitBucket } from "./ratelimit";
@@ -26,11 +25,11 @@ export const NO_STORE_HEADERS = {
 
 export const MESSAGES = {
   backendNotConfigured:
-    "Onboarding is not accepting submissions yet because secure storage is not configured on this server. Nothing you entered has been saved. Please contact Solidify Transport directly.",
+    "Onboarding is not accepting submissions yet because delivery is not configured on this server. Nothing you enter here is saved or sent. Please contact Solidify Transport directly.",
   inquiryNotConfigured: "We could not receive your request online right now. Please call (510) 499-4552.",
-  serverError: "That did not save. Nothing was stored — please try again.",
-  fileTooLarge: "Files must be 4 MB or smaller.",
-  adminNotConfigured: "Reviewer access is not configured on this server.",
+  deliveryFailed:
+    "We could not deliver your submission, so it was not accepted. Nothing was saved anywhere. Your answers and documents are still on this page — press submit again, or call (510) 499-4552.",
+  serverError: "That did not send. Nothing was saved — please try again.",
   rateLimited: "Too many attempts. Please wait a few minutes and try again.",
 } as const;
 
@@ -61,10 +60,11 @@ export function fail(err: unknown, where: string): NextResponse {
       case "inquiry_not_configured":
         log.warn(`${where}: refused, inquiry pipeline not configured`);
         return json({ error: "inquiry_not_configured", message: MESSAGES.inquiryNotConfigured }, { status: 503 });
-      case "admin_not_configured":
-        return json({ error: "admin_not_configured", message: MESSAGES.adminNotConfigured }, { status: 503 });
+      case "delivery_failed":
+        log.error(`${where}: delivery failed`);
+        return json({ error: "delivery_failed", message: MESSAGES.deliveryFailed }, { status: 502 });
       case "payload_too_large":
-        return json({ error: "payload_too_large", message: "Request is too large." }, { status: 413 });
+        return json({ error: "payload_too_large", message: payloadTooLargeMessage() }, { status: 413 });
       case "file_too_large":
         return json({ error: "file_too_large", message: fileTooLargeMessage() }, { status: 413 });
       case "bad_json":
@@ -78,37 +78,27 @@ export function fail(err: unknown, where: string): NextResponse {
         );
       case "not_found":
         return json({ error: "not_found" }, { status: 404 });
-      case "already_complete":
-        return json({ error: "already_complete", message: "This application has already been submitted." }, { status: 409 });
       case "incomplete":
         return json({ error: "incomplete", missing: err.missing ?? [] }, { status: 409 });
-      case "key_mismatch":
-      case "decrypt_failed":
-        break; // fall through to 500 with logging
     }
   }
   log.error(`${where}: unhandled error`, err);
   return json({ error: "server_error", message: MESSAGES.serverError }, { status: 500 });
 }
 
-/** "Files must be N MB or smaller." from the configured cap. */
+const mb = (bytes: number) => {
+  const v = bytes / (1024 * 1024);
+  return Number.isInteger(v) ? String(v) : v.toFixed(1);
+};
+
+/** "Each document must be N MB or smaller." from the configured per-file cap. */
 export function fileTooLargeMessage(): string {
-  const mb = getConfig().maxUploadBytes / (1024 * 1024);
-  const shown = Number.isInteger(mb) ? String(mb) : mb.toFixed(1);
-  return `Files must be ${shown} MB or smaller.`;
+  return `Each document must be ${mb(getConfig().maxUploadBytes)} MB or smaller.`;
 }
 
-/**
- * 503 unless records can be read and written: key + store. Reviewer
- * routes and the purge need this much and no more (no access codes).
- */
-export function requireStorage(): NextResponse | null {
-  const cfg = getConfig();
-  if (cfg.storeConfigured && cfg.encryptionKey) return null;
-  log.warn("onboarding: storage request refused, not configured", {
-    reasons: [...cfg.storeReasons, ...(cfg.encryptionKey ? [] : ["ONBOARDING_ENCRYPTION_KEY is not usable"])],
-  });
-  return json({ error: "backend_not_configured", message: MESSAGES.backendNotConfigured }, { status: 503 });
+/** "One submission can carry N MB." from the configured total budget. */
+export function payloadTooLargeMessage(): string {
+  return `One submission can carry ${mb(getConfig().maxTotalUploadBytes)} MB of documents in total.`;
 }
 
 /** 503 unless the onboarding pipeline is fully configured. */
@@ -147,45 +137,8 @@ export function limit(req: Request, bucket: LimitBucket): Promise<NextResponse |
 /** A verified session, or a 401 response. */
 export function requireSession(req: Request): Session | NextResponse {
   const session = readSession(req);
-  if (session) return session;
-  return json({ error: "no_session", message: "Your onboarding session has expired. Enter your access code again." }, { status: 401 });
-}
-
-function bearer(req: Request): string | null {
-  const h = req.headers.get("authorization");
-  if (!h) return null;
-  const m = /^Bearer\s+(.+)$/i.exec(h.trim());
-  return m?.[1]?.trim() || null;
-}
-
-/**
- * Reviewer access: `Authorization: Bearer <ONBOARDING_ADMIN_TOKEN>`.
- * Rate limited before comparison. 503 when no token is configured.
- */
-export async function requireAdmin(req: Request): Promise<NextResponse | null> {
-  const limited = await limit(req, "admin");
-  if (limited) return limited;
-  const cfg = getConfig();
-  if (!cfg.adminToken) return json({ error: "admin_not_configured", message: MESSAGES.adminNotConfigured }, { status: 503 });
-  const token = bearer(req);
-  if (!token || !safeEqual(token, cfg.adminToken)) {
-    return json({ error: "unauthorized" }, { status: 401, headers: { "WWW-Authenticate": "Bearer" } });
+  if (!session) {
+    return json({ error: "no_session", message: "Your session expired. Enter your access code again." }, { status: 401 });
   }
-  return null;
-}
-
-/** Purge caller: admin bearer OR the Vercel cron secret. */
-export async function requireAdminOrCron(req: Request): Promise<NextResponse | null> {
-  const limited = await limit(req, "admin");
-  if (limited) return limited;
-  const cfg = getConfig();
-  const token = bearer(req);
-  if (!cfg.adminToken && !cfg.cronSecret) {
-    return json({ error: "admin_not_configured", message: MESSAGES.adminNotConfigured }, { status: 503 });
-  }
-  if (!token) return json({ error: "unauthorized" }, { status: 401, headers: { "WWW-Authenticate": "Bearer" } });
-  const adminOk = cfg.adminToken ? safeEqual(token, cfg.adminToken) : false;
-  const cronOk = cfg.cronSecret ? safeEqual(token, cfg.cronSecret) : false;
-  if (adminOk || cronOk) return null;
-  return json({ error: "unauthorized" }, { status: 401, headers: { "WWW-Authenticate": "Bearer" } });
+  return session;
 }

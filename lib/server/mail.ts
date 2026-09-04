@@ -1,18 +1,39 @@
 /**
- * Outbound mail for INQUIRIES ONLY. The onboarding pipeline never imports
- * this module; a TIN or bank number must never sit in a mailbox.
+ * Outbound mail — the only way anything submitted to this site reaches
+ * Solidify.
+ *
+ * This module used to be inquiry-only, with a standing rule that the
+ * onboarding pipeline must never import it because a TIN or a bank number
+ * must never sit in a mailbox. That rule no longer holds: the client
+ * requires that this website keep no submission record, so email IS the
+ * record, onboarding included. Do not "restore" the old rule — restoring it
+ * would leave approved-driver submissions with nowhere to go.
+ *
+ * What still holds: nothing built here is ever passed to a logger, and the
+ * message body is the only place a secret appears.
  *
  * Resend REST API via fetch. No SDK.
  */
 
 import type { Inquiry } from "@/lib/schemas";
 import { getConfig } from "./config";
+import { redactString } from "./log";
+
+export interface MailAttachment {
+  /** Server-generated. Never a byte of the uploader's own filename. */
+  filename: string;
+  /** base64 of the file's bytes. */
+  content: string;
+  /** From the sniffed type, never the declared one. */
+  contentType: string;
+}
 
 export interface MailMessage {
   to: string;
   subject: string;
   text: string;
   replyTo?: string;
+  attachments?: MailAttachment[];
 }
 
 export interface Mailer {
@@ -23,10 +44,11 @@ class ResendMailer implements Mailer {
   constructor(
     private readonly apiKey: string,
     private readonly from: string,
+    private readonly base: string,
   ) {}
 
   async send(msg: MailMessage): Promise<{ id: string | null }> {
-    const res = await fetch("https://api.resend.com/emails", {
+    const res = await fetch(`${this.base}/emails`, {
       method: "POST",
       headers: { authorization: `Bearer ${this.apiKey}`, "content-type": "application/json" },
       body: JSON.stringify({
@@ -35,8 +57,12 @@ class ResendMailer implements Mailer {
         subject: msg.subject,
         text: msg.text,
         ...(msg.replyTo ? { reply_to: msg.replyTo } : {}),
+        ...(msg.attachments?.length
+          ? { attachments: msg.attachments.map((a) => ({ filename: a.filename, content: a.content, content_type: a.contentType })) }
+          : {}),
       }),
-      signal: AbortSignal.timeout(10_000),
+      // Attachments make the request an order of magnitude larger; give it room.
+      signal: AbortSignal.timeout(msg.attachments?.length ? 25_000 : 10_000),
     });
     if (!res.ok) {
       let detail = "";
@@ -46,7 +72,9 @@ class ResendMailer implements Mailer {
       } catch {
         /* body not JSON */
       }
-      throw new Error(`resend responded ${res.status}${detail ? `: ${detail}` : ""}`);
+      // The provider can echo request content back in an error; redact before it
+      // reaches a caller or a log.
+      throw new Error(redactString(`resend responded ${res.status}${detail ? `: ${detail}` : ""}`));
     }
     const body = (await res.json()) as { id?: string };
     return { id: typeof body.id === "string" ? body.id : null };
@@ -58,7 +86,7 @@ let mailer: Mailer | null | undefined;
 export function getMailer(): Mailer | null {
   if (mailer !== undefined) return mailer;
   const cfg = getConfig();
-  mailer = cfg.mailConfigured && cfg.resendApiKey ? new ResendMailer(cfg.resendApiKey, cfg.inquiryFromEmail) : null;
+  mailer = cfg.mailConfigured && cfg.resendApiKey ? new ResendMailer(cfg.resendApiKey, cfg.mailFromEmail, cfg.resendApiBase) : null;
   return mailer;
 }
 
@@ -67,6 +95,9 @@ const LANE_LABEL: Record<Inquiry["lane"], string> = {
   oem: "OEM / dealership inquiry",
   operator: "Owner-operator inquiry",
 };
+
+/** Nothing built in this module is ever logged; this is here to say so once. */
+export const NEVER_LOG_THIS = true;
 
 const FIELD_LABEL: Record<string, string> = {
   pickupCity: "Pickup city",

@@ -7,7 +7,6 @@ import { gsap, ScrollTrigger, MQ } from "@/lib/motion";
 import { Plate } from "@/components/ui/Plate";
 import { Section, SectionMark, SpecStrip, Lines } from "@/components/ui/Primitives";
 import { RevealText, Reveal } from "@/components/ui/Reveal";
-import { Blueprint } from "@/components/graphics/Blueprint";
 import { COMPENSATION, INSURANCE } from "@/lib/site";
 
 /**
@@ -142,15 +141,15 @@ export function Road({ id = "road" }: { id?: string }) {
             </div>
           </Frame>
 
-          {/* 04 the hauler drawn */}
-          <Frame index="04" label="The hauler" wide>
-            <div className="flex flex-1 flex-col justify-between gap-6 p-6 lg:p-8">
-              <div className="flex items-center justify-between">
-                <h3 className="display-sm max-w-[14ch]">What you run with the carrier.</h3>
-                <span className="spec !text-[var(--text-low)]">Fig. 04</span>
-              </div>
-              <Blueprint view="full" draw className="w-full" />
-              <p className="small max-w-[52ch]">Vehicle loads across all 48 contiguous states, with strong Western-US coverage. Apply through the driver portal; once approved, complete onboarding below.</p>
+          {/* 04 the load */}
+          <Frame index="04" label="The load" wide>
+            <div className="absolute inset-0">
+              <Plate slot="road-2" sizes="(max-width: 1024px) 88vw, 62vw" aspect="fill" parallax={0} reveal={false} overscan={1.04} grade="deep" className="!absolute inset-0 h-full w-full" />
+              <div aria-hidden className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,7,11,0.15),rgba(5,7,11,0.9))]" />
+            </div>
+            <div className="relative flex flex-1 flex-col justify-end gap-4 p-6 lg:p-8">
+              <h3 className="display-sm max-w-[16ch]">Every vehicle strapped down and carried.</h3>
+              <p className="small max-w-[52ch]">Vehicle loads across all 48 contiguous states, with strong Western-US coverage. Review the opportunity and requirements, then continue to the driver application.</p>
             </div>
           </Frame>
         </div>

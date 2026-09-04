@@ -1,13 +1,12 @@
 "use client";
 
-import { useRef } from "react";
+import { Fragment, useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import clsx from "clsx";
 import { gsap, ScrollTrigger, EASE, MQ } from "@/lib/motion";
 import { Plate } from "@/components/ui/Plate";
 import { Reveal, RevealText } from "@/components/ui/Reveal";
 import { Section, SectionMark, Lines, type Surface } from "@/components/ui/Primitives";
-import { Blueprint } from "@/components/graphics/Blueprint";
 import { HOME } from "@/lib/content/home";
 
 type Beat = (typeof HOME.sequence.beats)[number];
@@ -15,7 +14,7 @@ type Beat = (typeof HOME.sequence.beats)[number];
 /**
  * S3 — Pickup → Transit → Delivery as a pinned cinematic sequence.
  * Desktop: the stage pins for three viewports; each beat's photograph wipes in
- * through a directional mask while its Blueprint view draws on a graphite
+ * through a directional mask while a telemetry card beside it advances on a graphite
  * plate, the route rail fills, the numeral flips and the copy swaps.
  * Mobile: sticky media with the beats scrolling under it — no pin.
  * Reduced motion: three stacked frames with finished diagrams.
@@ -190,14 +189,45 @@ export function Sequence({ id = "sequence", surface = "deep", lead }: { id?: str
                   </div>
                 ))}
               </div>
-              {/* blueprint plate */}
+              {/* movement telemetry */}
               <div className="relative lg:col-span-6 lg:col-start-7">
-                <div className="plate plate-steel relative overflow-hidden p-5">
+                <div className="plate plate-steel relative overflow-hidden">
                   <div aria-hidden className="pointer-events-none absolute inset-0 guides" />
-                  <div className="relative aspect-[16/10]">
+                  <div className="relative aspect-[16/10] p-6">
                     {beats.map((b, i) => (
-                      <div key={b.slot} data-beat-copy data-beat-index={i} className={clsx("absolute inset-0 flex items-center justify-center")} style={{ opacity: i === 0 ? 1 : 0 }}>
-                        <Blueprint view={b.view} draw immediate className="max-h-full w-full" />
+                      <div key={b.slot} data-beat-copy data-beat-index={i} className="absolute inset-0 flex flex-col justify-between p-6" style={{ opacity: i === 0 ? 1 : 0 }}>
+                        <div className="flex items-baseline justify-between">
+                          <span className="label">Movement</span>
+                          <span className="numeral text-[var(--step--2)] text-[var(--text-low)]">
+                            <span className="text-[var(--text-hi)]">{String(i + 1).padStart(2, "0")}</span> / {String(beats.length).padStart(2, "0")}
+                          </span>
+                        </div>
+                        <dl className="grid grid-cols-[minmax(6rem,8rem)_1fr] gap-x-6 gap-y-3 border-y border-[var(--line)] py-5">
+                          {b.readout.map((r) => (
+                            <Fragment key={r.label}>
+                              <dt className="spec self-center">{r.label}</dt>
+                              <dd className="font-display text-[var(--step-0)] font-medium leading-snug text-[var(--text-hi)]">{r.value}</dd>
+                            </Fragment>
+                          ))}
+                        </dl>
+                        <div className="relative flex items-center gap-4">
+                          <div className="relative h-px flex-1 bg-[var(--line-strong)]">
+                            <div
+                              className="absolute inset-y-0 left-0 origin-left bg-[rgba(179,212,255,0.85)] transition-[width] duration-700"
+                              style={{ width: `${(i / (beats.length - 1)) * 100}%` }}
+                            />
+                            {beats.map((n, j) => (
+                              <span
+                                key={n.title}
+                                aria-hidden
+                                data-on={j <= i ? "true" : "false"}
+                                className="absolute top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-[rgba(179,212,255,0.55)] bg-[var(--surface-raised)] data-[on=true]:bg-[#b3d4ff]"
+                                style={{ left: `${(j / (beats.length - 1)) * 100}%` }}
+                              />
+                            ))}
+                          </div>
+                          <span className="spec whitespace-nowrap">{b.title}</span>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -256,9 +286,14 @@ export function Sequence({ id = "sequence", surface = "deep", lead }: { id?: str
                 <span className="spec !text-[rgba(179,212,255,0.9)]">{b.spec}</span>
                 <h3 className="display-sm">{b.title}</h3>
                 <p className="lead">{b.text}</p>
-                <div className="plate plate-steel relative overflow-hidden p-4">
-                  <Blueprint view={b.view} draw className="w-full" />
-                </div>
+                <dl className="plate plate-steel grid grid-cols-[minmax(6rem,8rem)_1fr] gap-x-6 gap-y-3 px-5 py-4">
+                  {b.readout.map((r) => (
+                    <Fragment key={r.label}>
+                      <dt className="spec self-center">{r.label}</dt>
+                      <dd className="font-display text-[var(--step-0)] font-medium leading-snug text-[var(--text-hi)]">{r.value}</dd>
+                    </Fragment>
+                  ))}
+                </dl>
                 <span className="sr-only">{`Step ${i + 1} of ${beats.length}`}</span>
               </li>
             ))}

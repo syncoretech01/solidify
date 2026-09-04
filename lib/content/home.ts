@@ -73,24 +73,36 @@ export const HOME = {
     beats: [
       {
         slot: "seq-pickup",
-        view: "ramp",
         title: "Pickup",
         text: "The vehicle is loaded and secured on the carrier at the agreed pickup point.",
         spec: "01 · LOADED AND SECURED",
+        readout: [
+          { label: "Where", value: "The agreed pickup point" },
+          { label: "What happens", value: "Loaded and secured on the carrier" },
+          { label: "Who", value: "The carrier's own driver" },
+        ],
       },
       {
         slot: "seq-transit",
-        view: "transit",
         title: "Transit",
         text: "It travels on the carrier to the destination.",
         spec: "02 · ON THE CARRIER",
+        readout: [
+          { label: "Where", value: "On the carrier, en route" },
+          { label: "What happens", value: "It travels on the deck it was loaded on" },
+          { label: "Who", value: "One contact for the whole move" },
+        ],
       },
       {
         slot: "seq-delivery",
-        view: "delivery",
         title: "Delivery",
         text: "It is unloaded and handed over at the delivery address.",
         spec: "03 · HANDED OVER",
+        readout: [
+          { label: "Where", value: "The delivery address" },
+          { label: "What happens", value: "Unloaded and handed over" },
+          { label: "Who", value: "The same carrier that collected it" },
+        ],
       },
     ],
   },

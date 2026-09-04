@@ -60,8 +60,12 @@ export const CLAIMS = {
   focus: "Strong Western-US focus",
 } as const;
 
-/** Western states, for the coverage visual. Geography only — never a volume or lane claim. */
-export const WESTERN_STATES = ["CA", "OR", "WA", "NV", "AZ", "UT", "ID", "MT", "WY", "CO", "NM"] as const;
+/**
+ * The highlighted focus states for the coverage visual. Geography only — never a
+ * volume, lane or comparative claim. The public wording stays exactly
+ * "Strong Western-US focus"; this list is what the map lights up.
+ */
+export const FOCUS_STATES = ["CA", "OR", "WA", "NV", "AZ", "UT", "ID", "MT", "WY", "CO", "NM", "TX"] as const;
 
 /**
  * Supplied by the client. Null values are simply not rendered anywhere.
@@ -92,7 +96,7 @@ export const CTA = {
   quoteShort: { href: "/contact", label: "Get a quote" },
   oem: { href: "/oem-dealerships", label: "OEM & dealership solutions" },
   oemInquiry: { href: "/contact?lane=oem", label: "Start a commercial inquiry" },
-  drive: { href: "/owner-operators", label: "Drive with Solidify" },
+  drive: { href: "/become-a-driver", label: "Become a driver" },
   apply: { href: APPLY_URL, label: "Start a new application" },
 } as const;
 
@@ -104,6 +108,7 @@ export const FOOTER_LINKS = {
   ],
   company: [
     { href: "/about", label: "About Solidify" },
+    { href: "/become-a-driver", label: "Become a Driver" },
     { href: "/owner-operators", label: "Owner Operators" },
     { href: "/contact", label: "Contact" },
     { href: "/privacy", label: "Privacy" },

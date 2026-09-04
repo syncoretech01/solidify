@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { pageMetadata, breadcrumbLd, faqLd } from "@/lib/seo";
-import { APPLY_URL, COMPENSATION, INSURANCE } from "@/lib/site";
+import Link from "next/link";
+import { COMPENSATION, INSURANCE } from "@/lib/site";
 import { JsonLd } from "@/components/layout/JsonLd";
 import { PageHero } from "@/components/blocks/PageHero";
 import { Road } from "@/components/operators/Road";
@@ -8,7 +9,7 @@ import { Paths } from "@/components/operators/Paths";
 import { Faq, type FaqItem } from "@/components/blocks/Faq";
 import { Closing } from "@/components/layout/Closing";
 import { Reveal } from "@/components/ui/Reveal";
-import { Section, SectionHead, ApplyLink, Lines } from "@/components/ui/Primitives";
+import { Section, SectionHead, Lines } from "@/components/ui/Primitives";
 import { Onboarding } from "@/components/onboarding/Onboarding";
 
 export const metadata: Metadata = pageMetadata({
@@ -26,14 +27,17 @@ const FAQ: readonly FaqItem[] = [
     q: "What insurance do I need?",
     a: `Cargo at $500,000 minimum; commercial automobile liability at $1,000,000 combined single limit; general liability at $1,000,000 each occurrence and $1,000,000 general aggregate. The certificate is sent from your insurance agent and must show ${holder} as certificate holder and additional insured.`,
   },
-  { q: "How do I apply?", a: "New applications go through our driver portal — use the Start a new application button on this page. It opens in a new tab." },
+  {
+    q: "How do I apply?",
+    a: "Start on the Become a Driver page. It covers the compensation, the requirements and every stage of the process, then takes you to the driver application portal, which opens in a new tab.",
+  },
   {
     q: "What is the onboarding form for?",
     a: "Once you are approved, Solidify gives you an access code. You use it on this page to complete your operator profile, equipment and licensing details, insurance certificates, W-9 and direct-deposit authorization securely online.",
   },
   {
     q: "Is my banking and tax information secure?",
-    a: "Onboarding runs over an encrypted connection to Solidify's own server-side application, is stored encrypted at rest, is never emailed, and is never saved in your browser. Sensitive values are masked on screen.",
+    a: "Onboarding runs over an encrypted connection and is delivered directly to Solidify Transport. This website does not keep a copy of your submission, and nothing is saved in your browser. Sensitive values are masked on screen.",
   },
   { q: "Where will I run?", a: "Solidify moves vehicles across all 48 contiguous states, with strong Western-US coverage." },
 ];
@@ -56,7 +60,7 @@ export default function OwnerOperatorsPage() {
         lead={`${COMPENSATION.basis} Payment terms are ${COMPENSATION.terms}. Vehicle loads across all 48 contiguous states, with strong Western-US coverage.`}
         slot="oo-hero"
         grade="deep"
-        primary={{ href: APPLY_URL, label: "Start a new application", external: true }}
+        primary={{ href: "/become-a-driver", label: "Become a driver" }}
         secondary={{ href: "#onboarding", label: "Approved? Begin onboarding" }}
         specs={[
           { label: "Compensation", value: COMPENSATION.basisShort },
@@ -80,13 +84,17 @@ export default function OwnerOperatorsPage() {
               </div>
               <Reveal className="lg:col-span-5 lg:justify-self-end">
                 <p className="lead lg:max-w-[38ch]">
-                  Six steps: profile, equipment and licensing, insurance, W-9, direct deposit, review. Submitted over an encrypted connection to Solidify&apos;s own application, stored encrypted, never emailed, never saved in your browser.
+                  Six steps: profile, equipment and licensing, insurance, W-9, direct deposit, review. Sent over an encrypted connection and delivered directly to Solidify Transport. This website does not keep a copy, and nothing is saved in your browser.
                 </p>
-                <p className="spec mt-3">Encrypted · Server-side · Never emailed</p>
+                <p className="spec mt-3">Encrypted · Delivered to Solidify · No copy kept</p>
               </Reveal>
             </div>
             <p className="small">
-              Not approved yet? <ApplyLink className="link-underline font-medium text-[var(--text-hi)]">Start a new application</ApplyLink> first — this form is for operators who already have an access code.
+              Not approved yet?{" "}
+              <Link href="/become-a-driver" className="link-underline font-medium text-[var(--text-hi)]">
+                Review the opportunity and apply
+              </Link>{" "}
+              first — this form is for operators who already have an access code.
             </p>
           </div>
           <Onboarding />
@@ -97,9 +105,8 @@ export default function OwnerOperatorsPage() {
       <Closing
         title={["Run with", "the carrier."]}
         lead="Apply through the driver portal, and complete onboarding here once approved."
-        primary={{ href: APPLY_URL, label: "Start a new application", external: true }}
-        secondary={{ href: "/contact?lane=operator", label: "Ask a question first" }}
-        slot="closing"
+        primary={{ href: "/become-a-driver", label: "Become a driver" }}
+        secondary={{ href: "/contact", label: "Ask a question first" }}
       />
     </>
   );

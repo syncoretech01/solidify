@@ -16,7 +16,7 @@ export const STATE_NAMES: Record<(typeof US_STATES)[number], string> = {
   AL:"Alabama",AK:"Alaska",AZ:"Arizona",AR:"Arkansas",CA:"California",CO:"Colorado",CT:"Connecticut",DE:"Delaware",DC:"District of Columbia",FL:"Florida",GA:"Georgia",HI:"Hawaii",ID:"Idaho",IL:"Illinois",IN:"Indiana",IA:"Iowa",KS:"Kansas",KY:"Kentucky",LA:"Louisiana",ME:"Maine",MD:"Maryland",MA:"Massachusetts",MI:"Michigan",MN:"Minnesota",MS:"Mississippi",MO:"Missouri",MT:"Montana",NE:"Nebraska",NV:"Nevada",NH:"New Hampshire",NJ:"New Jersey",NM:"New Mexico",NY:"New York",NC:"North Carolina",ND:"North Dakota",OH:"Ohio",OK:"Oklahoma",OR:"Oregon",PA:"Pennsylvania",RI:"Rhode Island",SC:"South Carolina",SD:"South Dakota",TN:"Tennessee",TX:"Texas",UT:"Utah",VT:"Vermont",VA:"Virginia",WA:"Washington",WV:"West Virginia",WI:"Wisconsin",WY:"Wyoming",
 };
 
-const digits = (v: unknown) => String(v ?? "").replace(/\D/g, "");
+export const digits = (v: unknown) => String(v ?? "").replace(/\D/g, "");
 
 const text = (label: string, max: number, min = 1) =>
   z
@@ -302,10 +302,18 @@ export type DirectDepositStep = z.infer<typeof directDepositStepSchema>;
 export const SECRET_FIELDS = new Set(["ein", "routingNumber", "accountNumber"]);
 
 /** Reduce a zod error to { field: message }, first message per field. */
+/**
+ * Zod issues keyed by their FULL dotted path.
+ *
+ * The whole application is validated in one request now, so a nested issue has
+ * to say which step it came from as well as which field: "direct-deposit.
+ * routingNumber", not "direct-deposit". Losing the tail would leave the
+ * applicant staring at a step that says something is wrong without saying what.
+ */
 export function fieldErrors(err: z.ZodError): Record<string, string> {
   const out: Record<string, string> = {};
   for (const issue of err.issues) {
-    const key = String(issue.path[0] ?? "_");
+    const key = issue.path.length > 0 ? issue.path.map((p) => String(p)).join(".") : "_";
     if (!(key in out)) out[key] = issue.message;
   }
   return out;

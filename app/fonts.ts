@@ -1,31 +1,32 @@
-import { Archivo, Inter, IBM_Plex_Mono } from "next/font/google";
+import { Inter_Tight, Manrope, IBM_Plex_Mono } from "next/font/google";
 
 /**
  * The Solidify type system.
  *
- * Archivo        — display. A strong modern grotesk with a width axis; set
- *                  wide and tight at headline sizes, it carries the
- *                  automotive-industrial register of the brand.
- * Inter          — body and UI. Excellent readability at every size.
- * IBM Plex Mono  — metadata only: eyebrows, reference numbers. Never body copy.
+ * Inter Tight   — display. A tight, modern grotesk that holds its shape at
+ *                 medium weights, which is where this brand sets headlines.
+ *                 No width axis: display type is never stretched.
+ * Manrope       — body and UI. Slightly rounder than a neutral grotesk, which
+ *                 keeps long-form copy from reading as a system dialog.
+ * IBM Plex Mono — functional metadata only: progress readouts, spec values,
+ *                 section marks. Never body copy, never decoration.
  *
  * All self-hosted by next/font — no third-party font origin at runtime, which
  * is what lets the CSP keep font-src to 'self'.
  */
 
-export const archivo = Archivo({
+export const interTight = Inter_Tight({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-archivo",
+  variable: "--font-display-face",
   weight: "variable",
-  axes: ["wdth"],
   preload: true,
 });
 
-export const inter = Inter({
+export const manrope = Manrope({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-inter",
+  variable: "--font-body",
   weight: "variable",
   preload: true,
 });
@@ -38,4 +39,4 @@ export const plexMono = IBM_Plex_Mono({
   preload: false,
 });
 
-export const fontVariables = `${archivo.variable} ${inter.variable} ${plexMono.variable}`;
+export const fontVariables = `${interTight.variable} ${manrope.variable} ${plexMono.variable}`;

@@ -16,9 +16,7 @@ export function DonePanel({ submissionId, busy, onEnd }: { submissionId: string 
         </p>
       )}
       <p className="body">
-        Solidify Transport reviews each submission and will contact you using the phone number or email on your profile. Everything you entered is stored encrypted on Solidify&apos;s own
-        application; it is never emailed, and nothing was saved in this browser.
-      </p>
+        Solidify Transport reviews each submission and will contact you using the phone number or email on your profile. Everything you entered was delivered to Solidify Transport. This website kept no copy of it, and nothing was saved in this browser.</p>
       <p className="small">
         Questions in the meantime? Call <PhoneLink className="link-underline text-[var(--text-hi)]" />.
       </p>

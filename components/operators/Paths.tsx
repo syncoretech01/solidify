@@ -3,11 +3,11 @@
 import { useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import { gsap, EASE, MQ } from "@/lib/motion";
-import { Section, SectionMark, Lines, ApplyLink } from "@/components/ui/Primitives";
+import Link from "next/link";
+import { Section, SectionMark, Lines } from "@/components/ui/Primitives";
 import { RevealText, Reveal } from "@/components/ui/Reveal";
 import { Button } from "@/components/ui/Button";
 import { LightSweep } from "@/components/ui/LightSweep";
-import { APPLY_URL } from "@/lib/site";
 
 /**
  * Two paths, never conflated: a new application leaves for the driver
@@ -45,7 +45,7 @@ export function Paths({ id = "paths" }: { id?: string }) {
               <Lines text={["New applicant,", "or already approved?"]} />
             </RevealText>
             <Reveal className="lg:col-span-5 lg:justify-self-end">
-              <p className="lead lg:max-w-[38ch]">New owner-operators apply through the driver portal. Approved operators complete onboarding here, with an access code from Solidify.</p>
+              <p className="lead lg:max-w-[38ch]">New owner-operators start with the driver journey — the opportunity, the requirements and the application. Approved operators complete onboarding here, with an access code from Solidify.</p>
             </Reveal>
           </div>
         </div>
@@ -57,7 +57,7 @@ export function Paths({ id = "paths" }: { id?: string }) {
             <LightSweep trigger="hover" />
             <div className="relative flex items-start justify-between">
               <span className="index-xl">01</span>
-              <span className="spec">New application</span>
+              <span className="spec">Considering it</span>
             </div>
             <svg aria-hidden viewBox="0 0 600 200" className="relative my-6 w-full" fill="none">
               <path data-draw d="M 20 150 C 140 150, 220 60, 360 60 S 540 110, 580 40" stroke="rgba(179,212,255,0.75)" strokeWidth="1.2" vectorEffect="non-scaling-stroke" />
@@ -69,13 +69,11 @@ export function Paths({ id = "paths" }: { id?: string }) {
             </svg>
             <div className="relative flex flex-col gap-4">
               <h3 id={`${id}-new`} className="title">
-                Apply through the driver portal.
+                Start with the driver journey.
               </h3>
-              <p className="body max-w-[44ch]">The application opens in a new tab and asks for your operating, equipment and insurance details.</p>
+              <p className="body max-w-[44ch]">Compensation, requirements and every stage from reading this page to your first load — then the application itself.</p>
               <div className="pt-1">
-                <Button href={APPLY_URL} external>
-                  Start a new application
-                </Button>
+                <Button href="/become-a-driver">Become a driver</Button>
               </div>
             </div>
           </article>
@@ -99,7 +97,7 @@ export function Paths({ id = "paths" }: { id?: string }) {
                 </g>
               ))}
               <path data-draw d="M 500 40 h 60 v 44 h -60 z M 512 40 v -10 a 18 18 0 0 1 36 0 v 10" stroke="#b3d4ff" strokeWidth="1.3" vectorEffect="non-scaling-stroke" />
-              <text x="470" y="66" textAnchor="end" fontFamily="var(--font-mono)" fontSize="12" letterSpacing="1.5" fill="#8b95a4">ENCRYPTED · NEVER EMAILED</text>
+              <text x="470" y="66" textAnchor="end" fontFamily="var(--font-mono)" fontSize="12" letterSpacing="1.5" fill="#8b95a4">ENCRYPTED · DELIVERED TO SOLIDIFY</text>
             </svg>
             <div className="relative flex flex-col gap-4">
               <h3 id={`${id}-approved`} className="title">
@@ -107,7 +105,10 @@ export function Paths({ id = "paths" }: { id?: string }) {
               </h3>
               <p className="body max-w-[44ch]">
                 Use the access code Solidify gave you to complete your profile, equipment and licensing, insurance certificates, W-9 and direct-deposit authorization. Not approved yet?{" "}
-                <ApplyLink className="link-underline text-[var(--text-hi)]">Start a new application</ApplyLink> first.
+                <Link href="/become-a-driver" className="link-underline text-[var(--text-hi)]">
+                  Review the opportunity and apply
+                </Link>{" "}
+                first.
               </p>
               <div className="pt-1">
                 <Button href="#onboarding" variant="steel">

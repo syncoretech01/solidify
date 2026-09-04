@@ -1,3 +1,0 @@
-{
-  "crons": [{ "path": "/api/onboarding/purge", "schedule": "0 4 * * *" }]
-}

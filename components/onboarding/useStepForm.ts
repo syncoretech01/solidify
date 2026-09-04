@@ -1,11 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useForm, type DefaultValues, type FieldValues, type Path } from "react-hook-form";
+import { useForm, type DefaultValues, type FieldValues } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { ZodType } from "zod";
 import { SECRET_FIELDS, type OnboardingStep } from "@/lib/schemas";
-import { saveStep } from "@/lib/onboarding-client";
 import { digitsOnly, type AnyStepForm, type StepHandlers } from "./types";
 
 /** Secrets travel as digits only. Everything else is what zod produced. */
@@ -58,27 +57,18 @@ export function useStepForm<T extends FieldValues>({ step, schema, initial, hand
     };
   }, [step, getValues]);
 
-  const submit = form.handleSubmit(async (parsed) => {
+  /**
+   * A step is completed, not saved: nothing leaves the browser until the
+   * whole application is submitted. The zod resolver here runs the identical
+   * schema the submit route re-runs server-side, so a value the browser
+   * accepts cannot be one the server rejects.
+   */
+  const submit = form.handleSubmit((parsed) => {
     setSaving(true);
     try {
       const wire = toWire(parsed as Record<string, unknown>);
-      const result = await saveStep(step, wire);
-      if (result.ok) {
-        form.reset(form.getValues());
-        latest.current.onSaved(step, wire as unknown as AnyStepForm);
-        return;
-      }
-      if (result.kind === "invalid") {
-        const fields = result.fields ?? {};
-        const known = Object.keys(fields).filter((k) => k in initial);
-        for (const k of known) form.setError(k as Path<T>, { type: "server", message: fields[k] });
-        if (known.length > 0) form.setFocus(known[0] as Path<T>);
-        const unknown = Object.keys(fields).filter((k) => !(k in initial));
-        const text = unknown.length > 0 ? fields[unknown[0]] : known.length > 0 ? "Please check the highlighted fields." : result.message;
-        latest.current.onOutcome({ ...result, message: text });
-        return;
-      }
-      latest.current.onOutcome(result);
+      form.reset(form.getValues());
+      latest.current.onSaved(step, wire as unknown as AnyStepForm);
     } finally {
       setSaving(false);
     }

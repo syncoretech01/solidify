@@ -29,6 +29,57 @@ Focal points are [x%, y%] of the master as adopted, measured by eye on the
 full-resolution frame.
 
 
+INTERNAL ONLY
+------------
+This file is an internal provenance and licensing record. It is NOT rendered,
+linked, or reachable from the website: there is no public photography-credit
+page, section or anchor, and the QA harness fails the build if a credit string
+or a #credits link reappears anywhere. Keep it here; do not surface it.
+
+
+VISUAL V2 — WHAT CHANGED (2026-09-04)
+-------------------------------------
+Retired, and deleted from assets/media/: road-utah-canyon, road-north-cascades,
+road-death-valley, road-utah-night (scenic roads standing in for operational
+imagery), detail-cadillac-crest (badge macro used as a scenario), and the three
+masters that were already in no slot (showroom-mc20, hands-wheel-detail,
+detail-amg-wheel).
+
+Adopted: deck-strapped-sedan — Pexels 29566910 (Ivan Zhukevich). A new sedan
+secured on a Cottrell deck with an orange ratchet strap. The full frame carries
+a hi-vis vest with a competing carrier's name and a yard sign; the master is
+cropped to the deck (x 0-1430, y 140-1040 of the 2400x1600 original) so neither
+is in shot, and the trailer's serial plate is cropped out with them.
+
+Derived crops adopted as distinct frames from masters already vetted. Each is a
+different subject, not a repeat, and each is credited to its source frame:
+  deck-corvette-detail  <- carrier-corvettes-highway (upper deck, covered cars)
+  deck-socal-detail     <- carrier-deck-socal (three vehicles on the deck)
+  deck-ramp-detail      <- deck-aerial-yard (ramps and grating from above)
+  lot-rows-detail       <- lot-chattanooga-aerial (tighter run of staged rows)
+  lot-covers-detail     <- lot-chevrolet-covers (transit covers and stickers)
+  strap-wheel-detail    <- supra-trailer-straps (tie-down at the deck rail)
+
+Third sourcing sweep, this session: Openverse (240+ results across nine
+queries) returned only vintage, foreign or sub-1024px frames; Pexels and
+Unsplash search pages are bot-blocked to scripted fetches and were read
+another way. Twenty-eight candidates were downloaded and put on a contact
+sheet; eight were taken to full resolution and magnified crops. Rejected on
+the rules: unsplash J5Xzr3E3HRQ and 9iTgJ8mv_S4 (NSW plates, 80 km/h sign,
+eucalyptus — Australia), unsplash vvnZdwe80EE (Opel models, German dealer
+signage), unsplash xDhuMgWBrXU (cab-over rig, no US evidence), pexels 32212376
+(FAW cab, Shanghai plate, Chinese lettering), pexels 5992514 (SE-Asian market
+models, tropical plant), pexels 16370722 (British Columbia commercial plate),
+pexels 34539243 (Heathwood, Queensland), pexels 18590409 (enclosed trailer —
+would imply a service Solidify has not confirmed), pexels 34875545 (US, Eagle
+Pass TX, but dry-van tractors), pexels 943930 (derelict), pexels 28264505 and
+16300654 (competitor livery / dry van).
+
+The photography ceiling documented below has now held across three independent
+sweeps. Where a frame does not exist, V2 composes from vetted photography —
+graded crops, masks, route lines, telemetry cards — and never from line art.
+
+
 ADOPTED MASTERS
 ---------------
 

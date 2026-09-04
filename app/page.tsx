@@ -7,9 +7,9 @@ import { Hero } from "@/components/home/Hero";
 import { Lanes } from "@/components/home/Lanes";
 import { Sequence } from "@/components/home/Sequence";
 import { Editorial } from "@/components/ui/Editorial";
+import { Plate } from "@/components/ui/Plate";
 import { CoverageMap } from "@/components/blocks/CoverageMap";
 import { Closing } from "@/components/layout/Closing";
-import { Blueprint } from "@/components/graphics/Blueprint";
 
 export const metadata: Metadata = pageMetadata({
   title: META.defaultTitle,
@@ -50,16 +50,7 @@ export default function HomePage() {
         mark={HOME.carShipping.mark}
         title={HOME.carShipping.title}
         lead={HOME.carShipping.lead}
-        graphic={
-          <div className="plate plate-steel relative overflow-hidden p-6 lg:-ml-[3vw] lg:p-8">
-            <div aria-hidden className="pointer-events-none absolute inset-0 guides" />
-            <div className="mb-4 flex items-center justify-between">
-              <span className="spec">Ramp · Load · Secure</span>
-              <span className="spec !text-[var(--text-low)]">Fig. 04</span>
-            </div>
-            <Blueprint view="ramp" draw className="w-full" />
-          </div>
-        }
+        media={{ slot: "seq-pickup", aspect: 4 / 3, grade: "deep", caption: "Secured on the deck at pickup" }}
         specs={HOME.carShipping.specs}
         actions={[{ href: HOME.carShipping.href, label: HOME.carShipping.cta }]}
       />
@@ -84,17 +75,15 @@ export default function HomePage() {
         id="sheet"
         layout="plate"
         surface="graphite"
+        tight
         mark={HOME.sheet.mark}
         title={HOME.sheet.title}
         lead={HOME.sheet.lead}
         specs={HOME.sheet.specs}
         graphic={
-          <div className="flex h-full flex-col justify-center gap-4">
-            <div className="flex items-center justify-between">
-              <span className="spec">Auto hauler · elevation</span>
-              <span className="spec !text-[var(--text-low)]">Fig. 07</span>
-            </div>
-            <Blueprint view="full" draw className="w-full" />
+          <div className="relative h-full min-h-[260px] overflow-hidden rounded-[var(--radius-sm)]">
+            <Plate slot="home-sheet" sizes="(max-width: 1024px) 90vw, 44vw" aspect="fill" parallax={6} reveal={false} overscan={1.08} grade="deep" dim={0.86} className="!absolute inset-0 h-full w-full" />
+            <div aria-hidden className="absolute inset-0 bg-[linear-gradient(90deg,rgba(11,15,24,0.75),transparent_60%)]" />
           </div>
         }
       />
@@ -111,10 +100,9 @@ export default function HomePage() {
         specs={HOME.operator.specs}
         actions={[{ href: HOME.operator.href, label: HOME.operator.cta, variant: "steel" }]}
         graphic={
-          <div className="relative h-full min-h-[260px]">
-            <div className="absolute inset-y-0 -left-[4%] right-0 flex items-center">
-              <Blueprint view="deck" draw className="w-full opacity-90" />
-            </div>
+          <div className="relative h-full min-h-[280px] overflow-hidden rounded-[var(--radius-sm)]">
+            <Plate slot="lane-operator" sizes="(max-width: 1024px) 90vw, 46vw" aspect="fill" parallax={8} reveal={false} overscan={1.1} grade="cool" dim={0.82} className="!absolute inset-0 h-full w-full" />
+            <div aria-hidden className="absolute inset-0 bg-[linear-gradient(270deg,rgba(8,11,18,0.7),transparent_62%)]" />
           </div>
         }
         tight

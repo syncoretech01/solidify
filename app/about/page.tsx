@@ -3,9 +3,9 @@ import { pageMetadata, breadcrumbLd } from "@/lib/seo";
 import { COMPANY, CLAIMS, CTA } from "@/lib/site";
 import { JsonLd } from "@/components/layout/JsonLd";
 import { Editorial } from "@/components/ui/Editorial";
+import { Plate } from "@/components/ui/Plate";
 import { CoverageMap } from "@/components/blocks/CoverageMap";
 import { Closing } from "@/components/layout/Closing";
-import { Blueprint } from "@/components/graphics/Blueprint";
 import { Button } from "@/components/ui/Button";
 import { Reveal, RevealText } from "@/components/ui/Reveal";
 import { SectionMark, PhoneLink, Lines } from "@/components/ui/Primitives";
@@ -70,10 +70,13 @@ export default function AboutPage() {
               <LightSweep trigger="inview" delay={1.2} />
               <div aria-hidden className="pointer-events-none absolute inset-0 guides" />
               <div className="relative flex items-center justify-between">
-                <span className="spec">Auto hauler · elevation</span>
-                <span className="spec !text-[var(--text-low)]">Fig. 01</span>
+                <span className="spec">The carrier</span>
+                <span className="spec !text-[var(--text-low)]">Tracy, California</span>
               </div>
-              <Blueprint view="full" draw immediate className="relative mt-4 w-full" title="Technical elevation of a loaded auto hauler" />
+              <div className="relative mt-4 aspect-[16/10] overflow-hidden rounded-[var(--radius-sm)]">
+                <Plate slot="about-hero" sizes="(max-width: 1024px) 90vw, 46vw" aspect="fill" parallax={0} reveal={false} overscan={1.08} grade="deep" dim={0.9} className="!absolute inset-0 h-full w-full" />
+                <div aria-hidden className="absolute inset-0 bg-[linear-gradient(180deg,transparent_45%,rgba(5,7,11,0.75))]" />
+              </div>
             </div>
           </div>
           <div className="hairline-route" aria-hidden />
@@ -97,10 +100,13 @@ export default function AboutPage() {
         graphic={
           <div className="flex h-full flex-col justify-center gap-4">
             <div className="flex items-center justify-between">
-              <span className="spec">Power unit</span>
-              <span className="spec !text-[var(--text-low)]">Fig. 02</span>
+              <span className="spec">On the deck</span>
+              <span className="spec !text-[var(--text-low)]">Secured for transport</span>
             </div>
-            <Blueprint view="cab" draw className="w-full" />
+            <div className="relative aspect-[4/5] overflow-hidden rounded-[var(--radius-sm)]">
+              <Plate slot="about-identity" sizes="(max-width: 1024px) 90vw, 40vw" aspect="fill" parallax={8} reveal={false} overscan={1.06} grade="deep" className="!absolute inset-0 h-full w-full" />
+              <div aria-hidden className="absolute inset-0 bg-[linear-gradient(180deg,transparent_50%,rgba(5,7,11,0.7))]" />
+            </div>
           </div>
         }
       />
@@ -121,7 +127,7 @@ export default function AboutPage() {
       >
         <div className="mt-8 flex flex-wrap items-baseline gap-x-4 gap-y-1">
           <span className="label">Reach the carrier</span>
-          <PhoneLink className="font-display text-[var(--step-2)] font-semibold text-[var(--text-hi)]" />
+          <PhoneLink className="font-display text-[var(--step-2)] font-medium text-[var(--text-hi)]" />
         </div>
       </Editorial>
 
