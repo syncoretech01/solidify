@@ -1,25 +1,69 @@
 import type { Metadata } from "next";
-import { pageMetadata, breadcrumbLd, faqLd } from "@/lib/seo";
 import Link from "next/link";
-import { COMPENSATION, INSURANCE } from "@/lib/site";
+import { pageMetadata, breadcrumbLd, faqLd } from "@/lib/seo";
+import { COMPENSATION, INSURANCE, CLAIMS } from "@/lib/site";
 import { JsonLd } from "@/components/layout/JsonLd";
 import { PageHero } from "@/components/blocks/PageHero";
 import { Road } from "@/components/operators/Road";
-import { Paths } from "@/components/operators/Paths";
+import { ApplicationRoute, ApplyPanel } from "@/components/operators/Apply";
+import { Editorial } from "@/components/ui/Editorial";
 import { Faq, type FaqItem } from "@/components/blocks/Faq";
 import { Closing } from "@/components/layout/Closing";
 import { Reveal } from "@/components/ui/Reveal";
 import { Section, SectionHead, Lines } from "@/components/ui/Primitives";
 import { Onboarding } from "@/components/onboarding/Onboarding";
 
+/**
+ * /owner-operators — the page for people who own their Truck / Power Unit.
+ *
+ * It runs the whole relationship end to end and is the ONLY page that leaves
+ * the domain: the application route explains the seven stages, the application
+ * panel opens the external portal, and secure onboarding for approved
+ * operators sits further down the same page. Drivers who would run Solidify's
+ * own equipment are a different audience and have their own page.
+ */
+
 export const metadata: Metadata = pageMetadata({
-  title: "Owner-Operators — Drive With an Auto Transport Carrier",
+  title: "Owner-Operators — Run Your Truck With an Auto Transport Carrier",
   description:
     "Run your Truck / Power Unit with Solidify Transport, an auto transport motor carrier. Compensation based on a percentage of line-haul revenue, Net 30 terms, all 48 contiguous states with strong Western-US coverage. Apply, then complete secure onboarding.",
   path: "/owner-operators",
 });
 
 const holder = INSURANCE.certificateHolder.join(", ");
+
+const REQUIREMENTS = [
+  {
+    index: 1,
+    title: "Your Truck / Power Unit and licensing",
+    meta: "Equipment",
+    text: "The VIN, year, make and model of your Truck / Power Unit, your licensing details, and the service areas you want to run.",
+  },
+  {
+    index: 2,
+    title: "Cargo insurance — $500,000 minimum",
+    meta: "Insurance",
+    text: `The certificate is sent from your insurance agent and must show ${holder} as certificate holder and additional insured.`,
+  },
+  {
+    index: 3,
+    title: "Commercial automobile liability — $1,000,000 combined single limit",
+    meta: "Insurance",
+    text: "Carried continuously while you run with the carrier.",
+  },
+  {
+    index: 4,
+    title: "General liability — $1,000,000 each occurrence, $1,000,000 aggregate",
+    meta: "Insurance",
+    text: "Shown on the same certificate as the cover above.",
+  },
+  {
+    index: 5,
+    title: "W-9 and direct deposit details",
+    meta: "Paperwork",
+    text: "Completed once you are approved, through secure onboarding on this page — not on the application portal.",
+  },
+];
 
 const FAQ: readonly FaqItem[] = [
   { q: "How am I paid?", a: `${COMPENSATION.basis} Payment terms are ${COMPENSATION.terms}.` },
@@ -29,7 +73,7 @@ const FAQ: readonly FaqItem[] = [
   },
   {
     q: "How do I apply?",
-    a: "Start on the Become a Driver page. It covers the compensation, the requirements and every stage of the process, then takes you to the driver application portal, which opens in a new tab.",
+    a: "Start with the application section on this page. It says what you need to hand first, then opens the external driver application portal in a new tab.",
   },
   {
     q: "What is the onboarding form for?",
@@ -38,6 +82,10 @@ const FAQ: readonly FaqItem[] = [
   {
     q: "Is my banking and tax information secure?",
     a: "Onboarding runs over an encrypted connection and is delivered directly to Solidify Transport. This website does not keep a copy of your submission, and nothing is saved in your browser. Sensitive values are masked on screen.",
+  },
+  {
+    q: "I do not own a truck. Can I still drive?",
+    a: "Yes — that is a different route. The Become a Driver page covers driving Solidify's own equipment, and the carrier follows up with you directly.",
   },
   { q: "Where will I run?", a: "Solidify moves vehicles across all 48 contiguous states, with strong Western-US coverage." },
 ];
@@ -60,27 +108,47 @@ export default function OwnerOperatorsPage() {
         lead={`${COMPENSATION.basis} Payment terms are ${COMPENSATION.terms}. Vehicle loads across all 48 contiguous states, with strong Western-US coverage.`}
         slot="oo-hero"
         grade="deep"
-        primary={{ href: "/become-a-driver", label: "Become a driver" }}
+        primary={{ href: "#apply", label: "Start your application" }}
         secondary={{ href: "#onboarding", label: "Approved? Begin onboarding" }}
         specs={[
           { label: "Compensation", value: COMPENSATION.basisShort },
           { label: "Terms", value: COMPENSATION.terms },
-          { label: "Coverage", value: "All 48 contiguous states" },
+          { label: "Coverage", value: CLAIMS.coverage },
         ]}
       />
 
       <Road />
 
-      <Paths />
+      <Editorial
+        id="requirements"
+        layout="ledger"
+        surface="graphite"
+        head="editorial"
+        mark={{ index: 2, label: "What you need" }}
+        title={["Before you", "apply."]}
+        lead="Have these ready. The insurance limits and the certificate holder below are exactly what the carrier requires."
+        rows={REQUIREMENTS}
+        route
+      />
 
-      {/* Secure onboarding — same page, isolated region */}
-      <Section surface="graphite" id="onboarding" ariaLabelledBy="onboarding-title" head="index">
+      <ApplicationRoute />
+
+      <ApplyPanel />
+
+      {/* Secure onboarding — stage 06, on the same page, isolated region */}
+      <Section surface="navy" id="onboarding" ariaLabelledBy="onboarding-title" head="index">
         <div aria-hidden className="pointer-events-none absolute inset-0 guides opacity-40" />
         <div className="shell relative flex flex-col gap-10">
           <div className="flex flex-col gap-6">
             <div className="grid gap-6 lg:grid-cols-12 lg:items-end lg:gap-10">
               <div className="lg:col-span-7">
-                <SectionHead pattern="index" index={4} mark={{ index: 4, label: "Approved operators" }} title={<Lines text={["Secure", "onboarding."]} />} id="onboarding-title" />
+                <SectionHead
+                  pattern="index"
+                  index={5}
+                  mark={{ index: 5, label: "Stage 06 · onboarding" }}
+                  title={<Lines text={["Secure", "onboarding."]} />}
+                  id="onboarding-title"
+                />
               </div>
               <Reveal className="lg:col-span-5 lg:justify-self-end">
                 <p className="lead lg:max-w-[38ch]">
@@ -90,23 +158,25 @@ export default function OwnerOperatorsPage() {
               </Reveal>
             </div>
             <p className="small">
-              Not approved yet?{" "}
-              <Link href="/become-a-driver" className="link-underline font-medium text-[var(--text-hi)]">
-                Review the opportunity and apply
+              You need an access code from Solidify to use this form. Not approved yet?{" "}
+              <Link href="#apply" className="link-underline font-medium text-[var(--text-hi)]">
+                Start your application
               </Link>{" "}
-              first — this form is for operators who already have an access code.
+              first.
             </p>
           </div>
           <Onboarding />
         </div>
       </Section>
 
-      <Faq mark={{ index: 5, label: "Questions" }} title="Questions from owner-operators" items={FAQ} surface="navy" />
+      <Faq mark={{ index: 6, label: "Questions" }} title="Questions from owner-operators" items={FAQ} surface="graphite" />
+
       <Closing
         title={["Run with", "the carrier."]}
-        lead="Apply through the driver portal, and complete onboarding here once approved."
-        primary={{ href: "/become-a-driver", label: "Become a driver" }}
-        secondary={{ href: "/contact", label: "Ask a question first" }}
+        lead="Start your application, and complete onboarding here once you are approved."
+        primary={{ href: "#apply", label: "Start your application" }}
+        secondary={{ href: "/become-a-driver", label: "I do not own a truck" }}
+        slot="oo-closing"
       />
     </>
   );

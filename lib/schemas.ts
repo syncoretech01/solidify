@@ -116,13 +116,22 @@ export const oemInquirySchema = z.object({
   ...antiSpam,
 });
 
-export const operatorInquirySchema = z.object({
-  lane: z.literal("operator"),
+/**
+ * A driver enquiring about running SOLIDIFY'S equipment.
+ *
+ * Every field here is a QUESTION, never a published requirement: Solidify has
+ * not confirmed hiring minimums, so the site asks and does not assert. `cdl`
+ * is asked because a commercial driver's license is a federal condition of
+ * operating this class of vehicle, not because a minimum has been set here.
+ */
+export const driverInquirySchema = z.object({
+  lane: z.literal("driver"),
   name: text("Name", 120),
   phone: phoneSchema,
   email: emailSchema,
-  homeBase: optionalText("Home base", 120),
-  equipment: optionalText("Equipment", 200),
+  basedIn: optionalText("Where you are based", 120),
+  cdl: z.enum(["class-a", "class-b", "other", "none"], { message: "Tell us which licence you hold." }),
+  experience: optionalText("Driving experience", 200),
   notes: optionalText("Notes", 1200),
   ...antiSpam,
 });
@@ -130,12 +139,12 @@ export const operatorInquirySchema = z.object({
 export const inquirySchema = z.discriminatedUnion("lane", [
   vehicleQuoteSchema,
   oemInquirySchema,
-  operatorInquirySchema,
+  driverInquirySchema,
 ]);
 
 export type VehicleQuote = z.infer<typeof vehicleQuoteSchema>;
 export type OemInquiry = z.infer<typeof oemInquirySchema>;
-export type OperatorInquiry = z.infer<typeof operatorInquirySchema>;
+export type DriverInquiry = z.infer<typeof driverInquirySchema>;
 export type Inquiry = z.infer<typeof inquirySchema>;
 
 /* ───────────────────────────────────────────────────────────── onboarding ── */

@@ -33,6 +33,7 @@ const PAGES = [
   { path: "/owner-operators", name: "owner-operators" },
   { path: "/about", name: "about" },
   { path: "/contact", name: "contact" },
+  { path: "/terms", name: "terms" },
   { path: "/privacy", name: "privacy" },
 ];
 
@@ -373,7 +374,7 @@ try {
       check(`${label} no oversized buttons (<= ${hi}px)`, oversized.length === 0, oversized.map((b) => `"${b.label}" ${b.h}px`).join(", "));
       check(`${label} no undersized buttons (>= ${lo}px)`, undersized.length === 0, undersized.map((b) => `"${b.label}" ${b.h}px`).join(", "));
       check(`${label} exactly one h1`, f.h1s.length === 1, JSON.stringify(f.h1s));
-      check(`${label} sections present`, f.sections.length >= (pg.name === "privacy" ? 1 : pg.name === "contact" ? 2 : 3), String(f.sections.length));
+      check(`${label} sections present`, f.sections.length >= (pg.name === "privacy" || pg.name === "terms" ? 1 : pg.name === "contact" ? 2 : 3), String(f.sections.length));
       check(`${label} no dead-centre focal point`, !f.objectPositions.includes("50% 50%"), f.objectPositions.join(" | "));
       check(`${label} no third-party scripts`, f.externalScripts.length === 0, f.externalScripts.join(", "));
       check(`${label} no iframes`, f.iframes.length === 0, f.iframes.join(", "));
@@ -396,14 +397,19 @@ try {
         check(`[${pg.name}] no technical elevation chrome`, !/auto hauler ·|· elevation|hydraulic upright/i.test(f.text), "elevation chrome found");
         check(`[${pg.name}] no illustration callouts`, f.callouts.length === 0, f.callouts.join(" | "));
         check(`[${pg.name}] no blueprint drawings`, f.blueprints === 0, String(f.blueprints));
-        check(`[${pg.name}] uses the client's own equipment wording`, pg.name !== "become-a-driver" || /truck \/ power unit/i.test(f.text), "missing");
+        check(
+          `[${pg.name}] uses the client's own equipment wording`,
+          !["owner-operators", "become-a-driver"].includes(pg.name) || /truck \/ power unit/i.test(f.text),
+          "missing",
+        );
         check(`[${pg.name}] display type is not overweight`, f.heavy.length === 0, f.heavy.slice(0, 4).join(" | "));
         check(`[${pg.name}] no stretched type`, f.stretched === 0, String(f.stretched));
         check(`[${pg.name}] no photography-credit links`, f.creditLinks === 0, String(f.creditLinks));
-        check(`[${pg.name}] WebGL only on the home hero`, pg.name === "home" ? f.canvases <= 1 : f.canvases === 0, String(f.canvases));
-        if (pg.name === "become-a-driver") check("[become-a-driver] carries the one external portal link", f.applyLinks === 1, String(f.applyLinks));
-        else check(`[${pg.name}] the portal is reached through the driver journey`, f.applyLinks === 0, String(f.applyLinks));
-        if (pg.name === "contact") check("[contact] two inquiry lanes, no owner-operator lane", f.laneTabs === 2, String(f.laneTabs));
+        check(`[${pg.name}] at most one WebGL surface`, f.canvases <= 1, String(f.canvases));
+        if (pg.name === "home") check("[home] the home canvas is the hero scene", f.canvas >= 1, String(f.canvas));
+        if (pg.name === "owner-operators") check("[owner-operators] carries the one external portal link", f.applyLinks === 1, String(f.applyLinks));
+        else check(`[${pg.name}] does not leave the domain`, f.applyLinks === 0, String(f.applyLinks));
+        if (pg.name === "contact") check("[contact] three inquiry lanes", f.laneTabs === 3, String(f.laneTabs));
         check(`[${pg.name}] no blue-filled buttons`, f.blueButtons.length === 0, f.blueButtons.join(", "));
         const dupHead = f.heads.find((h, i) => i > 0 && h && h === f.heads[i - 1] && h !== "stack");
         check(`[${pg.name}] consecutive sections use different heading patterns`, !dupHead, f.heads.join(" > "));
@@ -425,7 +431,7 @@ try {
           if (!p.photo) continue;
           (siteWidePhotoUse[p.photo] ||= new Set()).add(`${pg.name}:${p.slot}`);
         }
-        if (pg.name !== "privacy") {
+        if (pg.name !== "privacy" && pg.name !== "terms") {
           if (f.triggers === -1) note(`[${pg.name}] scroll animations`, "registry not exposed in production builds");
           else check(`[${pg.name}] scroll animations registered`, f.triggers > 3, String(f.triggers));
         }
@@ -434,12 +440,23 @@ try {
           check(`[${pg.name}] apply CTAs open safely`, f.applyCtas.every((a) => a.target === "_blank" && /noopener/.test(a.rel)), "");
         }
         if (pg.name === "owner-operators") {
-                  check("[owner-operators] routes drivers through the journey, not straight to the portal", f.driverLinks >= 1 && f.applyLinks === 0, `journey=${f.driverLinks} portal=${f.applyLinks}`);
+                  check("[owner-operators] points drivers without their own truck at the other route", f.driverLinks >= 1, String(f.driverLinks));
           check(`[${pg.name}] nothing in localStorage`, f.localStorageKeys.length === 0, f.localStorageKeys.join(", "));
           check(`[${pg.name}] nothing in sessionStorage`, f.sessionStorageKeys.length === 0, f.sessionStorageKeys.join(", "));
           check(`[${pg.name}] states the confirmed insurance minimums`, f.text.includes("$500,000") && f.text.includes("$1,000,000"));
           check(`[${pg.name}] shows the certificate holder address`, f.text.includes("2455 naglee rd"));
           check(`[${pg.name}] onboarding region present`, !!(await page.$("#onboarding")));
+        }
+        if (pg.name === "become-a-driver") {
+          check("[become-a-driver] sends drivers to the carrier, not to a portal", f.applyLinks === 0 && /talk to solidify/i.test(f.text), "");
+          check("[become-a-driver] points owner-operators at their own route", f.text.includes("owner-operator"), "");
+          check("[become-a-driver] cites the rule rather than inventing a policy", /49 cfr/i.test(f.text), "");
+          check("[become-a-driver] publishes no pay figure", !/\$\s?\d[\d,]*\s*(per|\/)\s*(mile|week|year)/i.test(f.text), "");
+        }
+        if (pg.name === "terms") {
+          check("[terms] says the website terms are not the transport terms", /transport agreement|contract of carriage/i.test(f.text), "");
+          check("[terms] names the company", f.text.includes("solidify transport llc"), "");
+          check("[terms] carries no photography credits", !/photo by|image credit/i.test(f.text), "");
         }
         if (pg.name === "home") {
           check(`[home] hero WebGL canvas mounted (motion on)`, f.canvas >= 1, String(f.canvas));

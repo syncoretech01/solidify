@@ -39,18 +39,37 @@ Rate limits are real even locally; the smoke test gives each request its own
 | `/` | Homepage — hero scene, audience lanes, statement, pickup→transit→delivery sequence, coverage, carrier sheet, closing |
 | `/car-shipping` | Consumer + commercial vehicle shipping, situations strip, quote console with route map, FAQ |
 | `/oem-dealerships` | OEM, dealership and dealer-group transport, the movement board, commercial inquiry |
-| `/owner-operators` | Recruiting road, **two paths** (considering it → `/become-a-driver`; approved → secure onboarding on the same page) |
-| `/become-a-driver` | The driver opportunity, requirements, the seven-stage application journey, and the hand-off to the external portal |
+| `/owner-operators` | **Owner-operators — people who own their Truck / Power Unit.** Recruiting road, requirements, the seven-stage application route, the external application, and secure onboarding once approved. The only route that leaves the domain |
+| `/become-a-driver` | **Drivers who would run Solidify's own equipment.** What auto transport actually involves, who the carrier is, the federal qualification floor, and a direct line to Solidify. No portal, no invented pay figures |
 | `/about` | Company identity, coverage, how it operates |
-| `/contact` | Two separated inquiry lanes, contact details, and the driver pathway |
+| `/contact` | Three separated inquiry lanes (vehicle · OEM · driving), contact details, and both driver routes |
+| `/terms` | Terms of use for the website. Deliberately narrow — the transport itself is governed by the agreement for that move |
 | `/privacy` | Privacy notice |
 | `/api/*` | Inquiry + onboarding pipelines — see `lib/server/README.md` |
 
+## The two driver audiences
+
+They are different people and the site never mixes them, because the paperwork
+does not:
+
+- **Owner-operators** own their Truck / Power Unit and carry their own
+  insurance. They have an application to complete (externally) and, once
+  approved, onboarding to file. All of that lives on `/owner-operators`.
+- **Drivers** would run Solidify's equipment. Solidify has confirmed nothing
+  about that programme — no pay basis, no experience or endorsement minimums,
+  no benefits, no hiring areas — so `/become-a-driver` states the company, the
+  work and the federal floor under 49 CFR 391, and then asks for a
+  conversation. It publishes no figure it cannot stand behind, and QA fails
+  the build if a per-mile/week/year rate appears there.
+
+When the client supplies those facts they go in `lib/site.ts` and slot into
+the existing ledger without a layout change.
+
 ## Frontend system
 
-Seven signature experiences carry the bespoke motion; everything else is built
-from one editorial system so secondary sections stay consistent without
-looking identical.
+Signature experiences carry the bespoke motion; everything else is built from
+one editorial system so secondary sections stay consistent without looking
+identical.
 
 | Signature | Where | File |
 | --- | --- | --- |
@@ -60,7 +79,42 @@ looking identical.
 | Coverage map (DrawSVG, pointer light) | `/`, `/car-shipping`, `/oem-dealerships`, `/about` | `components/blocks/CoverageMap.tsx` |
 | Movement board (DrawSVG + MotionPath) | `/oem-dealerships` | `components/oem/MovementBoard.tsx` |
 | Road (pinned horizontal) | `/owner-operators` | `components/operators/Road.tsx` |
+| Application route (pinned horizontal, with the hand-off break) | `/owner-operators` | `components/operators/Apply.tsx` |
+| Role board (pinned split — wiping photo column + expanding list) | `/become-a-driver` | `components/driver/RoleBoard.tsx` |
+| Scenario story (pinned, Flip, six photographic panels) | `/car-shipping` | `components/car/Situations.tsx` |
 | Closing (CTA + footer as one scene) | every page | `components/layout/Closing.tsx` |
+
+### WebGL
+
+Two different things, deliberately:
+
+- **The hero scene** (`components/webgl/HeroScene.tsx`, three.js) — the hauler
+  photograph on a fullscreen quad with mask-driven depth parallax, a scroll
+  dolly, road-light traces and a five-slat reveal. Home only.
+- **The ambient surfaces** (`components/webgl/Field.tsx` on
+  `lib/webgl/surface.ts`) — three fragment programs (`transit` · `network` ·
+  `dusk`) that add LIGHT to a section: travelling trails, a lit node field,
+  drifting volume. Raw WebGL2 in ~150 lines rather than three.js, because a
+  fullscreen triangle does not need a scene graph and this keeps four extra
+  routes off a 150 KB dependency.
+
+Rules, all QA-asserted or built into the runtime:
+
+- **At most one canvas per route**, never on a route already carrying the hero
+  scene. `Section` takes a `field` prop so any section can host the route's one
+  surface.
+- A surface goes in a section that is **not** a full-bleed photograph. Behind
+  one it is invisible; screened over one it fogs the image. Both were tried.
+- Blending is premultiplied source-over and a shader reports **coverage** as
+  alpha, so the section shows through wherever the shader is dark.
+- Painting only while on screen and the tab is visible; one GSAP-ticker
+  subscription shared with Lenis; DPR capped by device tier; sustained slow
+  frames step the buffer down twice and then stop — a surface never deletes
+  itself.
+- Nothing mounts at all under reduced motion.
+
+Preview the three programs on their own, without a build or a page load:
+`node scripts/shader-preview.mjs` → `.audit/shaders.png`.
 
 Editorial system: `components/ui/Editorial.tsx` (`feature` · `statement` ·
 `plate` · `ledger`), `SectionHead` patterns (`editorial` · `index` · `caption` ·
@@ -76,7 +130,14 @@ route line, a telemetry card — never line art, and never a figure caption.
 Type: **Inter Tight** for display (500–550, never stretched), **Manrope** for
 body and UI, IBM Plex Mono for functional metadata only. QA fails any display
 element computing a weight above 560, any `font-stretch` other than 100%, and
-any `h1` above 88px.
+any `h1` above 88px. The navigation and the footer are sized on their own
+ramps (`.nav-link`, `.foot-link`) rather than borrowing the body's, because
+both had gone quiet enough to read as unfinished.
+
+Pinned sections own an explicit scroll budget — a per-panel `SETTLE` distance
+plus a landing allowance — and snap to panel centres. Deriving the distance
+from track width alone gave roughly 290px per panel at 1920, which is fast
+enough that panels went past unread.
 
 Palette: midnight grounds, graphite/gunmetal plates, brushed-steel and ice
 controls; blue exists only as light (`glow-*` at alpha). No control has a blue
@@ -204,7 +265,7 @@ integration is installed for the team; `.vercelignore` keeps uploads to source.
 
 `npm run qa [url]` is **headless only** — it never opens a visible browser. It
 launches one headless Edge via `playwright-core`, reuses one context and one
-page across 8 routes × 4 viewports (1920×1080, 1536×864, 1440×900, 390×844),
+page across 9 routes × 4 viewports (1920×1080, 1536×864, 1440×900, 390×844),
 and closes everything on the way out. It asserts carrier positioning and
 banned claims (including the retired weak copy and any geography comparative),
 "not a broker" ≤ 2 site-wide, no reserved frames, no blue-filled buttons,

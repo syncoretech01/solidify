@@ -93,7 +93,7 @@ export function getMailer(): Mailer | null {
 const LANE_LABEL: Record<Inquiry["lane"], string> = {
   vehicle: "Vehicle shipping quote",
   oem: "OEM / dealership inquiry",
-  operator: "Owner-operator inquiry",
+  driver: "Driver enquiry",
 };
 
 /** Nothing built in this module is ever logged; this is here to say so once. */

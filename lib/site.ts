@@ -32,7 +32,15 @@ export const COMPANY = {
 export const ADDRESS_LINES = [COMPANY.street, `${COMPANY.city}, ${COMPANY.state} ${COMPANY.zip}`] as const;
 export const ADDRESS_ONE_LINE = `${COMPANY.street}, ${COMPANY.city}, ${COMPANY.state} ${COMPANY.zip}`;
 
-/** The live owner-operator application, hosted off-site. Every "apply" CTA points here. */
+/**
+ * The live owner-operator application, hosted off-site.
+ *
+ * It renders in exactly ONE place: the application section on
+ * /owner-operators. Nothing else on the site sends a visitor off-domain, and
+ * the section it lives in says plainly what opens and where before it does.
+ * Solidify's relationship with the portal's operator has not been confirmed,
+ * so no copy anywhere may describe it as run "for" or "by" Solidify.
+ */
 export const APPLY_URL = "https://account.neweratitans.com/apply/MTY0MTk=";
 
 /** How an owner-operator is paid. Confirmed. The percentage is NOT public and is never stated. */
@@ -88,6 +96,7 @@ export const NAV = [
   { href: "/car-shipping", label: "Car Shipping" },
   { href: "/oem-dealerships", label: "OEM & Dealerships" },
   { href: "/owner-operators", label: "Owner Operators" },
+  { href: "/become-a-driver", label: "Become a Driver" },
   { href: "/about", label: "About" },
 ] as const;
 
@@ -96,8 +105,12 @@ export const CTA = {
   quoteShort: { href: "/contact", label: "Get a quote" },
   oem: { href: "/oem-dealerships", label: "OEM & dealership solutions" },
   oemInquiry: { href: "/contact?lane=oem", label: "Start a commercial inquiry" },
+  /** Drivers who would run SOLIDIFY'S equipment. */
   drive: { href: "/become-a-driver", label: "Become a driver" },
-  apply: { href: APPLY_URL, label: "Start a new application" },
+  /** Operators who own their Truck / Power Unit. */
+  operator: { href: "/owner-operators", label: "Run your own truck" },
+  /** Internal — the section that explains the portal before it opens it. */
+  apply: { href: "/owner-operators#apply", label: "Start an application" },
 } as const;
 
 export const FOOTER_LINKS = {
@@ -111,6 +124,9 @@ export const FOOTER_LINKS = {
     { href: "/become-a-driver", label: "Become a Driver" },
     { href: "/owner-operators", label: "Owner Operators" },
     { href: "/contact", label: "Contact" },
+  ],
+  legal: [
+    { href: "/terms", label: "Terms & Conditions" },
     { href: "/privacy", label: "Privacy" },
   ],
 } as const;

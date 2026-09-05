@@ -10,6 +10,7 @@ import { Plate } from "@/components/ui/Plate";
 import { LightSweep } from "@/components/ui/LightSweep";
 import { Button } from "@/components/ui/Button";
 import { Closing } from "@/components/layout/Closing";
+import { Field } from "@/components/webgl/Field";
 
 export const metadata: Metadata = pageMetadata({
   title: "Get a Quote — Contact Solidify Transport",
@@ -30,8 +31,9 @@ export default function ContactPage() {
 
       {/* compact typographic hero */}
       <section id="hero" data-section="hero" data-surface="deep" data-head="hero" aria-labelledby="hero-title" className="relative isolate overflow-hidden bg-[var(--surface)] text-[var(--text-hi)]">
+        <Field preset="dusk" intensity={0.42} maxDpr={1.05} />
         <div aria-hidden className="pointer-events-none absolute inset-0 guides opacity-50" />
-        <div aria-hidden className="light-field opacity-60" />
+        <div aria-hidden className="light-field opacity-35" />
         <div className="shell relative z-10 flex flex-col gap-8 pb-[clamp(2.5rem,5vh,4rem)] pt-[calc(var(--nav-h)+4rem)]">
           <div className="grid gap-8 lg:grid-cols-12 lg:items-end">
             <div className="flex flex-col gap-5 lg:col-span-7">
@@ -110,24 +112,54 @@ export default function ContactPage() {
         </div>
       </Section>
 
+      {/* Two audiences, two routes. Neither is a lane in the form above:
+          one is a conversation, the other is an application. */}
       <Section surface="graphite" id="drive" ariaLabelledBy="drive-title" head="index">
-        <div className="shell relative">
-          <div className="plate plate-steel relative overflow-hidden">
-            <div aria-hidden className="pointer-events-none absolute inset-0 guides" />
-            <LightSweep trigger="inview" delay={0.6} />
-            <div className="relative grid gap-8 p-6 sm:p-8 lg:grid-cols-[auto_1fr_auto] lg:items-center lg:gap-12 lg:p-10">
-              <span className="index-xl !text-[clamp(1.8rem,1.3rem+1.4vw,2.8rem)]">03</span>
-              <div className="flex flex-col gap-3">
-                <SectionMark index={3} label="Owner-operators" />
-                <h2 id="drive-title" className="display-sm max-w-[20ch]">
-                  Interested in driving with Solidify?
-                </h2>
-                <p className="body max-w-[52ch]">Review the opportunity, the requirements and the application process — then continue to the driver application.</p>
-              </div>
-              <Button href="/become-a-driver" variant="steel" className="lg:justify-self-end">
-                Become a driver
-              </Button>
-            </div>
+        <div className="shell relative flex flex-col gap-6">
+          <div className="flex items-center justify-between gap-6 border-t border-[var(--line-strong)] pt-4">
+            <SectionMark index={3} label="Driving with Solidify" />
+            <span aria-hidden className="hidden h-px flex-1 bg-[var(--line)] sm:block" />
+          </div>
+          <h2 id="drive-title" className="display-sm max-w-[24ch]">
+            Two ways to run with the carrier.
+          </h2>
+          <div className="grid gap-4 lg:grid-cols-2">
+            {[
+              {
+                n: "01",
+                mark: "Drive our equipment",
+                title: "Become a driver",
+                text: "For drivers who want a Truck / Power Unit provided. See what auto transport actually involves, then talk to Solidify directly.",
+                href: "/become-a-driver",
+                cta: "Become a driver",
+              },
+              {
+                n: "02",
+                mark: "Own your own truck",
+                title: "Owner-operators",
+                text: "For operators running their own Truck / Power Unit. Compensation, insurance requirements, the application, and secure onboarding once you are approved.",
+                href: "/owner-operators",
+                cta: "Go to owner-operators",
+              },
+            ].map((c) => (
+              <article key={c.n} className="plate plate-steel relative flex flex-col justify-between gap-6 overflow-hidden p-6 lg:p-8">
+                <div aria-hidden className="pointer-events-none absolute inset-0 guides" />
+                <LightSweep trigger="hover" />
+                <div className="relative flex items-baseline justify-between">
+                  <span className="index-xl !text-[clamp(1.8rem,1.3rem+1.4vw,2.8rem)]">{c.n}</span>
+                  <span className="spec">{c.mark}</span>
+                </div>
+                <div className="relative flex flex-col gap-3">
+                  <h3 className="title">{c.title}</h3>
+                  <p className="body max-w-[46ch]">{c.text}</p>
+                </div>
+                <div className="relative">
+                  <Button href={c.href} variant="steel">
+                    {c.cta}
+                  </Button>
+                </div>
+              </article>
+            ))}
           </div>
         </div>
       </Section>

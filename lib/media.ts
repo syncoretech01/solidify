@@ -48,171 +48,233 @@ export type SlotDef = {
 /* ───────────────────────────────────────────────────────────── the photos ── */
 
 export const PHOTOS: Record<string, Photo> = {
-  /* ── the carrier, loaded and moving ─────────────────────────────────── */
+  /* -- the carrier, loaded and moving ---------------------------------- */
 
   "carrier-corvettes-highway": {
     file: "carrier-corvettes-highway",
     alt: "A loaded auto-transport carrier on a highway, sports cars under white transit covers strapped across its upper and lower decks.",
-    focal: [66, 58],
+    focal: [58, 42],
     tone: "light",
-    source: "Unsplash BSL-V0TRSSo — Roger Starnes Sr (I-71, Ohio; bottom strip cropped)",
+    source: "Unsplash BSL-V0TRSSo - Roger Starnes Sr (I-71, Ohio; bottom strip cropped)",
+  },
+  "carrier-deck-wide": {
+    file: "carrier-deck-wide",
+    alt: "The upper and lower decks of a loaded car carrier running against open sky, covered vehicles held between the uprights.",
+    focal: [55, 46],
+    tone: "light",
+    source: "Unsplash BSL-V0TRSSo - Roger Starnes Sr (letterbox crop across the decks)",
   },
   "deck-corvette-detail": {
     file: "deck-corvette-detail",
     alt: "Two sports cars under fitted transit covers secured side by side on the upper deck of a car carrier, orange uprights framing them.",
-    focal: [45, 55],
+    focal: [46, 52],
     tone: "light",
-    source: "Unsplash BSL-V0TRSSo — Roger Starnes Sr (upper-deck crop of the same frame)",
+    source: "Unsplash BSL-V0TRSSo - Roger Starnes Sr (upper-deck crop of the same frame)",
+  },
+  "carrier-deck-socal": {
+    file: "carrier-deck-socal",
+    alt: "An SUV and a four-door off-roader loaded on the deck of a car carrier against an open sky.",
+    focal: [52, 48],
+    tone: "light",
+    source: "Unsplash LrDsApWs3C0 - Craig Marolf (Southern California; upper deck crop)",
+  },
+  "deck-jeep-portrait": {
+    file: "deck-jeep-portrait",
+    alt: "A four-door off-roader standing on the upper deck of a car carrier, wheels seated on the steel grating against clear sky.",
+    focal: [50, 54],
+    tone: "light",
+    source: "Unsplash LrDsApWs3C0 - Craig Marolf (upright crop on the loaded vehicle)",
+  },
+  "deck-socal-detail": {
+    file: "deck-socal-detail",
+    alt: "Three vehicles standing on the upper deck of a car carrier, wheels seated on the steel grating.",
+    focal: [45, 56],
+    tone: "light",
+    source: "Unsplash LrDsApWs3C0 - Craig Marolf (deck-level crop of the same frame)",
   },
   "carrier-interstate-transit": {
     file: "carrier-interstate-transit",
     alt: "Covered vehicles riding on a car carrier in transit, deck rails and tie-downs visible along the trailer.",
     focal: [37, 64],
     tone: "light",
-    source: "Unsplash RQlbiwT4Zgs — Roger Starnes Sr (I-71; right-side crop)",
-  },
-  "carrier-deck-socal": {
-    file: "carrier-deck-socal",
-    alt: "An SUV and a four-door off-roader loaded on the deck of a car carrier against an overcast sky.",
-    focal: [54, 62],
-    tone: "light",
-    source: "Unsplash LrDsApWs3C0 — Craig Marolf (Southern California; upper deck crop)",
-  },
-  "deck-socal-detail": {
-    file: "deck-socal-detail",
-    alt: "Three vehicles standing on the upper deck of a car carrier, wheels seated on the steel grating.",
-    focal: [45, 58],
-    tone: "light",
-    source: "Unsplash LrDsApWs3C0 — Craig Marolf (deck-level crop of the same frame)",
+    source: "Unsplash RQlbiwT4Zgs - Roger Starnes Sr (I-71; right-side crop)",
   },
 
-  /* ── loading, securing, the equipment ───────────────────────────────── */
+  /* -- loading, securing, the equipment -------------------------------- */
 
   "deck-strapped-sedan": {
     file: "deck-strapped-sedan",
     alt: "A new sedan standing on the angled deck of a car carrier, its wheels held by a ratchet strap over the steel grating.",
-    focal: [62, 52],
+    focal: [62, 48],
     tone: "light",
-    source: "Pexels 29566910 — Ivan Zhukevich (cropped to the deck; no lettering in frame)",
+    source: "Pexels 29566910 - Ivan Zhukevich (cropped to the deck; no lettering in frame)",
   },
   "supra-trailer-straps": {
     file: "supra-trailer-straps",
     alt: "A sports car secured on a transport deck, wheel straps drawn tight through the tie-down rails.",
-    focal: [50, 46],
+    focal: [50, 38],
     tone: "dark",
-    source: "Pexels 12330350 — Jacob Moore (Colorado)",
+    source: "Pexels 12330350 - Jacob Moore (Colorado)",
+  },
+  "supra-deck-wide": {
+    file: "supra-deck-wide",
+    alt: "A sports car standing on a transport deck seen across its rear quarter, the tie-down rails running away beneath it.",
+    focal: [40, 46],
+    tone: "dark",
+    source: "Pexels 12330350 - Jacob Moore (letterbox crop of the same frame)",
   },
   "strap-wheel-detail": {
     file: "strap-wheel-detail",
     alt: "A wheel strap ratcheted down to the deck rail beside a loaded vehicle, the trailer's marker tape below.",
-    focal: [45, 52],
+    focal: [42, 56],
     tone: "dark",
-    source: "Pexels 12330350 — Jacob Moore (tie-down crop of the same frame)",
+    source: "Pexels 12330350 - Jacob Moore (tie-down crop of the same frame)",
   },
   "deck-aerial-yard": {
     file: "deck-aerial-yard",
-    alt: "A car carrier's empty decks and loading ramps seen from directly above, grating and tie-down rails running the length of the trailer.",
-    focal: [50, 55],
+    alt: "A car carrier's decks and loading ramps seen from directly above, grating and tie-down rails running the length of the trailer.",
+    focal: [42, 38],
     tone: "light",
-    source: 'Wikimedia Commons "Car carrier trailer 2" — Wikideas1, CC0 (cropped)',
+    source: "Wikimedia Commons 'Car carrier trailer 2' - Wikideas1, CC0 (cropped)",
   },
   "deck-ramp-detail": {
     file: "deck-ramp-detail",
     alt: "The ramps and upper deck of a car carrier from above, hydraulic rams and walkway grating in close detail.",
-    focal: [38, 46],
+    focal: [38, 42],
     tone: "light",
-    source: 'Wikimedia Commons "Car carrier trailer 2" — Wikideas1, CC0 (ramp crop of the same frame)',
+    source: "Wikimedia Commons 'Car carrier trailer 2' - Wikideas1, CC0 (ramp crop of the same frame)",
   },
 
-  /* ── inventory, yards and destinations ──────────────────────────────── */
+  /* -- inventory, yards and destinations -------------------------------- */
 
   "lot-chattanooga-aerial": {
     file: "lot-chattanooga-aerial",
     alt: "Rows of new vehicles staged in a distribution yard, seen from the air.",
-    focal: [58, 45],
+    focal: [56, 46],
     tone: "light",
-    source: "Pexels 4204153 — K (Chattanooga, TN)",
+    source: "Pexels 4204153 - K (Chattanooga, TN)",
   },
   "lot-rows-detail": {
     file: "lot-rows-detail",
     alt: "Ranks of new vehicles standing nose to tail in a staging yard, seen from above.",
-    focal: [50, 45],
+    focal: [52, 46],
     tone: "light",
-    source: "Pexels 4204153 — K (Chattanooga, TN; tighter crop of the same frame)",
+    source: "Pexels 4204153 - K (Chattanooga, TN; tighter crop of the same frame)",
   },
   "lot-chevrolet-covers": {
     file: "lot-chevrolet-covers",
     alt: "New vehicles in a staging lot with white transit roof covers and window stickers still fitted.",
     focal: [55, 52],
     tone: "light",
-    source: "Unsplash 1h491Giz9CU — Rob Dean (new-vehicle staging lot)",
+    source: "Unsplash 1h491Giz9CU - Rob Dean (new-vehicle staging lot)",
+  },
+  "covers-column": {
+    file: "covers-column",
+    alt: "New vehicles ranked in a staging lot under white transit roof covers, seen down the length of the rows.",
+    focal: [52, 46],
+    tone: "light",
+    source: "Unsplash 1h491Giz9CU - Rob Dean (upright crop of the same frame)",
   },
   "lot-covers-detail": {
     file: "lot-covers-detail",
     alt: "Transit covers and factory window stickers on new vehicles waiting to be moved.",
     focal: [54, 44],
     tone: "light",
-    source: "Unsplash 1h491Giz9CU — Rob Dean (detail crop of the same frame)",
+    source: "Unsplash 1h491Giz9CU - Rob Dean (detail crop of the same frame)",
   },
   "lot-dealer-row": {
     file: "lot-dealer-row",
     alt: "Vehicles lined up on the ground at their destination, ready to be handed over.",
-    focal: [45, 40],
+    focal: [46, 44],
+    tone: "dark",
+    source: "Unsplash NFz9uZ8CtKM - Koons Automotive (Virginia / Maryland)",
+  },
+  "dealer-amg-detail": {
+    file: "dealer-amg-detail",
+    alt: "The rear quarter of a delivered performance saloon standing on a dealership lot, tail light and exhaust in close detail.",
+    focal: [48, 34],
+    tone: "dark",
+    source: "Unsplash NFz9uZ8CtKM - Koons Automotive (upright detail crop of the same frame)",
+  },
+  "ramp-upright": {
+    file: "ramp-upright",
+    alt: "The loading ramps, grating and tie-down rails of a car carrier seen from above, running the length of the trailer.",
+    focal: [50, 44],
     tone: "light",
-    source: "Unsplash NFz9uZ8CtKM — Koons Automotive (Virginia / Maryland)",
+    source: "Wikimedia Commons 'Car carrier trailer 2' - Wikideas1, CC0 (upright crop along the trailer)",
+  },
+  "corvette-upright": {
+    file: "corvette-upright",
+    alt: "Covered sports cars stacked on the upper and lower decks of a car carrier, an orange upright framing the load.",
+    focal: [52, 46],
+    tone: "light",
+    source: "Unsplash BSL-V0TRSSo - Roger Starnes Sr (upright crop across both decks)",
   },
 };
 
-/* ────────────────────────────────────────────────────────────── the slots ── */
+/* --------------------------------------------------------- the slots -- */
 /**
- * One slot, one place. Every photograph carries exactly two page:slot uses,
- * which is the ceiling QA enforces — nothing on this site repeats a third time.
+ * One slot, one place. No photograph carries more than two page:slot uses,
+ * which is the ceiling QA enforces - nothing on this site repeats a third time.
+ *
+ * The strongest frames sit where they are seen most. The frames that read as
+ * documentation rather than as advertising - the empty deck from above, the
+ * grey transit shot - are used where the layout wants ground rather than
+ * subject: dimmed rails, a backdrop behind a board, the loading beat of a
+ * sequence. That ordering is the art direction of this file.
  */
 
 export const SLOTS = {
   /* Home */
-  "hero-carrier": { photo: "carrier-corvettes-highway", aspect: 16 / 9, tone: "dark", role: "HERO — the loaded carrier; the WebGL scene is built on it." },
-  "lane-consumer": { photo: "deck-strapped-sedan", aspect: 4 / 5, tone: "dark", role: "Lanes — one customer vehicle, secured." },
-  "lane-oem": { photo: "lot-chevrolet-covers", aspect: 4 / 5, tone: "light", role: "Lanes — new-vehicle inventory with transit covers." },
-  "lane-operator": { photo: "deck-ramp-detail", aspect: 4 / 5, tone: "light", role: "Lanes — the equipment an owner-operator runs." },
-  statement: { photo: "carrier-deck-socal", aspect: 2, tone: "dark", role: "Statement — vehicles on a carrier deck, full-bleed." },
-  "seq-pickup": { photo: "supra-trailer-straps", aspect: 16 / 9, tone: "dark", role: "Sequence 01 — secured at pickup." },
-  "seq-transit": { photo: "carrier-interstate-transit", aspect: 16 / 9, tone: "dark", role: "Sequence 02 — on the carrier." },
-  "seq-delivery": { photo: "lot-dealer-row", aspect: 16 / 9, tone: "dark", role: "Sequence 03 — at the destination." },
-  "home-oem": { photo: "lot-chattanooga-aerial", aspect: 16 / 11, tone: "light", role: "Home OEM feature — staged inventory from above." },
-  "home-sheet": { photo: "deck-corvette-detail", aspect: 4 / 3, tone: "dark", role: "Carrier sheet — the deck, close." },
-  closing: { photo: "deck-socal-detail", aspect: 16 / 9, tone: "dark", role: "Closing scene — vehicles on the deck." },
+  "hero-carrier": { photo: "carrier-corvettes-highway", aspect: 16 / 9, tone: "dark", role: "HERO - the loaded carrier; the WebGL scene is built on this exact file." },
+  "lane-consumer": { photo: "deck-jeep-portrait", aspect: 4 / 5, tone: "dark", role: "Lanes - one customer vehicle, loaded and standing on the deck." },
+  "lane-oem": { photo: "covers-column", aspect: 4 / 5, tone: "light", role: "Lanes - new-vehicle inventory under transit covers." },
+  "lane-operator": { photo: "corvette-upright", aspect: 4 / 5, tone: "dark", role: "Lanes - the loaded decks an owner-operator runs." },
+  statement: { photo: "carrier-deck-wide", aspect: 2, tone: "dark", role: "Statement - the loaded decks, full-bleed." },
+  "seq-pickup": { photo: "deck-strapped-sedan", aspect: 16 / 9, tone: "dark", role: "Sequence 01 - secured at pickup." },
+  "seq-transit": { photo: "carrier-deck-socal", aspect: 16 / 9, tone: "dark", role: "Sequence 02 - on the carrier." },
+  "seq-delivery": { photo: "lot-dealer-row", aspect: 16 / 9, tone: "dark", role: "Sequence 03 - at the destination." },
+  "home-oem": { photo: "lot-chattanooga-aerial", aspect: 16 / 11, tone: "light", role: "Home OEM feature - staged inventory from above." },
+  "home-sheet": { photo: "supra-deck-wide", aspect: 4 / 3, tone: "dark", role: "Carrier sheet - a vehicle on the deck, close." },
+  closing: { photo: "deck-socal-detail", aspect: 16 / 9, tone: "dark", role: "Closing scene - vehicles standing on the deck." },
 
   /* Car shipping */
-  "cs-hero": { photo: "carrier-deck-socal", aspect: 16 / 9, tone: "dark", role: "Car-shipping hero — vehicles on the carrier deck." },
-  "cs-situation-1": { photo: "strap-wheel-detail", aspect: 4 / 5, tone: "dark", role: "Scenario — relocating: the vehicle strapped down." },
-  "cs-situation-2": { photo: "deck-strapped-sedan", aspect: 4 / 5, tone: "dark", role: "Scenario — buying out of state: a car loaded for the trip." },
-  "cs-situation-3": { photo: "lot-covers-detail", aspect: 4 / 5, tone: "light", role: "Scenario — seasonal moves: covers and stickers." },
-  "cs-situation-4": { photo: "deck-corvette-detail", aspect: 4 / 5, tone: "dark", role: "Scenario — students and military: covered vehicles on the deck." },
-  "cs-situation-5": { photo: "lot-dealer-row", aspect: 4 / 5, tone: "light", role: "Scenario — family vehicles: a vehicle delivered and handed over." },
-  "cs-situation-6": { photo: "lot-rows-detail", aspect: 4 / 5, tone: "light", role: "Scenario — dealer transfers: dealer inventory ready to move." },
-  "quote-ground": { photo: "deck-aerial-yard", aspect: 21 / 9, tone: "dark", role: "Quote console rail — the decks from above, dimmed." },
+  "cs-hero": { photo: "carrier-deck-wide", aspect: 16 / 9, tone: "dark", role: "Car-shipping hero - the loaded decks." },
+  "cs-situation-1": { photo: "deck-strapped-sedan", aspect: 4 / 5, tone: "light", role: "Scenario - relocating: the vehicle going up the ramp." },
+  "cs-situation-2": { photo: "dealer-amg-detail", aspect: 4 / 5, tone: "dark", role: "Scenario - buying out of state: the car as it arrives." },
+  "cs-situation-3": { photo: "supra-trailer-straps", aspect: 4 / 5, tone: "dark", role: "Scenario - seasonal moves: a car secured for the run." },
+  "cs-situation-4": { photo: "deck-jeep-portrait", aspect: 4 / 5, tone: "dark", role: "Scenario - students and military: one vehicle on the deck." },
+  "cs-situation-5": { photo: "lot-chevrolet-covers", aspect: 4 / 5, tone: "light", role: "Scenario - family vehicles: new vehicles ready to move." },
+  "cs-situation-6": { photo: "lot-rows-detail", aspect: 4 / 5, tone: "light", role: "Scenario - dealer transfers: dealer inventory ready to move." },
+  "quote-ground": { photo: "deck-aerial-yard", aspect: 21 / 9, tone: "dark", role: "Quote console rail - the trailer from above, dimmed." },
 
   /* OEM & dealerships */
-  "oem-hero": { photo: "lot-chattanooga-aerial", aspect: 16 / 9, tone: "dark", role: "OEM hero — vehicles staged for transport." },
-  "oem-role": { photo: "lot-chevrolet-covers", aspect: 2, tone: "dark", role: "Role statement — inventory with transit covers, full-bleed." },
-  "oem-board": { photo: "lot-rows-detail", aspect: 16 / 9, tone: "dark", role: "Movement board backdrop — inventory depth behind the network." },
+  "oem-hero": { photo: "lot-chattanooga-aerial", aspect: 16 / 9, tone: "dark", role: "OEM hero - vehicles staged for transport." },
+  "oem-role": { photo: "lot-chevrolet-covers", aspect: 2, tone: "dark", role: "Role statement - inventory with transit covers, full-bleed." },
+  "oem-board": { photo: "lot-covers-detail", aspect: 16 / 9, tone: "dark", role: "Movement board backdrop - inventory depth behind the network." },
 
   /* Owner-operators */
-  "oo-hero": { photo: "carrier-corvettes-highway", aspect: 16 / 9, tone: "dark", role: "Owner-operator hero — the loaded carrier." },
-  "road-1": { photo: "deck-ramp-detail", aspect: 16 / 10, tone: "light", role: "Road 01 — the decks and ramps you run." },
-  "road-2": { photo: "strap-wheel-detail", aspect: 16 / 10, tone: "dark", role: "Road 03 — securing the load." },
+  "oo-hero": { photo: "carrier-corvettes-highway", aspect: 16 / 9, tone: "dark", role: "Owner-operator hero - the loaded carrier." },
+  "road-1": { photo: "deck-ramp-detail", aspect: 16 / 10, tone: "light", role: "Road 01 - the decks and ramps you run." },
+  "road-2": { photo: "deck-aerial-yard", aspect: 16 / 10, tone: "light", role: "Road 03 - the trailer you run, end to end." },
+  "oo-apply": { photo: "deck-corvette-detail", aspect: 4 / 5, tone: "dark", role: "Application panel - the load waiting on the deck." },
+  "oo-closing": { photo: "carrier-deck-socal", aspect: 16 / 9, tone: "dark", role: "Owner-operator closing - a loaded deck against open sky." },
 
   /* Become a driver */
-  "driver-hero": { photo: "deck-aerial-yard", aspect: 16 / 9, tone: "dark", role: "Driver hero — the equipment, from above." },
-  "driver-rail": { photo: "lot-covers-detail", aspect: 4 / 5, tone: "light", role: "Driver journey rail — the vehicles you move." },
+  "driver-hero": { photo: "deck-socal-detail", aspect: 16 / 9, tone: "dark", role: "Driver hero - a vehicle standing on the deck." },
+  "driver-work-1": { photo: "ramp-upright", aspect: 4 / 5, tone: "light", role: "The work 01 - the ramps and decks you operate." },
+  "driver-work-2": { photo: "strap-wheel-detail", aspect: 4 / 5, tone: "dark", role: "The work 02 - the tie-down that holds a vehicle." },
+  "driver-work-3": { photo: "covers-column", aspect: 4 / 5, tone: "light", role: "The work 03 - new vehicles, where condition is the job." },
+  "driver-work-4": { photo: "lot-dealer-row", aspect: 4 / 5, tone: "dark", role: "The work 04 - the destination you deliver to." },
+  "driver-console": { photo: "dealer-amg-detail", aspect: 4 / 5, tone: "dark", role: "Driver console rail - a delivered vehicle, dimmed behind the form." },
+  "driver-closing": { photo: "supra-deck-wide", aspect: 16 / 9, tone: "dark", role: "Driver closing - the load on the deck." },
 
   /* About */
-  "about-hero": { photo: "deck-socal-detail", aspect: 16 / 9, tone: "dark", role: "About hero — vehicles on the deck, layered." },
-  "about-identity": { photo: "supra-trailer-straps", aspect: 4 / 5, tone: "dark", role: "Identity plate — a vehicle secured for transport." },
+  "about-hero": { photo: "supra-trailer-straps", aspect: 16 / 10, tone: "dark", role: "About hero - a vehicle secured for transport." },
+  "about-identity": { photo: "corvette-upright", aspect: 4 / 5, tone: "light", role: "Identity plate - the loaded decks, upright." },
 
   /* Contact */
-  "contact-rail": { photo: "carrier-interstate-transit", aspect: 4 / 5, tone: "dark", role: "Contact console rail — the carrier in transit, dimmed." },
+  "contact-rail": { photo: "carrier-interstate-transit", aspect: 4 / 5, tone: "dark", role: "Contact console rail - the carrier in transit, heavily dimmed." },
 } as const satisfies Record<string, SlotDef>;
 
 export type MediaId = keyof typeof SLOTS;

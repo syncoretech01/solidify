@@ -29,6 +29,9 @@ type Panel = {
  * Touch: a snap carousel with the same active state, no pin.
  * Reduced motion: a static grid, every frame legible.
  */
+/** Scroll travel each panel owns, in px, on top of the horizontal distance. */
+const SETTLE = 190;
+
 const PANELS: readonly Panel[] = [
   { title: "Relocating", text: "Moving across the state or across the country, and one vehicle needs to arrive with you.", slot: "cs-situation-1" },
   { title: "Buying out of state", text: "Found the right vehicle in another state. The carrier picks it up and delivers it to your door.", slot: "cs-situation-2" },
@@ -78,10 +81,19 @@ export function Situations() {
         const st = ScrollTrigger.create({
           trigger: el,
           start: "top top",
-          end: () => "+=" + (distance() + window.innerHeight * 0.6),
+          end: () => "+=" + (distance() + PANELS.length * SETTLE + window.innerHeight * 0.5),
           pin: true,
-          scrub: 0.7,
+          pinSpacing: true,
+          anticipatePin: 1,
+          scrub: 1,
           invalidateOnRefresh: true,
+          snap: {
+            snapTo: (v) => Math.round(v * (PANELS.length - 1)) / (PANELS.length - 1),
+            duration: { min: 0.15, max: 0.45 },
+            delay: 0.06,
+            ease: EASE.settle,
+            inertia: false,
+          },
           onUpdate: (self) => {
             const p = self.progress;
             gsap.set(track, { x: -p * distance() });
@@ -131,7 +143,7 @@ export function Situations() {
   );
 
   return (
-    <Section surface="navy" id="situations" ariaLabelledBy="situations-title" head="editorial" flush className="overflow-clip">
+    <Section surface="navy" id="situations" ariaLabelledBy="situations-title" head="editorial" flush className="overflow-clip" field="transit" fieldIntensity={0.75}>
       <div ref={root} className="relative flex min-h-[100svh] flex-col justify-center gap-10 py-[clamp(4rem,8vh,6rem)] lg:gap-12">
         <div aria-hidden className="pointer-events-none absolute inset-0 guides opacity-40" />
 
@@ -181,11 +193,11 @@ export function Situations() {
                   grade="deep"
                   className="!absolute inset-0 h-full w-full"
                 />
-                <div aria-hidden className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,7,11,0.25)_0%,rgba(5,7,11,0.1)_38%,rgba(5,7,11,0.92)_100%)]" />
+                <div aria-hidden className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,7,11,0.62)_0%,rgba(5,7,11,0.12)_34%,rgba(5,7,11,0.93)_100%)]" />
                 <div aria-hidden className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-700 group-data-[on=true]:opacity-100 group-data-[on=true]:[background:radial-gradient(120%_80%_at_20%_100%,rgba(79,151,255,0.16),transparent_62%)]" />
 
                 <div className="relative flex items-start justify-between p-5 lg:p-6">
-                  <span className="numeral text-[clamp(1.6rem,1.2rem+1.2vw,2.4rem)] leading-none text-[rgba(242,245,249,0.42)]">{String(i + 1).padStart(2, "0")}</span>
+                  <span className="numeral text-[clamp(1.6rem,1.2rem+1.2vw,2.4rem)] leading-none text-[rgba(242,245,249,0.72)] transition-colors duration-500 group-data-[on=true]:text-[rgba(179,212,255,0.95)]">{String(i + 1).padStart(2, "0")}</span>
                   {p.kicker ? <span className="spec">{p.kicker}</span> : null}
                 </div>
 

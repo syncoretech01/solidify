@@ -80,10 +80,19 @@ export function Sequence({ id = "sequence", surface = "deep", lead }: { id?: str
         const st = ScrollTrigger.create({
           trigger: el,
           start: "top top",
-          end: `+=${beats.length * 100}%`,
+          end: `+=${beats.length * 118}%`,
           pin: stage ?? el,
           pinSpacing: true,
-          scrub: true,
+          anticipatePin: 1,
+          scrub: 1,
+          invalidateOnRefresh: true,
+          snap: {
+            snapTo: (v) => Math.round(v * beats.length) / beats.length,
+            duration: { min: 0.15, max: 0.4 },
+            delay: 0.08,
+            ease: EASE.settle,
+            inertia: false,
+          },
           onUpdate: (self) => {
             const p = self.progress;
             const i = Math.min(beats.length - 1, Math.floor(p * beats.length + 0.0001));

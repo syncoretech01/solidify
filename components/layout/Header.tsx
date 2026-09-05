@@ -166,24 +166,21 @@ export function Header() {
           className="absolute inset-0 border-b border-[var(--line)] opacity-0 backdrop-blur-xl transition-opacity duration-500 group-data-[condensed=true]/nav:opacity-100 [background:color-mix(in_srgb,var(--surface)_78%,transparent)]"
         />
 
-        <div className="shell-wide relative flex items-center justify-between" style={{ height: "var(--nav-h)" }}>
+        <div
+          className="shell-wide relative flex items-center justify-between transition-[height] duration-500 ease-[var(--ease-arrive)]"
+          style={{ height: "var(--nav-h)" }}
+          data-nav-bar
+        >
           <Link href="/" aria-label={`${COMPANY.name} — home`} className="relative z-10 flex items-center gap-3">
             <Mark className="h-9 w-9" />
             <Wordmark className="text-[0.95rem]" />
           </Link>
 
           <nav aria-label="Primary" className="hidden lg:block">
-            <ul role="list" className="flex items-center gap-[clamp(1.4rem,2.4vw,2.4rem)]">
+            <ul role="list" className="flex items-center gap-[clamp(1.05rem,1.7vw,2.1rem)]">
               {NAV.map((item) => (
                 <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    aria-current={isActive(item.href) ? "page" : undefined}
-                    className={clsx(
-                      "link-underline py-1 text-[var(--step--1)] font-medium transition-colors duration-300",
-                      isActive(item.href) ? "text-[var(--text-hi)]" : "text-[var(--text-mid)] hover:text-[var(--text-hi)]",
-                    )}
-                  >
+                  <Link href={item.href} aria-current={isActive(item.href) ? "page" : undefined} className="nav-link">
                     {item.label}
                   </Link>
                 </li>

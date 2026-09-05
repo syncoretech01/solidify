@@ -35,6 +35,24 @@
       "jpg"
     ]
   },
+  "carrier-deck-wide": {
+    "width": 2400,
+    "height": 966,
+    "aspect": 2.4845,
+    "widths": [
+      400,
+      640,
+      900,
+      1280,
+      1800,
+      2400
+    ],
+    "formats": [
+      "avif",
+      "webp",
+      "jpg"
+    ]
+  },
   "carrier-interstate-transit": {
     "width": 1290,
     "height": 1130,
@@ -45,6 +63,53 @@
       900,
       1280,
       1290
+    ],
+    "formats": [
+      "avif",
+      "webp",
+      "jpg"
+    ]
+  },
+  "corvette-upright": {
+    "width": 960,
+    "height": 1587,
+    "aspect": 0.6049,
+    "widths": [
+      400,
+      640,
+      900,
+      960
+    ],
+    "formats": [
+      "avif",
+      "webp",
+      "jpg"
+    ]
+  },
+  "covers-column": {
+    "width": 1008,
+    "height": 1408,
+    "aspect": 0.7159,
+    "widths": [
+      400,
+      640,
+      900,
+      1008
+    ],
+    "formats": [
+      "avif",
+      "webp",
+      "jpg"
+    ]
+  },
+  "dealer-amg-detail": {
+    "width": 828,
+    "height": 1482,
+    "aspect": 0.5587,
+    "widths": [
+      400,
+      640,
+      828
     ],
     "formats": [
       "avif",
@@ -80,6 +145,21 @@
       900,
       1280,
       1700
+    ],
+    "formats": [
+      "avif",
+      "webp",
+      "jpg"
+    ]
+  },
+  "deck-jeep-portrait": {
+    "width": 720,
+    "height": 920,
+    "aspect": 0.7826,
+    "widths": [
+      400,
+      640,
+      720
     ],
     "formats": [
       "avif",
@@ -226,6 +306,21 @@
       "jpg"
     ]
   },
+  "ramp-upright": {
+    "width": 888,
+    "height": 1484,
+    "aspect": 0.5984,
+    "widths": [
+      400,
+      640,
+      888
+    ],
+    "formats": [
+      "avif",
+      "webp",
+      "jpg"
+    ]
+  },
   "strap-wheel-detail": {
     "width": 1900,
     "height": 1250,
@@ -237,6 +332,24 @@
       1280,
       1800,
       1900
+    ],
+    "formats": [
+      "avif",
+      "webp",
+      "jpg"
+    ]
+  },
+  "supra-deck-wide": {
+    "width": 2400,
+    "height": 1170,
+    "aspect": 2.0513,
+    "widths": [
+      400,
+      640,
+      900,
+      1280,
+      1800,
+      2400
     ],
     "formats": [
       "avif",

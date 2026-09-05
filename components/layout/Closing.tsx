@@ -122,13 +122,13 @@ export function Closing({
         <div aria-hidden className="pointer-events-none absolute inset-0 guides opacity-60" />
 
         <div className="shell-wide relative flex flex-col gap-12 pb-8 pt-[clamp(3.5rem,6vw,5.5rem)]">
-          <div className="grid gap-12 md:grid-cols-[1.3fr_1fr_1fr_1.3fr]">
+          <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-[1.35fr_0.85fr_0.95fr_0.8fr_1.25fr] lg:gap-8">
             <div className="flex flex-col gap-6">
               <Link href="/" className="flex items-center gap-3" aria-label={`${COMPANY.name} — home`}>
                 <Mark className="h-10 w-10" />
                 <span className="font-display text-[1rem] font-medium tracking-[0.18em]">SOLIDIFY</span>
               </Link>
-              <p className="body max-w-[36ch]">
+              <p className="max-w-[34ch] text-[var(--step--1)] leading-relaxed text-[var(--text-mid)]">
                 {COMPANY.descriptor}. {CLAIMS.coverage}, with a strong Western-US focus.
               </p>
               <Button href={CTA.quote.href} variant="steel" className="w-fit">
@@ -141,7 +141,7 @@ export function Closing({
               <ul role="list" className="flex flex-col gap-3">
                 {FOOTER_LINKS.services.map((l) => (
                   <li key={l.href}>
-                    <Link href={l.href} className="link-underline text-[var(--text-mid)] transition-colors hover:text-[var(--text-hi)]">
+                    <Link href={l.href} className="foot-link">
                       {l.label}
                     </Link>
                   </li>
@@ -154,7 +154,20 @@ export function Closing({
               <ul role="list" className="flex flex-col gap-3">
                 {FOOTER_LINKS.company.map((l) => (
                   <li key={l.href}>
-                    <Link href={l.href} className="link-underline text-[var(--text-mid)] transition-colors hover:text-[var(--text-hi)]">
+                    <Link href={l.href} className="foot-link">
+                      {l.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="flex flex-col gap-4">
+              <span className="label">Legal</span>
+              <ul role="list" className="flex flex-col gap-3">
+                {FOOTER_LINKS.legal.map((l) => (
+                  <li key={l.href}>
+                    <Link href={l.href} className="foot-link">
                       {l.label}
                     </Link>
                   </li>
@@ -166,22 +179,22 @@ export function Closing({
               <span className="label">Contact</span>
               <dl className="flex flex-col divide-y divide-[var(--line)] border-y border-[var(--line)]">
                 <div className="flex flex-col gap-0.5 py-2.5">
-                  <dt className="spec !text-[var(--text-low)]">Company</dt>
+                  <dt className="spec">Company</dt>
                   <dd className="font-medium text-[var(--text-hi)]">{COMPANY.legalName}</dd>
                 </div>
                 <div className="flex flex-col gap-0.5 py-2.5">
-                  <dt className="spec !text-[var(--text-low)]">Location</dt>
+                  <dt className="spec">Location</dt>
                   <dd className="text-[var(--text-mid)]">{ADDRESS_LINES.join(", ")}</dd>
                 </div>
                 <div className="flex flex-col gap-0.5 py-2.5">
-                  <dt className="spec !text-[var(--text-low)]">Phone</dt>
+                  <dt className="spec">Phone</dt>
                   <dd>
                     <PhoneLink className="link-underline font-medium text-[var(--text-hi)]" />
                   </dd>
                 </div>
                 {has("email") && (
                   <div className="flex flex-col gap-0.5 py-2.5">
-                    <dt className="spec !text-[var(--text-low)]">Email</dt>
+                    <dt className="spec">Email</dt>
                     <dd>
                       <a href={`mailto:${CLIENT_DATA.email}`} className="link-underline text-[var(--text-mid)]">
                         {CLIENT_DATA.email}
@@ -193,16 +206,18 @@ export function Closing({
             </address>
           </div>
 
-          <div className="flex flex-col gap-3 border-t border-[var(--line)] pt-6 text-[var(--step--2)] text-[var(--text-low)] md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-col gap-3 border-t border-[var(--line)] pt-6 text-[var(--step--1)] text-[var(--text-mid)] md:flex-row md:items-center md:justify-between">
             <span>
               © {year} {COMPANY.legalName}. {COMPANY.descriptor}.
               {has("usdot") && <> USDOT {CLIENT_DATA.usdot}.</>}
               {has("mc") && <> MC {CLIENT_DATA.mc}.</>}
             </span>
-            <span className="flex flex-wrap gap-x-5 gap-y-1">
-              <Link href="/privacy" className="link-underline text-[var(--text-mid)]">
-                Privacy
-              </Link>
+            <span className="flex flex-wrap gap-x-6 gap-y-1">
+              {FOOTER_LINKS.legal.map((l) => (
+                <Link key={l.href} href={l.href} className="foot-link">
+                  {l.label}
+                </Link>
+              ))}
             </span>
           </div>
         </div>

@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import clsx from "clsx";
-import { gsap, ScrollTrigger, MQ } from "@/lib/motion";
+import { gsap, ScrollTrigger, EASE, MQ } from "@/lib/motion";
 import { Plate } from "@/components/ui/Plate";
 import { Section, SectionMark, SpecStrip, Lines } from "@/components/ui/Primitives";
 import { RevealText, Reveal } from "@/components/ui/Reveal";
@@ -38,10 +38,19 @@ export function Road({ id = "road" }: { id?: string }) {
           scrollTrigger: {
             trigger: el,
             start: "top top",
-            end: () => `+=${distance()}`,
+            end: () => `+=${distance() + frames.length * 200 + window.innerHeight * 0.4}`,
             pin: true,
-            scrub: 0.8,
+            pinSpacing: true,
+            anticipatePin: 1,
+            scrub: 1,
             invalidateOnRefresh: true,
+            snap: {
+              snapTo: (v) => Math.round(v * (frames.length - 1)) / (frames.length - 1),
+              duration: { min: 0.15, max: 0.45 },
+              delay: 0.06,
+              ease: EASE.settle,
+              inertia: false,
+            },
             onUpdate: (self) => {
               if (odo) odo.textContent = String(Math.round(self.progress * 100)).padStart(3, "0");
               if (fill) fill.style.transform = `scaleX(${self.progress.toFixed(4)})`;

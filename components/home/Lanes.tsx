@@ -155,6 +155,10 @@ function Lane({ item, i, onEnter }: { item: Item; i: number; onEnter: () => void
     >
       <Plate slot={item.slot} sizes="(max-width: 1024px) 84vw, 40vw" aspect="fill" parallax={0} reveal={false} overscan={1.06} grade="cool" className="!absolute inset-0 h-full w-full" />
       <div aria-hidden className="absolute inset-0 z-[1] bg-gradient-to-t from-[rgba(5,7,11,0.92)] via-[rgba(5,7,11,0.35)] to-transparent" />
+      {/* The index and the kicker sit over whatever the photograph happens to
+          be doing at the top of the frame. On the bright inventory frames that
+          was white type on white roofs, so the top gets its own ground. */}
+      <div aria-hidden className="absolute inset-x-0 top-0 z-[1] h-[34%] bg-gradient-to-b from-[rgba(5,7,11,0.72)] via-[rgba(5,7,11,0.28)] to-transparent" />
       <div aria-hidden className="absolute inset-x-0 top-0 z-[1] h-px bg-gradient-to-r from-transparent via-[rgba(179,212,255,0.5)] to-transparent opacity-0 transition-opacity duration-500 group-data-[active=true]/lane:opacity-100" />
       <LightSweep trigger="hover" className="z-[1]" />
 

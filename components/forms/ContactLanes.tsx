@@ -1,16 +1,25 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { InquiryForm, type Lane } from "./InquiryForm";
-import { ApplyLink } from "@/components/ui/Primitives";
 
 const LANES: { id: Lane; label: string; hint: string }[] = [
   { id: "vehicle", label: "Vehicle shipping quote", hint: "Individuals and businesses shipping a vehicle" },
   { id: "oem", label: "OEM & dealership inquiry", hint: "Manufacturers, dealerships, dealer groups" },
+  { id: "driver", label: "Driving with Solidify", hint: "Drivers who would run the carrier's equipment" },
 ];
 
-/** Three clearly separated inquiry lanes. `?lane=oem|operator` preselects. */
+/**
+ * Three separated inquiry lanes. `?lane=oem|driver` preselects one; anything
+ * else — including the retired `?lane=operator` — falls back to the vehicle
+ * lane, because the value is checked against LANES rather than trusted.
+ *
+ * Owner-operators are deliberately NOT a lane here. Someone who owns their
+ * Truck / Power Unit has an application to complete, not a message to send,
+ * so they are pointed at the page that runs it.
+ */
 export function ContactLanes() {
   const params = useSearchParams();
   const initial = (params.get("lane") as Lane | null) ?? "vehicle";
@@ -23,7 +32,7 @@ export function ContactLanes() {
 
   return (
     <div className="flex flex-col gap-7">
-      <div role="tablist" aria-label="Inquiry type" className="grid gap-2 sm:grid-cols-2">
+      <div role="tablist" aria-label="Inquiry type" className="grid gap-2 sm:grid-cols-3">
         {LANES.map((l, i) => (
           <button key={l.id} role="tab" type="button" id={`lane-tab-${l.id}`} aria-selected={lane === l.id} aria-controls={`lane-panel-${l.id}`} onClick={() => setLane(l.id)} className="seg">
             <span className="numeral mb-2 block text-[var(--step--2)] text-[var(--text-low)]" aria-hidden>
@@ -38,6 +47,16 @@ export function ContactLanes() {
       <div role="tabpanel" id={`lane-panel-${lane}`} aria-labelledby={`lane-tab-${lane}`}>
         <InquiryForm lane={lane} bare />
       </div>
+
+      {lane === "driver" && (
+        <p className="small border-t border-[var(--line)] pt-5">
+          Own your Truck / Power Unit?{" "}
+          <Link href="/owner-operators" className="link-underline font-medium text-[var(--text-hi)]">
+            Owner-operators run their own equipment
+          </Link>{" "}
+          and start with an application instead.
+        </p>
+      )}
     </div>
   );
 }

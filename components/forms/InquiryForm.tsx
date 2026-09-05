@@ -5,12 +5,12 @@ import { ROUTE_EVENT } from "@/components/car/RouteMap";
 import { useForm, type FieldErrors, type Path } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import clsx from "clsx";
-import { vehicleQuoteSchema, oemInquirySchema, operatorInquirySchema, US_STATES, STATE_NAMES } from "@/lib/schemas";
+import { vehicleQuoteSchema, oemInquirySchema, driverInquirySchema, US_STATES, STATE_NAMES } from "@/lib/schemas";
 import { COMPANY } from "@/lib/site";
 import { Field, describedBy } from "./Field";
 import { PhoneLink } from "@/components/ui/Primitives";
 
-export type Lane = "vehicle" | "oem" | "operator";
+export type Lane = "vehicle" | "oem" | "driver";
 
 type Status =
   | { kind: "idle" }
@@ -20,7 +20,7 @@ type Status =
   | { kind: "rate_limited"; retryAfter: number }
   | { kind: "failed"; message: string };
 
-const SCHEMAS = { vehicle: vehicleQuoteSchema, oem: oemInquirySchema, operator: operatorInquirySchema } as const;
+const SCHEMAS = { vehicle: vehicleQuoteSchema, oem: oemInquirySchema, driver: driverInquirySchema } as const;
 
 // A loose record so one form component can serve three lanes.
 type Values = Record<string, string | number | undefined>;
@@ -38,11 +38,11 @@ const LANE_COPY: Record<Lane, { title: string; text: string; submit: string; suc
     submit: "Send commercial inquiry",
     success: "Your inquiry is with the carrier's commercial team. We will follow up using the contact details you provided.",
   },
-  operator: {
-    title: "Owner-operator inquiry",
-    text: "Questions before you apply? Send them here. New applications go through our driver portal.",
-    submit: "Send inquiry",
-    success: "Your message is with the carrier. We will follow up using the contact details you provided.",
+  driver: {
+    title: "Talk to Solidify about driving",
+    text: "Tell us how to reach you and what you drive today. Solidify follows up directly to talk through the work, the runs and what it is looking for.",
+    submit: "Send my details",
+    success: "Your details are with the carrier. Solidify will follow up using the phone or email you provided.",
   },
 };
 
@@ -272,14 +272,22 @@ export function InquiryForm({ lane, className, compact = false, bare = false }: 
         </fieldset>
       )}
 
-      {lane === "operator" && (
+      {lane === "driver" && (
         <fieldset className="grid gap-4 sm:grid-cols-2">
-          <legend className="label mb-3">About you</legend>
-          <Field id="homeBase" label="Where you are based (city, state)" optional error={err("homeBase")}>
-            <input id="homeBase" className="input" {...register("homeBase")} />
+          <legend className="label mb-3">About your driving</legend>
+          <Field id="cdl" label="Commercial driver&rsquo;s license" error={err("cdl")}>
+            <select id="cdl" className="input" defaultValue="class-a" aria-invalid={!!err("cdl")} {...register("cdl")}>
+              <option value="class-a">Class A</option>
+              <option value="class-b">Class B</option>
+              <option value="other">Another class</option>
+              <option value="none">I do not hold one yet</option>
+            </select>
           </Field>
-          <Field id="equipment" label="Truck / Power Unit and trailer" optional error={err("equipment")}>
-            <input id="equipment" className="input" placeholder="Year, make, capacity" {...register("equipment")} />
+          <Field id="basedIn" label="Where you are based (city, state)" optional error={err("basedIn")}>
+            <input id="basedIn" className="input" autoComplete="address-level2" {...register("basedIn")} />
+          </Field>
+          <Field id="experience" label="Driving experience" optional error={err("experience")} className="sm:col-span-2">
+            <input id="experience" className="input" placeholder="What you drive today, and for how long" {...register("experience")} />
           </Field>
         </fieldset>
       )}

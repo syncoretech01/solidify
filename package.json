@@ -13,6 +13,8 @@
     "images:force": "node scripts/images.mjs --force",
     "masks": "node scripts/masks.mjs",
     "imagery:sheet": "node scripts/fetch-imagery.mjs sheet",
+    "imagery:derive": "node scripts/derive.mjs",
+    "shaders": "node scripts/shader-preview.mjs",
     "qa": "node scripts/qa.mjs",
     "onboarding:smoke": "node scripts/onboarding-smoke.mjs",
     "onboarding:ui": "node scripts/onboarding-ui.mjs",

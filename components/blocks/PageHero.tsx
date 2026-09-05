@@ -98,6 +98,7 @@ export function PageHero({
           <div aria-hidden className="absolute inset-0 scrim-left-soft" />
           <div aria-hidden className="absolute inset-x-0 bottom-0 h-[55%] scrim-bottom" />
         </div>
+
         <div aria-hidden className="pointer-events-none absolute inset-0 guides opacity-50" />
       </div>
 

@@ -59,6 +59,14 @@ different subject, not a repeat, and each is credited to its source frame:
   lot-rows-detail       <- lot-chattanooga-aerial (tighter run of staged rows)
   lot-covers-detail     <- lot-chevrolet-covers (transit covers and stickers)
   strap-wheel-detail    <- supra-trailer-straps (tie-down at the deck rail)
+  deck-jeep-portrait    <- carrier-deck-socal (upright crop, one loaded vehicle)
+  carrier-deck-wide     <- carrier-corvettes-highway (letterbox across the decks)
+  supra-deck-wide       <- supra-trailer-straps (letterbox, rear quarter on deck)
+  covers-column         <- lot-chevrolet-covers (upright run of covered vehicles)
+  dealer-amg-detail     <- lot-dealer-row (upright crop on the delivered car)
+
+  Cut with: node scripts/derive.mjs <source> <name> <left> <top> <w> <h>
+  (fractions of the source; the derived file is a JPEG master at q92, <=2400px)
 
 Third sourcing sweep, this session: Openverse (240+ results across nine
 queries) returned only vintage, foreign or sub-1024px frames; Pexels and
@@ -460,3 +468,30 @@ Peterbilt 388 car hauler (Ontario, Canada; livery), Peterbilt car hauler
 livery), the US Army Hohenfels unloading series (Germany, Scania, German
 plates), I-95 Sumter and I-4 Polk rest-area frames (distant / advertising
 livery), Canoe Creek pickup-and-gooseneck (Shell canopy + door logo).
+
+FOURTH sourcing sweep (V2 revision, this session)
+-------------------------------------------------
+Openverse's API now answers 401 to unauthenticated queries, so that discovery
+route is closed. Pexels search pages were read for ids instead; twenty
+candidates went onto a contact sheet (.audit/sweep4.png) and six to full
+resolution. Every one was rejected, and the reasons are the same as the three
+sweeps before it:
+
+  pexels 34539243  cab-over prime mover, Heathwood QLD - non-US equipment
+  pexels 16370722  Western Star hauler, but a BC plate (E-53864) and a BC
+                   Transit bus in frame - Canada, and the deck is empty
+  pexels 20333185  Turkish curtainsiders (BABACANLAR, Gaziantep/Istanbul)
+  pexels 29566908  new-vehicle rows under the Vancouver skyline - Canada
+  pexels 33623773  ranks of Asian-market cab-over flatbeds - not passenger
+                   vehicles and not US
+  pexels 16668923  Scania against red rock - European equipment
+
+CONCLUSION, now on the fourth attempt: there is no free-licence photograph of a
+loaded US auto hauler being worked - loading, unloading, strapping down, or a
+handover - in the libraries reachable from here. The answer is NOT to lower the
+origin bar and NOT to draw it. It is to compose from what has been vetted: the
+five derived crops above were cut this round for exactly that reason, and the
+slot map in lib/media.ts now puts the strongest frames where they are seen most
+and the documentary ones where the layout wants ground rather than subject.
+
+The shoot brief in this file stands, and is the only real fix.

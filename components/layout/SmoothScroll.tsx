@@ -59,16 +59,21 @@ export function SmoothScroll({ children }: { children: React.ReactNode }) {
       return () => mql.removeEventListener("change", onChange);
     }
 
+    /* Slightly longer glide and a slightly shorter wheel step than the
+       defaults: the pinned sections are scrubbed, and a fast wheel step made
+       them arrive before the eye did. `prevent` keeps the wheel out of Lenis
+       while a pinned track or a select is being scrolled inside itself. */
     const lenis = new Lenis({
-      duration: 1.15,
+      duration: 1.3,
       easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       orientation: "vertical",
       gestureOrientation: "vertical",
       smoothWheel: true,
-      wheelMultiplier: 1,
-      touchMultiplier: 1.5,
+      wheelMultiplier: 0.9,
+      touchMultiplier: 1.4,
       syncTouch: false,
       autoRaf: false,
+      prevent: (node) => node.hasAttribute?.("data-lenis-prevent") ?? false,
     });
     lenisRef.current = lenis;
     if (root.classList.contains(LOCK_CLASS)) lenis.stop();
